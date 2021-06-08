@@ -1,0 +1,6 @@
+stanford_earth_r25.config:
+  title: Stanford R25 Service Configuration
+  route_name: stanford_earth_r25.config_settings_form
+  parent: user.admin_index
+  description: 'Configure Stanford access to R25 API.'
+  weight: 0

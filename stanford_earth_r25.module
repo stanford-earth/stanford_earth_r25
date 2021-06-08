@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Implements Drupal hooks for stanford_earth_r25 module.
+ */
+
+/**
+ * Hook to format emailed error messages to site admin.
+ *
+ * @param string $key
+ *   The type of email being sent.
+ * @param array $message
+ *   The message array that can be modified by this hook.
+ * @param array $params
+ *   The parameter array whose contents can be used to format the message.
+ */
+function stanford_earth_r25_mail($key, array &$message, array $params) {
+  switch ($key) {
+    case 'r25_error':
+      $message['from'] = \Drupal::config('system.site')->get('mail');
+      $message['subject'] = t('R25 API error: @title', ['@title' => $params['r25']]);
+      $message['body'][] = $params['message'];
+      break;
+  }
+}

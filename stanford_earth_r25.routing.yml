@@ -1,0 +1,10 @@
+# configure the Stanford Earth R25 Services form
+stanford_earth_r25.config_settings_form:
+  # this will be a pick under admin/config
+  path: '/admin/config/r25'
+  # define where the form will be found and who can access it
+  defaults:  
+    _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25Config'  
+    _title: 'Stanford R25'
+  requirements:  
+    _permission: 'administer site configuration'

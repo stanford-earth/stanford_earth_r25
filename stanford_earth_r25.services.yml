@@ -1,0 +1,4 @@
+services:
+    stanford_earth_r25.r25_call:
+        class: Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
+        arguments: ['@http_client', '@config.factory', '@logger.factory', '@plugin.manager.mail', '@current_user']
