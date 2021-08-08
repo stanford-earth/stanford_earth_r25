@@ -1,0 +1,1024 @@
+langcode: en
+status: 'true'
+dependencies: {  }
+id: stanford_earth_r25_rooms
+label: 'Stanford Earth R25 Rooms'
+description: 'Stanford Earth R25 Room Configurations'
+source_type: null
+module: null
+rooms:
+  gctyd:
+    machine_name: gctyd
+    display_name: 'Arco Courtyard'
+    spud_name: ''
+    space_id: '1879'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:23am'
+    status: 2
+    caltype: 2
+    max_hours: 12
+    location_info:
+      capacity: '30'
+      comments: 'Event space available only to School of Earth, Energy & Environmental Sciences affiliates. Reservation requests are tentative until approved by ERE department. <span class="se3-hide">To request this room go to the <a href="https://earth.stanford.edu/r25/gctyd/calendar">Arco Courtyard page</a> on the Stanford Earth site.</span>'
+      layout_name: 'Other [OTH]'
+      layout_instruction: null
+      layout_features: 'Outdoor Space'
+      layout_categories: 'SE3 Scheduled'
+      photo_id: '888'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: 'r25:earthsci_ere_approvers'
+    approver_secgroup_id: 221
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  b125:
+    machine_name: b125
+    display_name: 'Braun 125'
+    spud_name: se3-braun-125
+    space_id: '1679'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:27am'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '16'
+      comments: 'This room may <b>not</b> be booked for seminars and conferences. Reservation requests are tentative until approved by the Geological Sciences department. <span class="se3-hide">Requests for this room may only be made via the <a href="https://earth.stanford.edu/r25/b125/calendar">Braun 125 page</a> on the Stanford Earth site.</span> This room is not available between noon and 1PM.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: null
+      layout_categories: 'Departmentally Scheduled, SE3 Scheduled'
+      photo_id: null
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: 'r25:earthsci_gs_approvers'
+    approver_secgroup_id: 220
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  b227:
+    machine_name: b227
+    display_name: 'Braun 227'
+    spud_name: ''
+    space_id: '814'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:30am'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '22'
+      comments: 'This teaching lab may be booked for meetings during any current quarter once the fourth week of that quarter has begun. Reservation requests are tentative until approved by administrative staff of the Geological Sciences department. <span class="se3-hide">Reservation requests may only be made from the <a href="https://earth.stanford.edu/r25/b227/calendar">Braun 227 page</a> on the Stanford Earth site.</span>'
+      layout_name: 'Lab, Teaching'
+      layout_instruction: null
+      layout_features: null
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '890'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_gs_approvers'
+    approver_secgroup_id: 220
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  b241:
+    machine_name: b241
+    display_name: 'Braun 241'
+    spud_name: ''
+    space_id: '394'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:34am'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '20'
+      comments: 'This teaching lab may be booked for meetings during any current quarter once the fourth week of that quarter has begun. Reservation requests are tentative until approved by administrative staff of the Geological Sciences department. <span class="se3-hide">Reservation requests may only be made from the <a href="https://earth.stanford.edu/r25/b241/calendar">Braun 241 page</a> on the Stanford Earth site.</span>'
+      layout_name: 'Lab, Teaching'
+      layout_instruction: null
+      layout_features: null
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '891'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_gs_approvers'
+    approver_secgroup_id: 220
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  g014:
+    machine_name: g014
+    display_name: 'Green 014'
+    spud_name: ''
+    space_id: '1877'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:37am'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '30'
+      comments: '<b>Room available for reservations as of 10/1</b> Seminars and classes should <b>not</b> be booked in conference rooms. '
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: 'Audio Conference Capable, Flexible Seating, Projection Screen, Projection, Overhead, Video Conference Capable, Whiteboard, Fixed'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '887'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  g067:
+    machine_name: g067
+    display_name: 'Green 067'
+    spud_name: se3-green-067
+    space_id: '1657'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:38am'
+    status: 0
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '8'
+      comments: 'GESB067 Seminars and classes should <b>not</b> be booked in conference rooms. Reservations are tentative until approved by Energy Resources Engineering administrative staff. <a href="mailto:se3-ere-room-info@se3mail.stanford.edu">Contact</a> for more information.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: 'Internet, Wired, Projection Screen'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '810'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: 'r25:earthsci_ere_approvers'
+    approver_secgroup_id: 221
+    email_confirms_and_cancels: 1
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  g104:
+    machine_name: g104
+    display_name: 'Green 104'
+    spud_name: ''
+    space_id: '54'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:41am'
+    status: 2
+    caltype: 2
+    max_hours: 2
+    location_info:
+      capacity: '24'
+      comments: 'This seminar room may be booked for meetings during any current quarter once the fourth week of that quarter has begun. Reservation requests are tentative until approved by administrative staff of the Energy Resources Engineering department. <span class="se3-hide">Reservation requests may only be made from the <a href="https://earth.stanford.edu/r25/g104/calendar">Green 104 page</a> on the Stanford Earth site.</span>'
+      layout_name: 'Classroom [CR]'
+      layout_instruction: null
+      layout_features: 'Access, Outside, Blackboard, Multiple Mov Panel, Blinds, Blackout, Boards, Multiple, Lecture Room, Petroleum Engineering Equip, Seminar Room, Seminar, Conf or Flex Tables, Window'
+      layout_categories: 'Departmentally Scheduled, EMCS'
+      photo_id: '889'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_ere_approvers'
+    approver_secgroup_id: 221
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  g132:
+    machine_name: g132
+    display_name: 'Green 132'
+    spud_name: se3-green-132
+    space_id: '1658'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:44am'
+    status: 0
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '10'
+      comments: 'Seminars and classes should <b>not</b> be booked in conference rooms.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: 'Internet, Wired, Projection Screen'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '808'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  g361:
+    machine_name: g361
+    display_name: 'Green 361'
+    spud_name: se3-green-361
+    space_id: '1659'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:46am'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '15'
+      comments: 'Seminars and classes should <b>not</b> be booked in conference rooms.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: 'Internet, Wired, Monitor, LED'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '809'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  g365:
+    machine_name: g365
+    display_name: 'Green 365'
+    spud_name: se3-green-365
+    space_id: '1661'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:47am'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '30'
+      comments: 'Seminars and classes should <b>not</b> be booked in conference rooms.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: 'Internet, Wired, Projection Screen'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '811'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  ma25:
+    machine_name: ma25
+    display_name: 'Mitchell A25 Teaching Lab'
+    spud_name: ''
+    space_id: '393'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:50am'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '21'
+      comments: 'This teaching lab may be booked for meetings during any current quarter once the fourth week of that quarter has begun. Reservation requests are tentative until approved by administrative staff of the Geological Sciences department. <span class="se3-hide">Reservation requests may only be made from the <a href="https://earth.stanford.edu/r25/ma25/calendar">Mitchell A25 page</a> on the Stanford Earth site.</span>'
+      layout_name: 'Lab, Teaching'
+      layout_instruction: null
+      layout_features: null
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '892'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_gs_approvers'
+    approver_secgroup_id: 220
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  ma65:
+    machine_name: ma65
+    display_name: 'Mitchell A65 Computer Teaching Lab'
+    spud_name: ''
+    space_id: '395'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:52am'
+    status: 1
+    caltype: 2
+    max_hours: 2
+    location_info:
+      capacity: null
+      comments: 'Computer lab scheduled by School of Earth Sciences. For information on reserving and using this room, please see <a href="https://earth.stanford.edu/facilities/ses-a65lab/">this page</a>.'
+      layout_name: null
+      layout_instruction: null
+      layout_features: null
+      layout_categories: 'Departmentally Scheduled, EMCS'
+      photo_id: null
+    default_view: 2
+    description_as_title: 1
+    permalink: 1
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  mb04:
+    machine_name: mb04
+    display_name: 'Mitchell B04'
+    spud_name: se3-mitchell-b04
+    space_id: '484'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:55am'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '20'
+      comments: 'This room may be booked for seminars and conferences.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: '<strong>Please note:&nbsp;</strong>After use, tables and chairs <strong>must</strong> be returned to their original configuration and whiteboards must be clean and put back where they were found.'
+      layout_features: 'Monitor, LED'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '805'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  mb59a:
+    machine_name: mb59a
+    display_name: 'Mitchell B59A'
+    spud_name: ''
+    space_id: '1677'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 11:58am'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '20'
+      comments: 'Reservation requests for this meeting room are tentative until approved by administrative staff of the Geophysics department. <span class="se3-hide">Reservation requests may only be made from the <a href="https://earth.stanford.edu/r25/mb59a/calendar">Mitchell B59A page</a> on the Stanford Earth site.</span>. Room is unavailable between noon and 1PM.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: 'Meeting room entrance is through B59 Suite.'
+      layout_features: 'Monitor, LED'
+      layout_categories: 'SE3 Scheduled'
+      photo_id: '893'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: 'r25:earthsci_mb59a_approvers'
+    approver_secgroup_id: 223
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  mgc1:
+    machine_name: mgc1
+    display_name: 'Mitchell Golf Cart'
+    spud_name: ''
+    space_id: '1834'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:01pm'
+    status: 2
+    caltype: 2
+    max_hours: 12
+    location_info:
+      capacity: '6'
+      comments: 'Reservation requests are tentative until approved by the Stanford Earth Dean''s Office. <span class="se3-hide">To request this vehicle go to the <a href="https://earth.stanford.edu/r25/mgc1/calendar">Mitchell Golf Cart</a> page on the Stanford Earth site.</span>'
+      layout_name: 'Other [OTH]'
+      layout_instruction: 'Before using the golf cart, you must complete the <a href="https://transportation.stanford.edu/parking_info/carts.shtml#training">Online Cart Safety Training PTS-1000</a> course via Axess and complete, sign, and return the <a href="https://earth.stanford.edu/sites/default/files/Golf%20Cart.2.pdf">Departmental Golf Cart Operator''s Agreement</a> form. Golf cart and key should be returned no later than 5PM the same day it was borrowed. For after hours return, please request prior approval from Sylvia Wasmer. '
+      layout_features: null
+      layout_categories: 'Departmentally Scheduled, SE3 Scheduled'
+      photo_id: '868'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: 'r25:earthsci_hartley_and_vehicles'
+    approver_secgroup_id: 206
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  m138:
+    machine_name: m138
+    display_name: 'Mitchell 138'
+    spud_name: se3-mitchell-138
+    space_id: '1651'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:05pm'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '12'
+      comments: 'This room may <b>not</b> be booked for seminars and conferences.'
+      layout_name: 'Boardroom [BR]'
+      layout_instruction: 'This room is accessible only from outside the Mitchell building, on the Mitchell terrace. A room key is needed for entry. Please lock after use.'
+      layout_features: 'Internet, Wired, Monitor, LED'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '804'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  m318:
+    machine_name: m318
+    display_name: 'Mitchell 318'
+    spud_name: se3-mitchell-318
+    space_id: '1655'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:09pm'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info: {  }
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: "<p>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;email <a href=\"mailto:Reservations may only be made for single occurrences of up to [max_duration] hours. For longer or recurring reservations, please email gp-reserve@lists.stanford.edu. All reservations are subject to approval by your department and the Dean's Office.?subject=Mitchell%20318%20Reservation%20Request\">gp-reserve@lists.stanford.edu</a>. All reservations are subject to approval by your department and the Dean's Office.</p>\r\n\r\n<p>&nbsp;</p>\r\n"
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+  m350:
+    machine_name: m350
+    display_name: 'Mitchell 350'
+    spud_name: ''
+    space_id: '346'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:12pm'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '20'
+      comments: 'This room is scheduled for classes by the Geophysics Department, however any Stanford School of Earth, Energy & Environmental Sciences associate may also reserve this room for meetings during any current quarter once the fourth week of that quarter has begun. <span class="se3-hide">In order to enforce these blackout periods, room reservations for meetings may only be made via the Stanford Earth <a href="https://earth.stanford.edu/r25/m350/calendar">room reservation page.</a></span>'
+      layout_name: 'Seminar [SEM]'
+      layout_instruction: null
+      layout_features: Projector
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '900'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_geophysics_approvers'
+    approver_secgroup_id: 219
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: "<p>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;email <a href=\"mailto:gp-reserve@lists.stanford.edu?subject=Mitchell%20350%20Reservation%20Request\">gp-reserve@lists.stanford.edu</a>. All reservations are subject to approval by your department and the Dean's Office.</p>\r\n"
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: "<p>If you are a Geophysics faculty member or TA trying to schedule this room during the first 3 weeks a new quarter, please email <a href=\"mailto:gp-reserve@lists.stanford.edu\">gp-reserve@lists.stanford.edu</a> with the following information: the reason for booking, start/end time, date, and if this is a reoccurring event.</p>\r\n"
+      format: content_editor_text_format
+  m360:
+    machine_name: m360
+    display_name: 'Mitchell 360'
+    spud_name: se3-mitchell-360
+    space_id: '1656'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:15pm'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '10'
+      comments: 'This room may <b>not</b> be booked for seminars and conferences.'
+      layout_name: 'Boardroom [BR]'
+      layout_instruction: null
+      layout_features: 'Internet, Wired, Projection Screen'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '807'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: "<p>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;email <a href=\"mailto:gp-reserve@lists.stanford.edu?subject=Mitchell%20360%20Reservation%20Request\">gp-reserve@lists.stanford.edu</a>. All reservations are subject to approval by your department and the Dean&#39;s Office.</p>\r\n"
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  m372:
+    machine_name: m372
+    display_name: 'Mitchell 372'
+    spud_name: ''
+    space_id: '35'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:18pm'
+    status: 2
+    caltype: 2
+    max_hours: 2
+    location_info:
+      capacity: '20'
+      comments: 'This room is scheduled for classes by the Geophysics Department, however any Stanford School of Earth, Energy & Environmental Sciences associate may also reserve this room for meetings during any current quarter once the fourth week of that quarter has begun. <span class="se3-hide">In order to enforce these blackout periods, room reservations for meetings may only be made via the Stanford Earth <a href="https://earth.stanford.edu/r25/m372/calendar">room reservation page.</a></span>'
+      layout_name: 'Seminar [SEM]'
+      layout_instruction: null
+      layout_features: 'Projection, 35MM Slide, Seat, Movable, Seminar Room, Whiteboard, Fixed'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '901'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_geophysics_approvers'
+    approver_secgroup_id: 219
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: "<p>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;email <a href=\"mailto:gp-reserve@lists.stanford.edu?subject=Mitchell%20372%20Reservation%20Request\">gp-reserve@lists.stanford.edu</a>. All reservations are subject to approval by your department and the Dean's Office.</p>\r\n"
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: "<p>If you are a Geophysics faculty member or TA trying to schedule this room during the first 3 weeks a new quarter, please email <a href=\"mailto:gp-reserve@lists.stanford.edu\">gp-reserve@lists.stanford.edu</a> with the following information: the reason for booking, start/end time, date, and if this is a reoccurring event.</p>\r\n"
+      format: content_editor_text_format
+  m350_372:
+    machine_name: m350_372
+    display_name: 'Mitchell 350 and 372 Combined'
+    spud_name: ''
+    space_id: '1884'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:25pm'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '40'
+      comments: 'This room is scheduled for classes by the Geophysics Department, however any Stanford School of Earth, Energy & Environmental Sciences associate may also reserve this room for meetings during any current quarter once the fourth week of that quarter has begun. <span class="se3-hide">In order to enforce these blackout periods, room reservations for meetings may only be made via the Stanford Earth <a href="https://earth.stanford.edu/r25/m350-372/calendar">room reservation page.</a></span>'
+      layout_name: 'Seminar [SEM]'
+      layout_instruction: 'Fold in partition between rooms before use. Please separate rooms again when finished.'
+      layout_features: Projector
+      layout_categories: 'Departmentally Scheduled, SE3 Scheduled'
+      photo_id: '180'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_geophysics_approvers'
+    approver_secgroup_id: 219
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: "<p>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;email <a href=\"mailto:gp-reserve@lists.stanford.edu?subject=Mitchell%20350%20and%20372%20Reservation%20Request\">gp-reserve@lists.stanford.edu</a>. All reservations are subject to approval by your department and the Dean's Office.</p>\r\n"
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: "<p>If you are a Geophysics faculty member or TA trying to schedule this room during the first 3 weeks a new quarter, please email <a href=\"mailto:gp-reserve@lists.stanford.edu\">gp-reserve@lists.stanford.edu</a> with the following information: the reason for booking, start/end time, date, and if this is a reoccurring event.</p>\r\n"
+      format: content_editor_text_format
+  m452:
+    machine_name: m452
+    display_name: 'Mitchell 452'
+    spud_name: ''
+    space_id: '342'
+    email_list: ksharp@stanford.edu
+    created: 'Sun, 01/08/2017 - 12:50pm'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '19'
+      comments: 'This room is scheduled for classes by the Geophysics Department, however any Stanford School of Earth, Energy & Environmental Sciences associate may also reserve this room for meetings during any current quarter once the fourth week of that quarter has begun. <span class="se3-hide">In order to enforce these blackout periods, room reservations for meetings may only be made via the Stanford Earth <a href="https://earth.stanford.edu/r25/m452/calendar">room reservation page.</a></span>'
+      layout_name: 'Seminar [SEM]'
+      layout_instruction: null
+      layout_features: Projector
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '899'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 1
+    approver_secgroup_name: 'r25:earthsci_geophysics_approvers'
+    approver_secgroup_id: 219
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: "<p>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;email <a href=\"mailto:gp-reserve@lists.stanford.edu?subject=Mitchell%20452%20Reservation%20Request\">gp-reserve@lists.stanford.edu</a>. All reservations are subject to approval by your department and the Dean's Office.</p>\r\n"
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+    override_blackout_instructions:
+      value: "<p>If you are a Geophysics faculty member or TA trying to schedule this room during the first 3 weeks a new quarter, please email <a href=\"mailto:gp-reserve@lists.stanford.edu\">gp-reserve@lists.stanford.edu</a> with the following information: the reason for booking, start/end time, date, and if this is a reoccurring event.</p>\r\n"
+      format: content_editor_text_format
+  se3proj1:
+    machine_name: se3proj1
+    display_name: 'Epson Powerlite Portable Projector'
+    spud_name: ''
+    space_id: '2010'
+    email_list: ksharp@stanford.edu
+    created: 'Fri, 05/25/2018 - 11:34am'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '1'
+      comments: "Portable Project available only to School of Earth, Energy & Environmental Sciences affiliates. Reservation requests are tentative until approved by ERE department. <span class=\"se3-hide\">To request this item, go to the <a href=\"https://earth.stanford.edu/r25/se3proj1/calendar\">Portable Project 1 page</a> on the Stanford Earth site.</span><br />\nLocation: Green Room 019<br />\nGatekeeper: Diane Cisneroz, Green room 050<br />\nModel info: Epson Powerlite 1781W WXGA<br />\nCase information: Workforce Safe n Secure Video Projector Care<br />\nAccessories: AmazonBasics High-Speed HDMI Cable, 10 Feet, 1-Pack and remote<br />"
+      layout_name: 'Other [OTH]'
+      layout_instruction: null
+      layout_features: null
+      layout_categories: 'SE3 Scheduled'
+      photo_id: '986'
+    default_view: 2
+    description_as_title: 0
+    permalink: 1
+    honor_blackouts: 0
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+    approver_secgroup_name: 'r25:earthsci_ere_approvers'
+    approver_secgroup_id: 221
+    email_confirms_and_cancels: 1
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  g242:
+    machine_name: g242
+    display_name: 'Green 242'
+    spud_name: ''
+    space_id: '2043'
+    email_list: ksharp@stanford.edu
+    created: 'Wed, 02/20/2019 - 4:05pm'
+    status: 3
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '10'
+      comments: 'Seminars and classes should <b>not</b> be booked in conference rooms.'
+      layout_name: 'Conference [CON]'
+      layout_instruction: null
+      layout_features: 'Internet, Wireless, Projection Screen, Projection, Overhead'
+      layout_categories: 'Departmentally Scheduled, EMCS, SE3 Scheduled'
+      photo_id: '1010'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+    approver_secgroup_name: ''
+    approver_secgroup_id: 0
+    email_confirms_and_cancels: 0
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
+  mh01:
+    machine_name: mh01
+    display_name: 'Hartley Conference Internal'
+    spud_name: ''
+    space_id: '1675'
+    email_list: ksharp@stanford.edu
+    created: 'Mon, 06/10/2019 - 5:37pm'
+    status: 2
+    caltype: 2
+    max_hours: 0
+    location_info:
+      capacity: '34'
+      comments: "Conference room and kitchen only. Does *not* include outdoor Mitchell Patio.<br />\nGo to <a href=\"https://pangea.stanford.edu/hartley/r25/mh02/calendar\">Mitchell Patio</a> to book just the patio.<br />\nGo to <a href=\"https://pangea.stanford.edu/hartley/r25/mh03/calendar\">Hartley Conference Room plus Mitchell Patio</a> to book the conference room and patio together.<br />\nLearn more about Hartley Conference Room and Mitchell Patio rental fees, booking instructions, and use instructions <a href=\"https://pangea.stanford.edu/hartley\">here</a>.<br /><br />\n<strong>Note: Users are responsible for keeping the space around and in front of the electrical panel clear.</strong> Please be aware that blocking the electrical panel in the Hartley conference room is a <strong>Fire Marshall Violation</strong>.<br /><br />"
+      layout_name: 'Boardroom [BR]'
+      layout_instruction: null
+      layout_features: 'Access, Outside, Counter, Prep, Dept Scheduled Room, Freezer, Internet, Wireless, Podium, Projection Screen, Projection, Overhead, Refrigerator, Seminar, Conf or Flex Tables, Sink, Teleconference Capable'
+      layout_categories: 'SE3 Scheduled'
+      photo_id: '884'
+    default_view: 2
+    description_as_title: 0
+    permalink: 1
+    honor_blackouts: 0
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+    approver_secgroup_name: 'r25:earthsci_hartley_and_vehicles'
+    approver_secgroup_id: 206
+    email_confirms_and_cancels: 1
+    authentication: 1
+    multi_day: 1
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: '176,169,170,171,172,173,177'
+    event_attribute_fields:
+      176:
+        name: 'SE3 Hartley First Time User'
+        type: B
+        contact: false
+      169:
+        name: 'SE3 Hartley Food'
+        type: B
+        contact: false
+      170:
+        name: 'SE3 Hartley Cleanup'
+        type: B
+        contact: false
+      171:
+        name: 'SE3 Hartley Billable'
+        type: B
+        contact: false
+      172:
+        name: 'SE3 Hartley PTA'
+        type: S
+        contact: false
+      173:
+        name: 'SE3 Hartley Signature Authority'
+        type: S
+        contact: false
+      177:
+        name: 'SE3 Hartley Description'
+        type: X
+        contact: false
+    contact_attr: '175'
+    contact_attr_field:
+      175:
+        name: 'SE3 Booking Contact Info'
+        type: X
+        contact: true
+    auto_billing_code: '155'
+  b114:
+    machine_name: b114
+    display_name: 'Student Lounge'
+    spud_name: ''
+    space_id: '264'
+    email_list: ksharp@stanford.edu
+    created: 'Fri, 10/18/2019 - 1:52pm'
+    status: 2
+    caltype: 2
+    max_hours: 4
+    location_info:
+      capacity: '22'
+      comments: '<span class="se3-hide">To request this room go to the <a href="https://earth.stanford.edu/r25/b114/calendar">Stanford Earth Student Lounge</a> page on the Stanford Earth site.<br /></span>Lounge only. Does <strong>not </strong>include Wellness Room. This room may not be booked for classes, seminars, or conferences. Reservation requests are tentative until approved by the room administrator. You will only be contacted if your request <strong>cannot</strong> be approved. <strong>Please Note: </strong>During your event, the lounge will still be accessible to students who would like to use the space for sitting, studying, or just relaxing. This is a shared space, and we do not allow restricted use of the space. Shared use guidelines for the Student Lounge can be found <a href="https://pangea.stanford.edu/sites/default/files/Stanford%20Earth%20Student%20Lounge%20-%20Shared%20Use%20Guidelines.pdf">here</a>. Shared use guidelines for the Braun Wellness Room can be found <a href="https://pangea.stanford.edu/sites/default/files/Wellness%20and%20Conversation%20Room%20-%20Shared%20Use%20Guidelines.pdf">here</a>.'
+      layout_name: Lounge
+      layout_instruction: null
+      layout_features: 'Counter, Prep, Freezer, Internet, Wired, Internet, Wireless, Projection Screen, Refrigerator, Seminar, Conf or Flex Tables'
+      layout_categories: 'Departmentally Scheduled, EMCS'
+      photo_id: '1039'
+    default_view: 2
+    description_as_title: 0
+    permalink: 0
+    honor_blackouts: 0
+    override_blackout_instructions:
+      value: ''
+      format: content_editor_text_format
+    approver_secgroup_name: 'r25:earthsci_power_users'
+    approver_secgroup_id: 190
+    email_confirms_and_cancels: 1
+    authentication: 1
+    multi_day: 0
+    postprocess_booking: 0
+    override_booking_instructions:
+      value: ''
+      format: content_editor_text_format
+    event_attributes: ''
+    event_attribute_fields: {  }
+    contact_attr: ''
+    contact_attr_field: {  }
+    auto_billing_code: ''
