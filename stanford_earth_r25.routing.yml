@@ -3,8 +3,40 @@ stanford_earth_r25.config_settings_form:
   # this will be a pick under admin/config
   path: '/admin/config/r25'
   # define where the form will be found and who can access it
-  defaults:  
-    _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25Config'  
+  defaults:
+    _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25Config'
     _title: 'Stanford R25'
-  requirements:  
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.stanford_earth_r25.collection:
+  path: '/admin/config/system/stanford_earth_r25'
+  defaults:
+    _entity_list: 'stanford_earth_r25'
+    _title: 'Stanford Earth R25 Rooms'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.stanford_earth_r25.add_form:
+  path: '/admin/config/system/stanford_earth_r25/add'
+  defaults:
+    _entity_form: 'stanford_earth_r25.add'
+    _title: 'Add room'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.stanford_earth_r25.edit_form:
+  path: '/admin/config/system/stanford_earth_r25/{room}'
+  defaults:
+    _entity_form: 'stanford_earth_r25.edit'
+    _title: 'Edit room'
+  requirements:
+  _permission: 'administer site configuration'
+
+entity.stanford_earth_r25.delete_form:
+  path: '/admin/config/system/stanford_earth_r25/{room}/delete'
+  defaults:
+    _entity_form: 'stanford_earth_r25.delete'
+    _title: 'Delete room'
+  requirements:
     _permission: 'administer site configuration'

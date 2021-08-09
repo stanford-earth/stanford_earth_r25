@@ -1,0 +1,5 @@
+entity.stanford_earth_r25.add_form:
+  route_name: 'entity.stanford_earth_r25.add_form'
+  title: 'Add room'
+  appears_on:
+    - entity.stanford_earth_r25.collection
