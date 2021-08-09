@@ -5,38 +5,38 @@ stanford_earth_r25.config_settings_form:
   # define where the form will be found and who can access it
   defaults:
     _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25Config'
-    _title: 'Stanford R25'
+    _title: 'Stanford Earth R25'
   requirements:
     _permission: 'administer site configuration'
 
-entity.stanford_earth_r25.collection:
-  path: '/admin/config/system/stanford_earth_r25'
+entity.stanford_earth_r25_location.collection:
+  path: '/admin/config/system/stanford_earth_r25_location'
   defaults:
-    _entity_list: 'stanford_earth_r25'
-    _title: 'Stanford Earth R25 Rooms'
+    _entity_list: 'stanford_earth_r25_location'
+    _title: 'Stanford Earth R25 Locations'
   requirements:
     _permission: 'administer site configuration'
 
-entity.stanford_earth_r25.add_form:
-  path: '/admin/config/system/stanford_earth_r25/add'
+entity.stanford_earth_r25_location.add_form:
+  path: '/admin/config/system/stanford_earth_r25_location/add'
   defaults:
-    _entity_form: 'stanford_earth_r25.add'
-    _title: 'Add room'
+    _entity_form: 'stanford_earth_r25_location.add'
+    _title: 'Add location'
   requirements:
     _permission: 'administer site configuration'
 
-entity.stanford_earth_r25.edit_form:
-  path: '/admin/config/system/stanford_earth_r25/{room}'
+entity.stanford_earth_r25_location.edit_form:
+  path: '/admin/config/system/stanford_earth_r25_location/{location}'
   defaults:
-    _entity_form: 'stanford_earth_r25.edit'
-    _title: 'Edit room'
+    _entity_form: 'stanford_earth_r25_location.edit'
+    _title: 'Edit location'
   requirements:
   _permission: 'administer site configuration'
 
 entity.stanford_earth_r25.delete_form:
-  path: '/admin/config/system/stanford_earth_r25/{room}/delete'
+  path: '/admin/config/system/stanford_earth_r25_location/{location}/delete'
   defaults:
-    _entity_form: 'stanford_earth_r25.delete'
-    _title: 'Delete room'
+    _entity_form: 'stanford_earth_r25_location.delete'
+    _title: 'Delete location'
   requirements:
     _permission: 'administer site configuration'

@@ -1,0 +1,10 @@
+stanford_earth_r25.location.*:
+  type: config_entity
+  label: 'Stanford Earth R25 Location'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'

@@ -1,12 +1,12 @@
 stanford_earth_r25.config:
-  title: Stanford R25 Service Configuration
+  title: 'Stanford R25 Service Configuration'
   route_name: stanford_earth_r25.config_settings_form
-  parent: user.admin_index
+  parent: system.admin_config_system
   description: 'Configure Stanford access to R25 API.'
   weight: 0
 
 entity.stanford_earth_r25.collection:
-  title: 'Stanford Earth R25 Rooms'
+  title: 'Stanford Earth R25 Locations'
   parent: system.admin_config_system
-  description: 'Configure rooms'
+  description: 'Configure locations'
   route_name: entity.stanford_earth_r25.collection
