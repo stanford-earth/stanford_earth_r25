@@ -1,3 +1,5 @@
+<?php
+
 namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
@@ -21,7 +23,7 @@ class StanfordEarthR25LocationDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.stanford_earth_r25.location.collection');
+    return new Url('entity.stanford_earth_r25_location.collection');
   }
 
   /**

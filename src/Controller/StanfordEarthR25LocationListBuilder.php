@@ -1,3 +1,5 @@
+<?php
+
 namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;

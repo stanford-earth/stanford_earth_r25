@@ -1,7 +1,8 @@
+<?php
+
 namespace Drupal\stanford_earth_r25\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\stanford_earth_r25\StanfordEarthR25LocationInterface;
 
 /**
 * Defines the Stanford Earth R25 Location entity.
@@ -17,7 +18,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25LocationInterface;
 *       "delete" = "Drupal\stanford_earth_r25\Form\StanfordEarthR25LocationDeleteForm",
 *     }
 *   },
-*   config_prefix = "stanford_earth_r25_location",
+*   config_prefix = "stanford_earth_r25",
 *   admin_permission = "administer site configuration",
 *   entity_keys = {
 *     "id" = "id",
@@ -33,8 +34,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25LocationInterface;
 *   }
 * )
 */
-class StanfordEarthR25Location extends ConfigEntityBase
-  implements StanfordEarthR25LocationInterface {
+class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarthR25LocationInterface {
 
 /**
 * The Room ID.

@@ -2,4 +2,4 @@ entity.stanford_earth_r25_location.add_form:
   route_name: 'entity.stanford_earth_r25_location.add_form'
   title: 'Add location'
   appears_on:
-    - entity.stanford_earth_r25.location.collection
+    - entity.stanford_earth_r25_location.collection

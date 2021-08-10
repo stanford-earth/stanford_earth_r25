@@ -1,4 +1,6 @@
-namespace Drupal\stanford_earth_r25;
+<?php
+
+namespace Drupal\stanford_earth_r25\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 

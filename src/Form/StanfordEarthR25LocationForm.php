@@ -1,3 +1,5 @@
+<?php
+
 namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Entity\EntityForm;
@@ -77,14 +79,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
       ]));
     }
 
-    $form_state->setRedirect('entity.stanford_earth_r25.location.collection');
+    $form_state->setRedirect('entity.stanford_earth_r25_location.collection');
   }
 
   /**
    * Helper function to check whether a Location configuration entity exists.
    */
   public function exist($id) {
-    $entity = $this->entityTypeManager->getStorage('stanford_earth_r25.location')->getQuery()
+    $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')->getQuery()
       ->condition('id', $id)
       ->execute();
     return (bool) $entity;
