@@ -8,3 +8,135 @@ stanford_earth_r25_location.*:
     label:
       type: label
       label: 'Label'
+    spud_name:
+      type: string
+      label: '25Live Publisher Webname'
+    space_id:
+      type: string
+      label: 'R25 Location ID'
+    email_list:
+      type: string
+      label: 'Email List'
+    created:
+      type: string
+      label: 'Created on'
+    status:
+      type: int
+      label: 'Location Display Options'
+    caltype:
+      type: int
+      label: 'Calendary Display Type'
+    max_hours:
+      type: int
+      label: 'Maximum Reservation Hours'
+    default_view:
+      type: int
+      label: 'Default Calendar View'
+    description_as_title:
+      type: boolean
+      label: 'Show Event Description as Title'
+    permalink:
+      type: boolean
+      label: 'Display Calendar Permalink on Page'
+    honor_blackouts:
+      type: boolean
+      label: 'Honor Blackout Dates for Reservations'
+    override_blackout_instructions:
+      type: string
+      label: 'Override Blackout Instructions'
+    approver_secgroup_name:
+      type: string
+      label: 'Approver Security Group'
+    approver_secgroup_id:
+      type: int
+      label: 'R25 Approver Security Group ID'
+    email_cancellations:
+      type: boolean
+      label: 'Email Cancellations to Approvers'
+    authentication_type:
+      type: int
+      label: 'Authentication Method'
+    multi_day:
+      type: boolean
+      label: 'Allow Multi-Day Reservations'
+    postprocess_booking:
+      type: boolean
+      label: 'Postprocess Booking'
+    override_booking_instructions:
+      type: string
+      label: 'Override Booking Instructions'
+    event_attributes:
+      type: string
+      label: 'Event Attributes'
+    event_attributes_field:
+      type: sequence
+      label: 'Event Attribute R25 Info'
+      sequence:
+        - type: mapping
+          label: 'R25 Event Attr'
+          mapping:
+            attr_id:
+              type: string
+              label: 'Event Attr ID'
+            name:
+              type: string
+              label: 'Event Attr Name'
+            r25_type:
+              type: string
+              label: 'Event Attr Type'
+            contact:
+              type: boolean
+              label: 'Contact attribute'
+    contact_attribute:
+      type: string
+      label: 'Contact Attribute'
+    contact_attribute_field:
+      type: sequence
+      label: 'Contact Attribute R25 Info'
+      sequence:
+        - type: mapping
+          label: 'R25 Contact Attr'
+          mapping:
+            attr_id:
+              type: string
+              label: 'Contact Attr ID'
+            name:
+              type: string
+              label: 'Contact Attr Name'
+            r25_type:
+              type: string
+              label: 'Contact Attr Type'
+            contact:
+              type: boolean
+              label: 'Contact attribute'
+    auto_billing_code:
+      type string
+      label: 'Auto-Bill Rate Group ID'
+    location_info:
+      type: sequence
+      label: 'R25 Location Info'
+      sequence:
+        - type: mapping
+          label: 'R25 Location Info'
+          mapping:
+            capacity:
+              type: string
+              label: 'Capacity'
+            comments:
+              type: string
+              label: 'Comments'
+            layout_name:
+              type: string
+              label: 'Layout Name'
+            layout_instructions:
+              type: string
+              label: 'Layout Instructions'
+            layout_features:
+              type: string
+              label: 'Layout Features'
+            layout_categories:
+              type: string
+              label: 'Layout Categories'
+            photo_id:
+              type: string
+              label: Photo ID
