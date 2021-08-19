@@ -71,7 +71,7 @@ class StanfordEarthR25Service {
                               MailManager $mailmgr,
                               AccountProxy $curUser) {
     $this->httpClient = $http_client;
-    $this->config = $config->get('stanford_earth_r25.adminsettings');
+    $this->config = $config->get('stanford_earth_r25.credentialsettings');
     $this->logger = $logger_factory->get('system');
     $this->mailManager = $mailmgr;
     $this->currentUser = $curUser;
@@ -114,7 +114,12 @@ class StanfordEarthR25Service {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  public function r25_api_call(string $command = NULL, string $post_data = NULL, string $id = NULL) {
+  public function r25_api_call(
+    string $command = NULL,
+    string $post_data = NULL,
+    string $id = NULL
+  ) {
+
     $api_result = [
       'status' => [
         'status' => FALSE
@@ -122,15 +127,29 @@ class StanfordEarthR25Service {
       'output' => [],
     ];
     try {
-        // get our R25 credential from config
-        $credential = $this->config->get('client_credential');
+      // get our R25 credential path from config and read it in.
+      if ($command == 'test' && !empty($post_data)) {
+        $post_data = unserialize($post_data);
+        $url = $post_data['base_url'];
+        $credential_path = $post_data['credential'];
+      }
+      else {
+        $credential_path = $this->config->get('stanford_r25_credential');
         // See the collegenet API documentation for more information: https://knowledge25.collegenet.com/display/WSW/WebServices+API
         // get the base url for the organization's 25Live back-end
-        $url = $this->config->get('base_url');
-        // add the 25Live admin credential to the url and force it to https
-        $url = 'https://' . $credential . '@' . substr($url, (strpos($url, '://') + 3));
-        // figure out which 25Live webservices API command corresponds to what we want to do
-        switch ($command) {
+        $url = $this->config->get('stanford_r25_base_url');
+      }
+      $credential = '';
+      if (!empty($credential_path)) {
+        $credential = trim(file_get_contents($credential_path));
+      }
+      // add the 25Live admin credential to the url and force it to https
+      if (empty($credential) || empty($url)) {
+        return $api_result;
+      }
+      $url = 'https://' . $credential . '@' . substr($url, (strpos($url, '://') + 3));
+      // figure out which 25Live webservices API command corresponds to what we want to do
+      switch ($command) {
           case 'reserve':
             $xml_command = 'events.xml';
             break;

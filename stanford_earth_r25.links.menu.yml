@@ -4,16 +4,23 @@ stanford_earth_r25.top:
   description: 'Present options for R25 system and location configurations.'
   parent: system.admin_config_system
 
+stanford_earth_r25.credentials:
+  title: 'Stanford R25 Credentials'
+  route_name: stanford_earth_r25.config_credentials_form
+  parent: stanford_earth_r25.top
+  description: 'Configure Stanford Earth access to R25 API.'
+  weight: 0
+
 stanford_earth_r25.config:
   title: 'Stanford R25 Configuration'
   route_name: stanford_earth_r25.config_settings_form
   parent: stanford_earth_r25.top
-  description: 'Configure Stanford Earth access to R25 API.'
-  weight: 0
+  description: 'Configure Stanford Earth R25 global settings.'
+  weight: 1
 
 entity.stanford_earth_r25_location.collection:
   title: 'Stanford Earth R25 Locations'
   route_name: entity.stanford_earth_r25_location.collection
   parent: stanford_earth_r25.top
   description: 'Configure Stanford Earth locations.'
-  weight: 1
+  weight: 2

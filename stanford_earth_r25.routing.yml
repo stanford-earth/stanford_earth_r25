@@ -6,13 +6,23 @@ stanford_earth_r25.top:
   requirements:
     _permission: 'administer site configuration'
 
+stanford_earth_r25.config_credentials_form:
+  # this will be a pick under admin/config
+  path: '/admin/config/r25/credentials'
+  # define where the form will be found and who can access it
+  defaults:
+    _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25CredentialsForm'
+    _title: 'Stanford Earth R25 Credentials'
+  requirements:
+    _permission: 'administer site configuration'
+
 stanford_earth_r25.config_settings_form:
   # this will be a pick under admin/config
   path: '/admin/config/r25/config'
   # define where the form will be found and who can access it
   defaults:
-    _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25Config'
-    _title: 'Stanford Earth R25'
+    _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25ConfigForm'
+    _title: 'Stanford Earth R25 Settings'
   requirements:
     _permission: 'administer site configuration'
 
