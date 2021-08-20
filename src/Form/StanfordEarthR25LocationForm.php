@@ -300,10 +300,10 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#base_type' => 'textarea'
     );
     // set a created date
-    $form['created'] = array(
-      '#title' => $this->t('Created on'),
+    $form['updated'] = array(
+      '#title' => $this->t('Last updated'),
       '#type' => 'textfield',
-      '#default_value' => $location->get('created'),
+      '#default_value' => $location->get('updated'),
       '#disabled' => TRUE,
     );
 

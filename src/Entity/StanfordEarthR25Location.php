@@ -34,7 +34,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "spud_name",
  *     "space_id",
  *     "email_list",
- *     "created",
+ *     "updated",
  *     "displaytype",
  *     "caltype",
  *     "max_hours",
@@ -107,7 +107,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    *
    * @var string
    */
-  protected $created;
+  protected $updated;
 
   /**
    * Location displaytype.
@@ -261,6 +261,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    */
   public function save() {
     $location_info = StanfordEarthR25Util::_stanford_r25_get_room_info($this->get('space_id'));
+    $this->set('updated', \Drupal::service('date.formatter')->format(time()));
     $this->set('location_info', $location_info);
     $return = parent::save();
     return $return;
