@@ -1,0 +1,11 @@
+'administer stanford r25':
+  title: Administer Stanford R25 Settings
+  description: Change Stanford R25 room settings.
+'view r25 room calendars':
+  title: View R25 Room Calendars
+  description: View R25 room calendars created by 25Live Publisher.
+'book r25 rooms':
+  title: Book R25 Rooms
+  description: Book rooms in the R25 database from the 25Live Publisher calendar.
+
+

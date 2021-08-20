@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_r25\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
  * Defines the Stanford Earth R25 Location entity.
@@ -22,7 +23,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     }
  *   },
  *   config_prefix = "stanford_earth_r25",
- *   admin_permission = "administer site configuration",
+ *   admin_permission = "administer stanford r25",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
@@ -34,7 +35,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "space_id",
  *     "email_list",
  *     "created",
- *     "status",
+ *     "displaytype",
  *     "caltype",
  *     "max_hours",
  *     "default_view",
@@ -49,7 +50,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "multi_day",
  *     "postprocess_booking",
  *     "override_booking_instructions",
- *     "override_booking_instructions_format",
  *     "event_attributes",
  *     "event_attributes_field",
  *     "contact_attribute",
@@ -110,11 +110,11 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $created;
 
   /**
-   * Location status.
+   * Location displaytype.
    *
    * @var int
    */
-  protected $status;
+  protected $displaytype;
 
   /**
    * The Calendar display type.
@@ -260,6 +260,8 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * {@inheritdoc}
    */
   public function save() {
+    $location_info = StanfordEarthR25Util::_stanford_r25_get_room_info($this->get('space_id'));
+    $this->set('location_info', $location_info);
     $return = parent::save();
     return $return;
   }

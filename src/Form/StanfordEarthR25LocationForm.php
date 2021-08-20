@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
  * Form handler for the Example add and edit forms.
@@ -69,12 +70,12 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#required' => TRUE,
       ];
 
-    // room status - whether it should display a calendar and allow reservations, display a calendar without allowing reservations,
+    // room display type - whether it should display a calendar and allow reservations, display a calendar without allowing reservations,
     // or display a calendar and allow tentative or confirmed reservations
-    $form['status'] = [
+    $form['displaytype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Room Display Options'),
-      '#default_value' => $location->get('status'),
+      '#default_value' => $location->get('displaytype'),
       '#options' => array(
         0 => 'Disabled',
         1 => 'Read-Only Calendar',
@@ -130,7 +131,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('The R25 space_id code for this room. Required for tentative and confirmed bookings.'),
       '#states' => array(
         'required' => array(
-          ':input[name="status"]' => array(
+          ':input[name="displaytype"]' => array(
             array('value' => 2),
             array('value' => 3)
           )
@@ -200,17 +201,20 @@ class StanfordEarthR25LocationForm extends EntityForm {
 
     // a fieldset of rarely-needed, advanced settings
     $form['advanced'] = array(
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => $this->t('Advanced Options'),
       '#description' => $this->t('Some uncommonly used options.'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#open' => FALSE,
     );
     // whether the room allows reservations only by drupal permission, or only by external authentication, or either
-    $form['advanced']['authentication'] = array(
+    $authtype = $location->get('authentication_type');
+    if (empty($authtype)) {
+      $authtype = 1;
+    }
+    $form['advanced']['authentication_type'] = array(
       '#type' => 'radios',
       '#title' => $this->t('Authentication Method'),
-      '#default_value' => $location->get('authentication'),
+      '#default_value' => $authtype,
       '#options' => array(
         1 => 'Internal (Drupal) Accounts',
         2 => 'External (Non-Drupal) Login',
@@ -250,13 +254,23 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t("The rate group id to use to auto-bill for the use of this room. Leave blank for none."),
     );
     // override default booking instructions for this room
-    $default_booking_instr = $config['override_booking_instructions'];
+    $override_instr = $location->get('override_booking_instructions');
+    if (empty($override_instr)) {
+      $override_instr = [];
+    }
+    if (empty($override_instr['value'])) {
+      $override_instr['value'] = '';
+    }
+    if (empty($override_instr['format'])) {
+      $override_instr['format'] = filter_default_format();
+    }
     $form['advanced']['override_booking_instructions'] = array(
       '#type' => 'text_format',
       '#title' => $this->t('Override Booking Instructions'),
-      '#description' => $this->t('Instructions that will appear below room reservation forms if different from site default.'),
-      '#default_value' => $location->get('value'),
-      '#format' => $default_booking_instr['format'],
+      '#description' => $this->t('Instructions that will appear below room reservation forms if different from site default.\''),
+      '#default_value' => $override_instr['value'],
+      '#format' => $override_instr['format'],
+      '#base_type' => 'textarea'
     );
     // checkbox if you want to store booking information in $form_state['storage'] for post-processing in your own module
     $form['advanced']['postprocess_booking'] = array(
@@ -265,34 +279,69 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t("If you want to write you own submit hook to do something after a booking is complete, check this box and booking info will be placed in \$form_state['storage']"),
       '#default_value' => $location->get('postprocess_booking'),
     );
-    $form['content'] = [
-      '#type' => 'text_format',
-      '#title' => $this->t('Field content'),
-      '#default_value' => isset($field['properties']['content']['value']) ? $field['properties']['content']['value'] : '',
-      '#format' => isset($field['properties']['content']['format']) ? $field['properties']['content']['format'] : 'plain_text',
-      '#base_type' => 'textarea',
-      '#required' => TRUE,
-    ];
-/*
-    // override default booking instructions for this room
-    $default_blackout_instr = $config['override_blackout_instructions'];
+    // override default blackout instructions for this room
+    $override_instr = $location->get('override_blackout_instructions');
+    if (empty($override_instr)) {
+      $override_instr = [];
+    }
+    if (empty($override_instr['value'])) {
+      $override_instr['value'] = '';
+    }
+    if (empty($override_instr['format'])) {
+      $override_instr['format'] = filter_default_format();
+    }
     $form['advanced']['override_blackout_instructions'] = array(
       '#type' => 'text_format',
       '#title' => $this->t('Override Blackout Instructions'),
-      '#description' => $this->t('User instructions for booking during blackout periods, if "Honor Blackout Dates" is checked. Default site message displayed if left blank.'),
-      '#default_value' => $default_blackout_instr['value'],
-      '#format' => $default_blackout_instr['format'],
+      '#description' => $this->t('User instructions for booking during blackout periods, if "Honor Blackout Dates" is checked. Default site message displayed if left blank.
+'),
+      '#default_value' => $override_instr['value'],
+      '#format' => $override_instr['format'],
+      '#base_type' => 'textarea'
     );
-*/
     // set a created date
     $form['created'] = array(
       '#title' => $this->t('Created on'),
       '#type' => 'textfield',
-      '#default_value' => $config['created'],
+      '#default_value' => $location->get('created'),
       '#disabled' => TRUE,
     );
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+
+    $displaytype = intval($form_state->getValue('displaytype',0));
+    $caltype = intval($form_state->getValue('caltype',0));
+    $spud = $form_state->getValue('spud_name');
+    if (empty($spud) && $caltype == 1 && $displaytype > 0) {
+      $form_state->setErrorByName('spud_name', '25Live Publisher webname is required to display calendar.');
+    }
+    $space_id = $form_state->getValue('space_id');
+    if (empty($space_id) && $displaytype > 1) {
+      $form_state->setErrorByName('space_id', 'R25 Room ID is required to enable bookings.');
+    }
+    $max_hours = $form_state->getValue('max_hours',-1);
+    if (!is_numeric($max_hours) || intval($max_hours) != $max_hours || $max_hours < 0) {
+      $form_state->setErrorByName('max_hours', 'Maximum Reservation (Hours) must be zero or a positive integer.');
+    }
+    $secgroup_id = 0;
+    $secgroup_name = $form_state->getValue('approver_secgroup_name');
+    if (!empty($secgroup_name)) {
+      $secgroup_id = StanfordEarthR25Util::_stanford_r25_secgroup_id($secgroup_name);
+      if (empty($secgroup_id)) {
+        $form_state->setErrorByName('approver_secgroup_name', 'Unable to retrieve security group id from 25Live.');
+      }
+      $form_state->setValue('approver_secgroup_id', $secgroup_id);
+      $list = StanfordEarthR25Util::_stanford_r25_security_group_emails($secgroup_id, TRUE);
+      if (empty($list)) {
+        $form_state->setErrorByName('approver_secgroup_name', 'Unable to retrieve security group email list from 25Live.');
+      }
+    }
   }
 
   /**

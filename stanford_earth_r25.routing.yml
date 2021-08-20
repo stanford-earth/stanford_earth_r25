@@ -4,7 +4,7 @@ stanford_earth_r25.top:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Stanford Earth R25'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
 
 stanford_earth_r25.config_credentials_form:
   # this will be a pick under admin/config
@@ -14,7 +14,7 @@ stanford_earth_r25.config_credentials_form:
     _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25CredentialsForm'
     _title: 'Stanford Earth R25 Credentials'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
 
 stanford_earth_r25.config_settings_form:
   # this will be a pick under admin/config
@@ -24,7 +24,7 @@ stanford_earth_r25.config_settings_form:
     _form: '\Drupal\stanford_earth_r25\Form\StanfordEarthR25ConfigForm'
     _title: 'Stanford Earth R25 Settings'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
 
 entity.stanford_earth_r25_location.collection:
   path: '/admin/config/system/stanford_earth_r25_location'
@@ -32,7 +32,7 @@ entity.stanford_earth_r25_location.collection:
     _entity_list: 'stanford_earth_r25_location'
     _title: 'Stanford Earth R25 Locations'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
 
 entity.stanford_earth_r25_location.add_form:
   path: '/admin/config/system/stanford_earth_r25_location/add'
@@ -40,7 +40,7 @@ entity.stanford_earth_r25_location.add_form:
     _entity_form: 'stanford_earth_r25_location.add'
     _title: 'Add location'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
 
 entity.stanford_earth_r25_location.edit_form:
   path: '/admin/config/system/stanford_earth_r25_location/{stanford_earth_r25_location}'
@@ -48,7 +48,7 @@ entity.stanford_earth_r25_location.edit_form:
     _entity_form: 'stanford_earth_r25_location.edit'
     _title: 'Edit location'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
 
 entity.stanford_earth_r25_location.delete_form:
   path: '/admin/config/system/stanford_earth_r25_location/{stanford_earth_r25_location}/delete'
@@ -56,4 +56,52 @@ entity.stanford_earth_r25_location.delete_form:
     _entity_form: 'stanford_earth_r25_location.delete'
     _title: 'Delete location'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer stanford r25'
+
+entity.stanford_earth_r25_location.feed:
+  # JSON feed to return to the JavaScript FullCalendar, parameterized by room id
+  path: '/r25/{r25_location}/r25_feed'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25FeedController::feed'
+    _title: 'Stanford R25 Feed'
+  options:
+    parameters:
+      r25_location:
+        type: entity:stanford_earth_r25_location
+    no_cache: TRUE
+  requirements:
+    _permission: 'view r25 room calendars'
+
+#  // this page, parameterized by the room machine id, displays the room calendar and info and reservation blocks
+##  $items['r25/%/calendar'] = array(
+#  'title callback' => '_stanford_r25_room_title',
+#  'title arguments' => array(1, 'Room Calendar'),
+#  'page callback' => '_stanford_r25_calendar_page',
+#  'page arguments' => array(1),
+#  'access arguments' => array('view r25 room calendars'),
+#  'file' => 'stanford_r25.pages.inc',
+#  'type' => MENU_CALLBACK,
+#  );
+#  // links to cancel reservations displayed on fullcalendar
+#  // parameters are room machine id, R25 event id, and instance date (needed for recurring events)
+#  // access argument is simply if user can book rooms, but more sophisticated permission checking is done in the callback
+# $items['r25/%/cancel_reservation/%/%'] = array(
+#  'title' => 'Cancel Reservation',
+#  'page callback' => 'drupal_get_form',
+#  'page arguments' => array('_stanford_r25_cancel_reservation', 1, 3, 4),
+#  'access arguments' => array('book r25 rooms'),
+#  'type' => MENU_CALLBACK,
+#  'file' => 'stanford_r25.pages.inc',
+#  );
+#  // links to confirm reservations displayed on fullcalendar
+##  // parameters are room machine id, R25 event id, and instance date (for display only)
+ # // access argument is simply if user can book rooms, but more sophisticated permission checking is done in the callback
+ # // uses the same callback as cancel_reservation, which checks the drupal_path to see which is which
+ #$items['r25/%/confirm_reservation/%/%'] = array(
+ # 'title' => 'Confirm Reservation',
+ # 'page callback' => 'drupal_get_form',
+ #'page arguments' => array('_stanford_r25_cancel_reservation', 1, 3, 4),
+ # 'access arguments' => array('book r25 rooms'),
+ # 'type' => MENU_CALLBACK,
+ # 'file' => 'stanford_r25.pages.inc',
+ # );
