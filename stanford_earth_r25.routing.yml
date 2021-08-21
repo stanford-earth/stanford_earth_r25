@@ -72,16 +72,19 @@ entity.stanford_earth_r25_location.feed:
   requirements:
     _permission: 'view r25 room calendars'
 
-#  // this page, parameterized by the room machine id, displays the room calendar and info and reservation blocks
-##  $items['r25/%/calendar'] = array(
-#  'title callback' => '_stanford_r25_room_title',
-#  'title arguments' => array(1, 'Room Calendar'),
-#  'page callback' => '_stanford_r25_calendar_page',
-#  'page arguments' => array(1),
-#  'access arguments' => array('view r25 room calendars'),
-#  'file' => 'stanford_r25.pages.inc',
-#  'type' => MENU_CALLBACK,
-#  );
+entity.stanford_earth_r25_location.calendar:
+  path: '/r25/{r25_location}/calendar'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25CalendarController::page'
+    _title: 'Stanford R25 Calendar Page'
+  options:
+    parameters:
+      r25_location:
+        type: entity:stanford_earth_r25_location
+    no_cache: TRUE
+  requirements:
+    _permission: 'view r25 room calendars'
+
 #  // links to cancel reservations displayed on fullcalendar
 #  // parameters are room machine id, R25 event id, and instance date (needed for recurring events)
 #  // access argument is simply if user can book rooms, but more sophisticated permission checking is done in the callback

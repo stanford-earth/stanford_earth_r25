@@ -1,0 +1,14 @@
+stanford_earth_r25_calendar:
+  css:
+    theme:
+      css/stanford_earth_r25.css: {}
+  js:
+    js/jquery.qtip/jquery.qtip.min.js
+    js/jquery.qtip/imagesloaded.pkg.min.js
+    js/fullcalendar/gcal.js
+    js/fullcalendar/fullcalendar.min.js
+    js/fullcalendar/lib/moment.min.js
+    js/fullcalendar/lang-all.js
+  dependencies:
+    - core/jquery
+    - core/drupalSettings

@@ -5,7 +5,11 @@ namespace Drupal\stanford_earth_r25\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\HttpKernel\Exception;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\stanford_earth_r25\StanfordEarthR25Util;
+use Drupal\Core\Mail;
+use Drupal\Core\Url;
 /**
  * Provide R25 event feed by location to fullcalendar js.
  */
@@ -30,68 +34,70 @@ class StanfordEarthR25FeedController extends ControllerBase {
    * @return markup
    */
   public function feed(EntityInterface $r25_location, Request $request) {
+
+    $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
+
     // format the request to the 25Live API from either POST or GET arrays
-    $rooms = _stanford_r25_room_config_load();
-    $room_id = '';
-    $space_id = NULL;
+    $room_id = $r25_location->get('id');
+    $space_id = $r25_location->get('space_id');
+    if (empty($room_id) || empty($space_id)) {
+      throw new Exception\NotFoundHttpException();
+    }
+    $params = [];
+    if ($request->getMethod() == 'GET') {
+      $params = $request->query->all();
+    }
+    else if ($request->getMethod() == 'POST') {
+      $params = $request->request->all();
+    }
     $start = '';
     $end = '';
-    if (!empty($_POST['room_id']) && !empty($rooms[$_POST['room_id']]['space_id'])) {
-      $room_id = $_POST['room_id'];
-      $space_id = $rooms[$_POST['room_id']]['space_id'];
-      $start = str_replace('-', '', $_POST['start']);
-      $end = str_replace('-', '', $_POST['end']);
+    if (!empty($params['start'])) {
+      $start = str_replace('-', '', $params['start']);
     }
-    else {
-      if (empty($get_room_id) || empty($rooms[$get_room_id]['space_id'])) {
-        drupal_not_found();
-      }
-      else {
-        $room_id = $get_room_id;
-        $space_id = $rooms[$get_room_id]['space_id'];
-        if (!empty($_GET['start'])) {
-          $start = str_replace('-', '', $_GET['start']);
-        }
-        if (!empty($_GET['end'])) {
-          $end = str_replace('-', '', $_GET['end']);
-        }
-      }
+    if (!empty($params['end'])) {
+      $end = str_replace('-', '', $params['end']);
     }
+    $x = 'room_id=m138&start=2021-08-01&end=2021-09-12&timezone=America%2FLos_Angeles';
 
     // depending on the logged in user requesting this information, we want to include
     // links to contact the event scheduler, or to confirm or cancel the event
     $approver_list = array();
-    if (!empty($rooms[$room_id]['approver_secgroup_id'])) {
-      $approver_list = _stanford_r25_security_group_emails($rooms[$room_id]['approver_secgroup_id']);
+    $secgroup = $r25_location->get('approver_secgroup_id');
+    if (!empty($secgroup)) {
+      $approver_list = StanfordEarthR25Util::_stanford_r25_security_group_emails($secgroup);
     }
-    $approver = FALSE;
 
+    $approver = FALSE;
     // if the user is Drupal user 1 or can administer rooms, let them approve
     // and cancel events
-    global $user;
-    if ($user->uid == 1 || user_access('administer stanford r25') ||
-      ($user->uid > 0 && in_array($user->mail, $approver_list))
-    ) {
+    $user = \Drupal::currentUser();
+    if ($user->hasPermission('administer stanford r25') ||
+      ($user->isAuthenticated() &&
+        in_array($user->getEmail(), $approver_list))) {
       $approver = TRUE;
     }
 
     // build the 25Live API request with the space id for the requested room and
     // for the start and end dates requested by fullcalendar
     $args = 'space_id=' . $space_id . '&scope=extended&start_dt=' . $start . '&end_dt=' . $end;
-    $items = array();
+    $items = [];
     // make the API call
-    $results = _stanford_r25_api_call('feed', NULL, NULL, $args);
-    if ($results && !empty($results['index']['R25:RESERVATION_ID'])) {
+    $r25_result = $r25_service->r25_api_call('feed', $args);
+    if ($r25_result['status']['status'] === TRUE &&
+      !empty($r25_result['output']['index']['R25:RESERVATION_ID'])) {
+
+      $results = $r25_result['output'];
       // for each result, store the data in the return array
       foreach ($results['index']['R25:RESERVATION_ID'] as $key => $value) {
         $id = $results['vals'][$value]['value'];
-        $event_id = _stanford_r25_feed_get_value($results, 'R25:EVENT_ID', $key);
-        $title = _stanford_r25_feed_get_value($results, 'R25:EVENT_NAME', $key);
-        $start = _stanford_r25_feed_get_value($results, 'R25:RESERVATION_START_DT', $key);
-        $end = _stanford_r25_feed_get_value($results, 'R25:RESERVATION_END_DT', $key);
-        $headcount = _stanford_r25_feed_get_value($results, 'R25:EXPECTED_COUNT', $key);
-        $state = _stanford_r25_feed_get_value($results, 'R25:STATE', $key);
-        $state_text = _stanford_r25_feed_get_value($results, 'R25:STATE_NAME', $key);
+        $event_id = $this->_stanford_r25_feed_get_value($results, 'R25:EVENT_ID', $key);
+        $title = $this->_stanford_r25_feed_get_value($results, 'R25:EVENT_NAME', $key);
+        $start = $this->_stanford_r25_feed_get_value($results, 'R25:RESERVATION_START_DT', $key);
+        $end = $this->_stanford_r25_feed_get_value($results, 'R25:RESERVATION_END_DT', $key);
+        $headcount = $this->_stanford_r25_feed_get_value($results, 'R25:EXPECTED_COUNT', $key);
+        $state = $this->_stanford_r25_feed_get_value($results, 'R25:STATE', $key);
+        $state_text = $this->_stanford_r25_feed_get_value($results, 'R25:STATE_NAME', $key);
         $items[] = array(
           'id' => $id,
           'event_id' => $event_id,
@@ -108,9 +114,10 @@ class StanfordEarthR25FeedController extends ControllerBase {
       }
 
       // for logged in users, we want to display event status, headcount, and who did the booking
-      if (user_is_logged_in()) {
+      if ($user->isAuthenticated()) {
         // find out if event was *not* scheduled by QuickBook account and then get the scheduler
-        $quickbook_id = intval(variable_get('stanford_r25_credential_contact_id', '0'));
+        $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+        $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
         foreach ($results['index']['R25:SCHEDULER_ID'] as $key => $value) {
           if (intval($results['vals'][$value]['value']) != $quickbook_id) {
             $text = '';
@@ -152,10 +159,9 @@ class StanfordEarthR25FeedController extends ControllerBase {
               $index -= 1;
               if (intval($value) > intval($items[$index]['index'])) {
                 // display event description as event title if room is so marked
-                if (isset($rooms[$room_id]['description_as_title']) &&
-                  intval($rooms[$room_id]['description_as_title']) == 1
-                ) {
-                  $items[$index]['title'] = drupal_html_to_text($text);
+                if (!empty($r25_location->get('description_as_title')) &&
+                  intval($r25_location->get('description_as_title')) == 1) {
+                  $items[$index]['title'] = Mail\MailFormatHelper::htmlToText($text);
                 }
                 $items[$index]['description'] = $text;
                 break;
@@ -194,31 +200,30 @@ class StanfordEarthR25FeedController extends ControllerBase {
                 $scheduler_email = substr($description, $mailto_pos + 8, $mailto_endpos - ($mailto_pos + 8));
               }
             }
-            if (!empty($scheduler_email) && $scheduler_email === $user->mail) {
+            if (!empty($scheduler_email) && $scheduler_email === $user->getEmail()) {
               $can_cancel = TRUE;
             }
           }
 
           if ($can_confirm) {
-            $items[$key]['tip'] .= '<br /><a href="' . url('/r25/' . $_POST['room_id'] . '/confirm_reservation/' . $items[$key]['event_id'] . '/' .
-                $items[$key]['start']) . '">Click to confirm reservation</a>';
+            $url = Url::fromUserInput('/r25/' . $room_id . '/confirm_reservation/' . $items[$key]['event_id'] . '/' .
+              $items[$key]['start']);
+            $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to confirm reservation</a>';
           }
           if ($can_cancel) {
-            $items[$key]['tip'] .= '<br /><a href="' . url('/r25/' . $_POST['room_id'] . '/cancel_reservation/' . $items[$key]['event_id'] . '/' .
-                $items[$key]['start']) . '">Click to cancel reservation</a>';
+            $url = Url::fromUserInput('/r25/' . $room_id . '/cancel_reservation/' . $items[$key]['event_id'] . '/' .
+              $items[$key]['start'])->toString();
+            $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to cancel reservation</a>';
           }
           if ($approver) {
-            $items[$key]['tip'] .= '<br /><a href="https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $items[$key]['event_id'] .
-              '">Click to manage in 25Live</a>';
+            $url = 'https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $items[$key]['event_id'];
+            $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to manage in 25Live</a>';
           }
         }
       }
     }
-    drupal_json_output($items);  // return a json version of the output array to full calendar
-    return [
-      '#type' => 'markup',
-      '#markup' => $this->t('R25 Feed.'),
-    ];
+    \Drupal::service('page_cache_kill_switch')->trigger();
+    return JsonResponse::create($items);
   }
 
 }

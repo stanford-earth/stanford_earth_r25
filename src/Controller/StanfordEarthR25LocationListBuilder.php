@@ -4,6 +4,7 @@ namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
 
 /**
  * Provides a listing of Stanford Earth R25 Locations.
@@ -29,6 +30,14 @@ class StanfordEarthR25LocationListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+ /*
+    $row['label'] = [
+      '#type' => 'link',
+      '#url' => Url::fromUserInput('/r25/' . $entity->id() . '/r25_feed'),
+      '#title' => $entity->label(),
+    ];
+    //'<a href="https://ksharp-earth.stanford.edu/r25/'.$entity->id().'/calendar">'.$entity->label().'</a>';
+ */
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
     $caltype = $entity->get('caltype');

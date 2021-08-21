@@ -1,0 +1,41 @@
+/*
+ *
+ *  various style tweaks for calendar displays, room info block, and reservation form
+ *
+ */
+
+#stanford-r25-reservation {
+    margin-bottom: 0;
+}
+
+#stanford-r25-reservation .form-item {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#stanford-r25-reservation .form-submit {
+    margin-top: 10px;
+}
+
+#calendar thead, #calendar thead th {
+    background: #f5f5f5 none repeat scroll 0 0;
+    color: #333;
+}
+
+#block-stanford-r25-stanford-r25-room-info {
+    margin-bottom: 15px;
+}
+
+#stanford-r25-room-info-form {
+    margin-bottom: 10px;
+}
+
+#stanford-r25-room-photo {
+    float: left;
+    width: 150px;
+    padding-right: 15px;
+}
+
+.se3-hide {
+    display: none;
+}

@@ -1,0 +1,49 @@
+<h2>{{ r25_location.label }}</h2>
+<div id="stanford-r25-room-info">
+  {% if r25_location is empty %}
+  <p>Room information unavailable. Please check with your site administrator.</p>
+  {% else %}
+    {% if r25_location.get('displaytype') == 0 %}
+      <p>This room is not available for reservation.<br />
+        If you believe this is in error, please check with your department maanger.</p>
+    {% else %}
+      {% if photo_url is not empty %}
+        <div id="stanford-r25-room-photo">
+          <img src="{{ file_url(photo_url) }}">
+        </div>
+      {%  endif %}
+      <div id="stanford-r25-room-detail">
+        {% set comments = r25_location.get('location_info')['comments'] %}
+        {% if comments is not empty %}
+          <div id="stanford-r25-room-comments">
+            {{ comments | raw }}
+          </div>
+        {%  endif %}
+        {% set layout_name = r25_location.get('location_info')['layout_name'] %}
+        {% if layout_name is not empty %}
+          <div id="stanford-r25-room-layout">
+            <b>Layout: </b>{{ layout_name }}
+          </div>
+        {% endif %}
+        {% set capacity = r25_location.get('location_info')['capacity'] %}
+        {% if capacity is not empty %}
+            <div id="stanford-r25-room-capacity">
+              <b>Capacity: </b>{{ capacity }}
+            </div>
+        {% endif %}
+        {% set layout_features = r25_location.get('location_info')['layout_features'] %}
+        {% if layout_features is not empty %}
+          <div id="stanford-r25-room-features">
+            <b>Features: </b>{{ layout_features }}
+          </div>
+        {% endif %}
+        {% set layout_instruction = r25_location.get('location_info')['layout_instruction'] %}
+        {% if layout_instruction is not empty %}
+          <div id="stanford-r25-room-instruction">
+            <b>Instructions: </b>{{ layout_instruction }}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
