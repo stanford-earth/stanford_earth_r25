@@ -2,12 +2,24 @@
 
 namespace Drupal\stanford_earth_r25;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 
 /**
  * Encapsulates information and utility methods.
  */
 class StanfordEarthR25Util {
+
+  // define room status codes as constants
+  const STANFORD_R25_ROOM_STATUS_DISABLED = 0;
+  const STANFORD_R25_ROOM_STATUS_READONLY = 1;
+  const STANFORD_R25_ROOM_STATUS_TENTATIVE = 2;
+  const STANFORD_R25_ROOM_STATUS_CONFIRMED = 3;
+
+  // define authentication methods as constants
+  const STANFORD_R25_AUTH_DRUPAL_ACCT = 1;
+  const STANFORD_R25_AUTH_EXTERN_ACCT = 2;
+  const STANFORD_R25_AUTH_EITHER_ACCT = 3;
 
   /**
    * Parse a blackout date text area into an array of start and end dates.
@@ -182,4 +194,66 @@ class StanfordEarthR25Util {
     }
     return $room_info;
   }
+
+// function that checks if the current user can book a room, based on
+// room machine_id and how the room is authenticated
+
+public static function _stanford_r25_can_book_room(EntityInterface $r25_location = NULL) {
+
+    // default return array; user is an internal (Drupal) user
+    // who can not book the room
+    $can_book = [
+      'can_book' => FALSE,
+      'auth' => 'internal',
+      'external_module' => '',
+      'external_acct' => FALSE
+    ];
+    $room_id = null;
+    if (!empty($r25_location)) {
+      $room_id = $r25_location->id();
+    }
+    if (!empty($room_id)) {  // only check if we have a room id, obviously
+      $authentication_type = $r25_location->get('authentication_type');
+      if (!empty($authentication_type)) {   // only continue if room has an auth type
+        // if the room uses internal Drupal accounts, simply check if the current user has the permission
+        // if the user is Drupal user 1 or can administer rooms, let them approve
+        // and cancel events
+        $user = \Drupal::currentUser();
+        if (($authentication_type == SELF::STANFORD_R25_AUTH_DRUPAL_ACCT ||
+            $authentication_type == SELF::STANFORD_R25_AUTH_EITHER_ACCT) &&
+          $user->hasPermission('book r25 rooms'))
+        {
+          $can_book['can_book'] = TRUE;
+        }
+        /* TBD
+        else {
+          // if the user can't book by Drupal permission, and the room supports
+          // external accounts, then check the user that way
+          if ($rooms[$room_id]['authentication'] == STANFORD_R25_AUTH_EXTERN_ACCT ||
+            $rooms[$room_id]['authentication'] == STANFORD_R25_AUTH_EITHER_ACCT
+          ) {
+            $can_book['auth'] = 'external';
+            // see if any module implements hook_stanford_r25_external_user
+            $externs = module_implements('stanford_r25_external_user');
+            if (!empty($externs) && is_array($externs)) {
+              // if so, just use the first one returned
+              $can_book['external_module'] = $externs[0];
+              // call the stanford_r25_external_user hook for the module found
+              // it will return an array of user contact info if okay, or false if not
+              $external_acct = module_invoke($externs[0], 'stanford_r25_external_user');
+              if (!empty($external_acct)) {
+                // we got back a non-empty array, so assume an authenticated user who can book the room
+                $can_book['can_book'] = TRUE;
+                $can_book['external_acct'] = $external_acct;
+              }
+            }
+          }
+        }
+        */
+      }
+    }
+    return $can_book; // return the array defined above
+
+  }
+
 }

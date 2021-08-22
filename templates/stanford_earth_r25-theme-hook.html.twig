@@ -47,3 +47,19 @@
     {% endif %}
   {% endif %}
 </div>
+{% set caltype = r25_location.get('caltype') %}
+{% if caltype is empty %}
+  {% set caltype = 0 %}
+{% endif %}
+{% if caltype == 1 %}
+  <div id="control-spud"></div>
+  <div id="calendar-spud">Refresh browser if calendar does not appear.</div>
+{% elseif caltype == 2 %}
+  <div id="calendar"></div>
+  {% set permalink = r25_location.get('permalink') %}
+  {% if permalink == 1 %}
+    <div id="permalink"></div>
+  {% endif %}
+{% else %}
+  <span>The requested room is not currently available.</span>
+{% endif %}
