@@ -8,7 +8,6 @@ var qtip = false;  // assume we don't have the qtip library to start
 
   Drupal.behaviors.stanford_earth_r25_fullcalendar = {
     attach: function (context, settings) {
-      console.log(drupalSettings.stanfordEarthR25.stanfordR25MaxHours);
       // if we are coming back from a reservation, check cookies for date to bring the user back to
       var defaultDate = readCookie("stanford-r25-date");
       if (defaultDate === null) {
@@ -29,7 +28,6 @@ var qtip = false;  // assume we don't have the qtip library to start
       if (defaultView === null) {
         // if no cookie, see if a view was set by Drupal from a URL parameter
         if (drupalSettings.stanfordEarthR25.hasOwnProperty('stanfordR25ParamView')) {
-          console.log('paramview');
           defaultView = drupalSettings.stanfordEarthR25.stanfordR25ParamView;
         }
         else {
@@ -103,9 +101,6 @@ var qtip = false;  // assume we don't have the qtip library to start
         // if in month view for a non-multi-day room and the user clicks a date, go to agenda day view
 
         dateClick: function(info) {
-          $('.tooltip').each(function(){
-            $(this).remove();
-          });
           if (info.view.type === 'dayGridMonth' && !multiDay) {
             calendar.gotoDate(info.dateStr);
             calendar.changeView('timeGridDay');
@@ -116,13 +111,10 @@ var qtip = false;  // assume we don't have the qtip library to start
         initialView: defaultView,
         dayMaxEventRows: true,
          eventDidMount: function(info) {
-            console.log('inside event didmount');
-            console.dir(info.event);
-            console.log('done');
             if (qtip) {
               var tooltip = new Tooltip(info.el, {
                 title: info.event.extendedProps.tip,
-                placement: 'bottom-start',
+                placement: 'right-start',
                 trigger: 'click',
                 container: 'body',
                 html: true,
@@ -143,7 +135,6 @@ var qtip = false;  // assume we don't have the qtip library to start
           },
         },
           loading: function (bool) {
-            console.log('loading triggered');
             if (bool) {
               $('body').css('cursor', 'progress');
             }
@@ -156,17 +147,16 @@ var qtip = false;  // assume we don't have the qtip library to start
           },
 
         });
-        console.log('about to render');
         calendar.render();
     }
   };
+
   $(document).on("click", calendar.calendarEl, function (e) {
-    console.log('removing tooltips');
     $('.tooltip').each(function(){
       $(this).remove();
     });
   });
-  
+
   // read a javascript cookie
   function readCookie(name)
   {
