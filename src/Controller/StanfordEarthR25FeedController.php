@@ -54,11 +54,16 @@ class StanfordEarthR25FeedController extends ControllerBase {
     $end = '';
     if (!empty($params['start'])) {
       $start = str_replace('-', '', $params['start']);
+      if (strpos($start, "T") !== FALSE) {
+        $start = substr($start,0, strpos($start, "T"));
+      }
     }
     if (!empty($params['end'])) {
       $end = str_replace('-', '', $params['end']);
+      if (strpos($end, "T") !== FALSE) {
+        $end = substr($end, 0, strpos($end, "T"));
+      }
     }
-    $x = 'room_id=m138&start=2021-08-01&end=2021-09-12&timezone=America%2FLos_Angeles';
 
     // depending on the logged in user requesting this information, we want to include
     // links to contact the event scheduler, or to confirm or cancel the event
@@ -207,7 +212,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
 
           if ($can_confirm) {
             $url = Url::fromUserInput('/r25/' . $room_id . '/confirm_reservation/' . $items[$key]['event_id'] . '/' .
-              $items[$key]['start']);
+              $items[$key]['start'])->toString();
             $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to confirm reservation</a>';
           }
           if ($can_cancel) {

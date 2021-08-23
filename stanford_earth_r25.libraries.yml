@@ -2,17 +2,12 @@ stanford_earth_r25_calendar:
   css:
     theme:
       css/stanford_earth_r25.css: {}
-      js/fullcalendar/fullcalendar.min.css: {}
-      js/jquery.qtip/jquery.qtip.css: {}
-
+      js/fullcalendar/lib/main.min.css: {}
   js:
-    js/fullcalendar/lib/moment.min.js: {}
-    js/jquery.qtip/jquery.qtip.min.js: {}
-    js/jquery.qtip/imagesloaded.pkg.min.js: {}
-    js/fullcalendar/fullcalendar.min.js: {}
+    https://unpkg.com/popper.js/dist/umd/popper.min.js: { external: true, defer: true, async: true }
+    https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js: { external: true, defer: true, async: true }
+    js/fullcalendar/lib/main.min.js: {}
     js/stanford_earth_r25_fullcal.js: {}
-    'https://25livepub.collegenet.com/scripts/spuds.js': { external: true, defer: true, async: true }
-    js/stanford_earth_r25_spud.js: {}
   dependencies:
     - core/jquery
     - core/drupalSettings

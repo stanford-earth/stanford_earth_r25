@@ -120,9 +120,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
           'stanford_earth_r25/stanford_earth_r25_calendar'
         ],
         'drupalSettings' => [
-          'stanford_earth_r25' => [
-            'stanford_earth_r25_calendar' => $drupalSettings
-          ]
+          'stanfordEarthR25' => $drupalSettings
         ]
       ],
     ];
