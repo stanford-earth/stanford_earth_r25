@@ -4,8 +4,8 @@ stanford_earth_r25_calendar:
       css/stanford_earth_r25.css: {}
       js/fullcalendar/lib/main.min.css: {}
   js:
-    https://unpkg.com/popper.js/dist/umd/popper.min.js: { external: true, defer: true, async: true }
-    https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js: { external: true, defer: true, async: true }
+    https://unpkg.com/@popperjs/core@2: { external: true, defer: true, async: true }
+    https://unpkg.com/tippy.js@6: { external: true, defer: true, async: true }
     js/fullcalendar/lib/main.min.js: {}
     js/stanford_earth_r25_fullcal.js: {}
   dependencies:

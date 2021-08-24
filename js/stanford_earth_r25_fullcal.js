@@ -112,12 +112,15 @@ var qtip = false;  // assume we don't have the qtip library to start
         dayMaxEventRows: true,
          eventDidMount: function(info) {
             if (qtip) {
-              var tooltip = new Tooltip(info.el, {
-                title: info.event.extendedProps.tip,
-                placement: 'right-start',
+              var tooltip = new tippy(info.el, {
+                allowHTML: true,
+                appendTo: calendarEl,
+                arrow: true,
+                content: info.event.extendedProps.tip,
+                interactive: true,
+                placement: 'auto',
+                theme: 'stanford-earth-r25',
                 trigger: 'click',
-                container: 'body',
-                html: true,
               });
             }
          },
@@ -150,12 +153,6 @@ var qtip = false;  // assume we don't have the qtip library to start
         calendar.render();
     }
   };
-
-  $(document).on("click", calendar.calendarEl, function (e) {
-    $('.tooltip').each(function(){
-      $(this).remove();
-    });
-  });
 
   // read a javascript cookie
   function readCookie(name)
