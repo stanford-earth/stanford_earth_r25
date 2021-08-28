@@ -40,13 +40,29 @@
         {% set layout_instruction = r25_location.get('location_info')['layout_instruction'] %}
         {% if layout_instruction is not empty %}
           <div id="stanford-r25-room-instruction">
-            <b>Instructions: </b>{{ layout_instruction }}
+            <b>Instructions: </b>{{ layout_instruction | raw }}
           </div>
         {% endif %}
       </div>
     {% endif %}
   {% endif %}
 </div>
+<div id="stanford-r25-reservation">
+  {% set room_id = r25_location.id() %}
+  {% if logged_in %}
+    {{ link('Reserve This Room',
+      "internal:/r25/reservation/#{room_id}",
+      { 'class':['use-ajax', 'button']} ) }}
+    <span>&nbsp;Click here or select a timeslot on the calendar to reserve.</span>
+  {% else %}
+    {{ link('Login to Reserve Room',
+      "internal:/saml_login?destination=/r25/#{room_id}/calendar",
+      { 'class':['button']} ) }}
+    <span>&nbsp;You must login in order to reserve this room.</span>
+  {% endif %}
+</div>
+
+<div id="#stanford-r25-self-serve-msg"></div>
 <div id="stanford-r25-calendar">
 {% set caltype = r25_location.get('caltype') %}
 {% if caltype is empty %}
@@ -59,7 +75,7 @@
   <div id="calendar"></div>
   {% set permalink = r25_location.get('permalink') %}
   {% if permalink == 1 %}
-    <div id="permalink"></div>
+    <div id="stanford-r25-permalink"></div>
   {% endif %}
 {% else %}
   <span>The requested room is not currently available.</span>

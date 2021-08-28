@@ -45,6 +45,15 @@
 .se3-hide {
     display: none;
 }
+
+#stanford-r25-permalink {
+  margin-top: 10px;
+}
+
+#stanford-r25-reservation {
+  padding-bottom: 10px;
+}
+
 .tippy-box[data-theme~='stanford-earth-r25'] {
   background-color: lightgoldenrodyellow;
   color: black;
@@ -61,3 +70,13 @@
 .tippy-box[data-theme~='stanford-earth-r25'][data-placement^='right'] > .tippy-arrow::before {
   border-right-color: lightgoldenrodyellow;
 }
+
+/*
+body[class^="page-r25-"] .ui-dialog {
+.page-r25-mb04-calendar
+ */
+body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+

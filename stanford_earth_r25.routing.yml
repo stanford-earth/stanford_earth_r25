@@ -81,21 +81,20 @@ entity.stanford_earth_r25_location.calendar:
     parameters:
       r25_location:
         type: entity:stanford_earth_r25_location
-    no_cache: TRUE
   requirements:
     _permission: 'view r25 room calendars'
 
-#entity.stanford_earth_r25_location.reservation:
-#  path: '/r25/{r25_location}/reservation'
-#  defaults:
-#    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ReservationController::page'
-#    _title: 'Stanford R25 Reservation Page'
-# options:
-#    parameters:
-#     r25_location:
-#       type: entity:stanford_earth_r25_location
-#   requirements:
-#      _permission: 'book r25 rooms'
+stanford_earth_r25_location.reservation:
+  path: '/r25/reservation/{location_id}'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ReservationController::reserve'
+    _title: 'Stanford R25 Reservation Page'
+  options:
+    parameters:
+      location_id:
+        type: string
+  requirements:
+    _permission: 'book r25 rooms'
 
 #  // links to cancel reservations displayed on fullcalendar
 #  // parameters are room machine id, R25 event id, and instance date (needed for recurring events)

@@ -107,7 +107,9 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         //$library[] = 'stanford_earth_r25/stanford_earth_r25_fullcalendar';
       }
     }
-
+    $resForm = \Drupal::formBuilder()->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm');
+    // If you want modify the form:
+    $resForm['field']['#value'] = 'From my controller';
     \Drupal::service('page_cache_kill_switch')->trigger();
     return [
       // Your theme hook name.
@@ -115,8 +117,10 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       // Your variables.
       '#r25_location' => $r25_location,
       '#photo_url' => $photo_url,
+      '#form' => $resForm,
       '#attached' => [
         'library' => [
+          'core/drupal.dialog.ajax',
           'stanford_earth_r25/stanford_earth_r25_calendar'
         ],
         'drupalSettings' => [

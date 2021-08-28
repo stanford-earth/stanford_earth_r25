@@ -39,8 +39,35 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
       'variables' => [
         'r25_location' => NULL,
         'photo_url' => '',
+        'form' => NULL,
       ],
     ],
   ];
 
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function stanford_earth_r25_element_info_alter(array &$types) {
+  $types['datetime']['#process'][] = '_stanford_earth_r25_datetime_set_format';
+}
+
+/**
+ * Element process callback for datetime fields.
+ */
+function _stanford_earth_r25_datetime_set_format($element) {
+  if ($element['#date_time_element'] !== 'none') {
+    $element['#date_time_format'] = 'H:i';
+  }
+  if (!empty($element['time']['#value'])) {
+    $parts = explode(':', $element['time']['#value']);
+    $parts = array_splice($parts, 0, 2);
+    $element['time']['#value'] = implode(':', $parts);
+  }
+  // Remove seconds in browsers that support HTML5 type=date.
+
+  // Remove seconds in browsers that support HTML5 type=date.
+  $element['time']['#attributes']['step'] = '1800';
+  return $element;
 }
