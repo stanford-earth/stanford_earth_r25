@@ -256,4 +256,48 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
 
   }
 
+  // function to check if a given date is blacked out based on blackout dates
+  // and current date.
+  // $date is given as a UNIX timestamp
+  public static function _stanford_r25_date_blacked_out($date) {
+
+    // if an empty date is given, return false
+    if (empty($date)) {
+      return FALSE;
+    }
+
+    // if I'm currently in a blackout period, the requested date doesn't matter - we consider it blacked out.
+    // if I'm *not* currently in a blackout period, then the requested date has to be before the next blackout starts.
+    // if I'm currently past the last possible blackout, consider me blacked out so an admin will update the dates.
+    $blackouts = \Drupal::config('stanford_earth_r25.adminsettings')->get('stanford_r25_blackout_dates');
+    if (empty($blackouts)) {
+      $blackouts = [];
+    }
+    $blacked_out = TRUE;
+
+    // first find out if we are currently in a blackout
+    // if not, find out when the next blackout starts
+    $cur = time();
+    $cur_blackout = TRUE;
+    $next_blackout = 0;
+    foreach ($blackouts as $blackout) {
+      if ($cur < strtotime($blackout['start'])) {
+        $cur_blackout = FALSE;
+        $next_blackout = strtotime($blackout['start']);
+        break;
+      }
+      else {
+        if ($cur <= strtotime($blackout['end'])) {
+          break;
+        }
+      }
+    }
+
+    // now see if the requested date is before the next blackout
+    if (!$cur_blackout && $date < $next_blackout) {
+      $blacked_out = FALSE;
+    }
+    return $blacked_out;
+  }
+
 }

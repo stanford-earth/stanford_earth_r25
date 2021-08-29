@@ -28,10 +28,49 @@ class StanfordEarthR25ReservationForm extends FormBase {
     return 'stanford_earth_r25_reservation';
   }
 
+  private function parseDateStr($dateStr) {
+    $dayParts = [];
+    $dayBits = explode('-',$dateStr);
+    if (!empty($dayBits) && count($dayBits) > 4) {
+      $dayParts['year'] = $dayBits[0];
+      $dayParts['month'] = $dayBits[1];
+      $dayParts['day'] = $dayBits[2];
+      $dayParts['hour'] = $dayBits[3];
+      $minutes = intval($dayBits[4]);
+      if ($minutes > 0 && $minutes < 30) {
+        $minutes = 30;
+      }
+      else {
+        if ($minutes > 30) {
+          $minutes = 0;
+          $hour = intval($dayParts['hour']) + 1;
+          if ($hour == 24) {
+            $hour = 0;
+          }
+          $dayParts['hour'] = $hour;
+        }
+      }
+      $dayParts['minute'] = $minutes;
+      $dayParts['seconds'] = 0;
+      if (count($dayBits) > 5) {
+        $dayParts['extra1'] = $dayBits[5];
+        $extra2str = '';
+        for ($i=6; $i<count($dayBits); $i++) {
+          if ($i > 6) {
+            $extra2str .= '-';
+          }
+          $extra2str .= $dayBits[$i];
+        }
+        $dayParts['extra2'] = $extra2str;
+      }
+    }
+    return $dayParts;
+  }
+
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $room = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $room = NULL, $start = NULL) {
     $rooms = [];
     $adminSettings = [];
     if (!empty($room)) {
@@ -66,28 +105,28 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
 
     // use the Drupal date popup for date and time picking
-    $daytime = DrupalDateTime::createFromTimestamp(time());
     $dayParts = [];
-    $dayParts['year'] = $daytime->format("Y");
-    $dayParts['month'] = $daytime->format("m");
-    $dayParts['day'] = $daytime->format("d");
-    $dayParts['hour'] = $daytime->format("H");
-    $minutes = intval($daytime->format("i"));
-    if ($minutes > 0 && $minutes < 30) {
-      $minutes = 30;
-    }
-    else if ($minutes > 30)  {
-      $minutes = 0;
-      $hour = intval($dayParts['hour']) + 1;
-      if ($hour == 24) {
-        $hour = 0;
+    $endParts = [];
+    $durationIndex = -1;
+    if (!empty($start) && $start !== 'now') {
+      $dayParts = $this->parseDateStr($start);
+      if (!empty($dayParts['extra1']) && !empty($dayParts['extra2'])) {
+        if ($dayParts['extra1'] === 'duration') {
+          $durationIndex = $dayParts['extra2'];
+        }
+        else if ($dayParts['extra1'] === 'end') {
+          $endParts = $this->parseDateStr($dayParts['extra2']);
+        }
       }
-      $dayParts['hour'] = $hour;
+      unset($dayParts['extra1']);
+      unset($dayParts['extra2']);
+    } else {
+      $daytime = DrupalDateTime::createFromTimestamp(time());
+      $daytimestr = $daytime->format('Y-m-d-H-i');
+      $dayParts = $this->parseDateStr($daytimestr);
+      $endParts = $dayParts;
     }
-    $dayParts['minute'] = $minutes;
-    $dayParts['seconds'] = 0;
-
-      $form['stanford_r25_booking_date'] = array(
+       $form['stanford_r25_booking_date'] = array(
         '#type' => 'datetime',
         '#default_value' => DrupalDateTime::createFromArray($dayParts),
         '#required' => TRUE,
@@ -131,7 +170,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           '#type' => 'select',
           '#title' => t('Duration'),
           '#options' => $hours_array,
-          '#default_value' => 0,
+          '#default_value' => $durationIndex,
           '#required' => TRUE,
         );
       }
@@ -140,7 +179,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
         $max_hours = '';
         $form['stanford_r25_booking_enddate'] = array(
           '#type' => 'datetime',
-          '#default_value' => DrupalDateTime::createFromArray($dayParts),
+          '#default_value' => DrupalDateTime::createFromArray($endParts),
           '#required' => TRUE,
           '#title' => 'End Date/Time',
         );
@@ -315,8 +354,123 @@ class StanfordEarthR25ReservationForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $form_state->setErrorByName('stanford_r25_booking_date',
-      new TranslatableMarkup('Agent Cooper wants to know what year this is.'));
+    $user_input = $form_state->getUserInput();
+    if (empty($user_input['stanford_r25_booking_roomid'])) {
+      $form_state->setErrorByName('stanford_r25_booking_roomid',
+        new TranslatableMarkup('The room id is missing from the request.'));
+      return;
+    }
+    $room = $user_input['stanford_r25_booking_roomid'];
+    $booking_info = array();  // store booking info in form storage after validation
+    $rooms = [];
+    $adminSettings = [];
+    if (!empty($room)) {
+      $rooms[$room] = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room)->getRawData();
+      $adminSettings = \Drupal::config('stanford_earth_r25.adminsettings')->getRawData();
+    }
+
+    // make sure we have a valid room id in the form input
+    if (!isset($rooms[$room])) {
+      $form_state->setErrorByName('stanford_r25_booking_roomid',
+        new TranslatableMarkup('The reservation room id is invalid.'));
+      return;
+    }
+    else {
+      $booking_info['room'] = $rooms[$room];
+    }
+
+    // make sure the current user has permission to book the room
+    $entity = \Drupal::entityTypeManager()->getStorage('stanford_earth_r25_location')
+      ->load($room);
+    $can_book = StanfordEarthR25Util::_stanford_r25_can_book_room($entity);
+    if (!$can_book['can_book']) {
+      $form_state->setErrorByName('stanford_r25_booking_reason',
+        new TranslatableMarkup('User does not have permission to book rooms.'));
+      return;
+    }
+
+    // make sure we have a valid date
+    // some date and time formatting stuff - taking input from form date/time and duration fields
+    // and returning start and end times in W3C format to pass to the 25Live web services api.
+    $booking_date = $user_input['stanford_r25_booking_date'];
+    $booking_str = $booking_date['date'] . '-' . $booking_date['time'];
+    $booking_str = str_replace(':','-',$booking_str);
+    $date = DrupalDateTime::createFromArray($this->parseDateStr($booking_str));
+    $date2 = $date->format('Y-m-d g:i a');
+    if (empty($date) || $date->hasErrors()) {
+      $form_state->setErrorByName('stanford_r25_booking_date',
+        new TranslatableMarkup('The start date is invalid.'));
+      return;
+    }
+
+    // don't allow reservations more than 1/2 hour in the past. we're not a time machine.
+    if ($date->getTimestamp() < (time() - 1800)) {
+      $form_state->setErrorByName('stanford_r25_booking_date',
+        new TranslatableMarkup('A reservation in the past was requested. This isn\'t a time machine!'));
+      return;
+    }
+
+    // if this is a multi-day capable room, check the end date the same way we just checked
+    // the start date, and make sure it isn't early than the start date.
+    $end_date = null;
+    if (!empty($user_input['stanford_r25_booking_enddate'])) {
+      $booking_end_date = $user_input['stanford_r25_booking_enddate'];
+      $booking_str = $booking_end_date['date'] . '-' . $booking_end_date['time'];
+      $booking_str = str_replace(':', '-', $booking_str);
+      $end_date = DrupalDateTime::createFromArray($this->parseDateStr($booking_str));
+      //$date2 = $date->format('Y-m-d g:i a');
+      if (empty($end_date) || $end_date->hasErrors()) {
+        $form_state->setErrorByName('stanford_r25_booking_enddate',
+          new TranslatableMarkup('The end date is invalid.'));
+        return;
+      }
+      if ($end_date->getTimestamp() <= $date->getTimestamp()) {
+        $form_state->setErrorByName('stanford_r25_booking_enddate',
+          new TranslatableMarkup('The end date may not be before the start date.'));
+        return;
+      }
+    }
+
+    // make sure date isn't blacked out if room checks for that
+    if ($rooms[$room]['honor_blackouts'] == 1) {
+      if (StanfordEarthR25Util::_stanford_r25_date_blacked_out($date->getTimestamp()) ||
+        (!empty($end_date) && StanfordEarthR25Util::_stanford_r25_date_blacked_out($end_date->getTimestamp()))
+      ) {
+        $form_state->setErrorByName('stanford_r25_booking_date',
+          new TranslatableMarkup('This room is unavailable for reservation on the requested date. ' .
+            'The room may only be reserved until the end of the current quarter. Please see your department ' .
+            'administrator for more information.'));
+        return;
+      }
+    }
+
+    // build 25Live date strings
+    if (!empty($end_date)) {
+      $date_strs = array(
+        'day' => $date->format('Y-m-d'),
+        'start' => $date->format(DATE_W3C),
+        'end' => $end_date->format(DATE_W3C),
+      );
+    }
+    else {
+      $duration = intval($user_input['stanford_r25_booking_duration']);
+      if ($duration < 0 || $duration > (($booking_info['room']['max_hours'] * 2) - 1)) {
+        $form_state->setErrorByName('stanford_r25_booking_duration',
+          new TranslatableMarkup('The reservation duration is invalid.'));
+        return;
+      }
+      $duration = ($duration * 30) + 30;
+      $date_strs = array(
+        'day' => $date->format('Y-m-d'),
+        'start' => $date->format(DATE_W3C),
+        'end' => $date->add(new \DateInterval('PT' . $duration . 'M'))->format(DATE_W3C),
+      );
+    }
+
+    // store booking info in form storage
+    $booking_info['dates'] = $date_strs;
+    $form_state->setStorage($booking_info);
+
   }
 
   /**

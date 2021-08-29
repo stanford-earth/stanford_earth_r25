@@ -350,7 +350,6 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
     foreach ($form_values as $key => $value) {
       if (substr($key,0,13) == 'stanford_r25_') {
         if ($key == 'stanford_r25_blackout_dates') {
-          $xyz = 1;
           $value = StanfordEarthR25Util::parse_blackout_dates($value);
         }
         $config->set($key, $value);

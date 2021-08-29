@@ -49,9 +49,10 @@
 </div>
 <div id="stanford-r25-reservation">
   {% set room_id = r25_location.id() %}
+  {% set start = 'now' %}
   {% if logged_in %}
     {{ link('Reserve This Room',
-      "internal:/r25/reservation/#{room_id}",
+      "internal:/r25/reservation/#{room_id}/#{start}",
       { 'class':['use-ajax', 'button']} ) }}
     <span>&nbsp;Click here or select a timeslot on the calendar to reserve.</span>
   {% else %}

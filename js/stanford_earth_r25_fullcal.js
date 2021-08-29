@@ -167,10 +167,16 @@ var qtip = false;  // assume we don't have the qtip library to start
         select: function (selectInfo) {
             var start = selectInfo.start;
             var end = selectInfo.end;
+            var endStr = '';
             //$('#edit-stanford-r25-booking-date-datepicker-popup-0').val(start.format('YYYY-MM-DD'));
             //$('#edit-stanford-r25-booking-date-timeEntry-popup-1').val(start.format('hh:mm a'));
             // account for multi-day rooms that have an end date/time instead of a duration
             if (multiDay) {
+              var endMonth = parseInt(end.getMonth()) + 1;
+              endStr = '-end-' + end.getFullYear() + '-' + endMonth.toString() +
+                '-' + end.getDate() + '-' + end.getHours() + '-' +
+                end.getMinutes();
+
               //$('#edit-stanford-r25-booking-enddate-datepicker-popup-0').val(end.format('YYYY-MM-DD'));
               //$('#edit-stanford-r25-booking-enddate-timeEntry-popup-1').val(end.format('hh:mm a'));
             } else {
@@ -184,12 +190,24 @@ var qtip = false;  // assume we don't have the qtip library to start
                 }
                 window.alert('Maximum booking duration is ' + maxStr + '. For longer please contact a department administrator.');
               } else {
-                var duration_index = (duration / 30) - 1;
+                var durationIndex = (duration / 30) - 1;
+                endStr = '-duration-' + durationIndex.toString();
                 //$('#edit-stanford-r25-booking-duration').val(duration_index);
               }
             }
-            console.dir($('#stanford-r25-reservation'));
-          $('#stanford-r25-reservation .button').click();
+            var link = $('#stanford-r25-reservation a').attr('href');
+            var month = parseInt(start.getMonth()) + 1;
+            var startStr = start.getFullYear() + '-' + month.toString() + '-' +
+              start.getDate() + '-' + start.getHours() + '-' +
+              start.getMinutes() + endStr;
+            link = link.replace('now',startStr);
+            var ajaxSettings = {
+              url: link,
+              dialogType: 'modal',
+              dialog: { width: 800 },
+            };
+            var myAjaxObject = Drupal.ajax(ajaxSettings);
+            myAjaxObject.execute();
         },
         // set whether the calendar is selectable, as defined up above
         selectable: selectable,

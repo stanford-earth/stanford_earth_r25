@@ -51,11 +51,11 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *
    * @return array
    */
-  public function reserve($location_id) {
+  public function reserve($location_id, $start) {
     $response = new AjaxResponse();
 
     // Get the modal form using the form builder.
-    $modal_form = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',$location_id);
+    $modal_form = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',$location_id, $start);
 
     // Add an AJAX command to open a modal dialog with the form as the content.
     $response->addCommand(new OpenModalDialogCommand('Room Reservation Form', $modal_form, ['width' => '800']));

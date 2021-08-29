@@ -80,3 +80,7 @@ body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane 
   margin-bottom: 0;
 }
 
+.fc-highlight {
+  margin-top: -10px !important;
+  margin-bottom: 10px !important;
+}
