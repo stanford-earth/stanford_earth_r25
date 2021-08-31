@@ -204,13 +204,13 @@ class StanfordEarthR25Service {
       if ($command == 'reserve') {
         // $post_data contains the XML for a reservation request
         $method = 'POST';
-        $options['data'] = $post_data;
+        $options['body'] = $post_data;
       }
       else {
         // $post_data contains the XML to update an event or its billing group id
         if ($command == 'billing-put' || $command == 'event-put') {
           $method = 'PUT';
-          $options['data'] = $post_data;
+          $options['body'] = $post_data;
         }
         else {
           if ($command == 'delete') {
@@ -225,7 +225,7 @@ class StanfordEarthR25Service {
         $options);
 
       // if the request returns an error, report it
-      if ($result->getStatusCode() != 200) {
+      if ($result->getStatusCode() > 206) {
         $errmsg = 'HTTP Error response from R25 API: ' . $result->getReasonPhrase();
         $this->logger->error($errmsg);
         $api_result['status']['message'] = $errmsg;
@@ -235,7 +235,6 @@ class StanfordEarthR25Service {
 
       // get the response contents
       $xmlbody = $result->getBody()->getContents();
-
       // if getting a room photo, the response body will contain JPEG data instead of XML
       if ($command == 'roomphoto') {
         if (empty($xmlbody)) {

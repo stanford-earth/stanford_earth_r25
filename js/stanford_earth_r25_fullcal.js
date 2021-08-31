@@ -1,6 +1,7 @@
 // javascript for managing FullCalendar display and populating the reserve form on calendar time selects
 
 var qtip = false;  // assume we don't have the qtip library to start
+var calendar;
 
 (function ($, Drupal, drupalSettings) {
 
@@ -72,7 +73,7 @@ var qtip = false;  // assume we don't have the qtip library to start
       var multiDay = false;  // typically do not allow multi-day reservation
       var selectConstraint = {startTime: '06:00', endTime: '22:00'};  // limit selection to "normal" hours
       var selectable = false;  // value of selectable will determine if user can select timeslots from fullcalendar
-      if (parseInt(stanford_r25_status) > 1 && parseInt(drupalSettings.stanfordEarthR25.stanfordR25Access) == 1) {
+      if (parseInt(stanford_r25_status) > 1 && parseInt(drupalSettings.stanfordEarthR25.stanfordR25Access) === 1) {
         // in this case, the room is reservable and the user has access to reserve it
         selectable = true;
         if (parseInt(drupalSettings.stanfordEarthR25.stanfordR25MultiDay) === 1) {
@@ -95,37 +96,54 @@ var qtip = false;  // assume we don't have the qtip library to start
           maxDuration = dValue * 60;
         }
       }
-
-      var calendar = new FullCalendar.Calendar(calendarEl, {
+      var setCalendar = true;
+      if (typeof(calendar) === 'object') {
+        if (calendar instanceof FullCalendar.Calendar) {
+          setCalendar = false;
+        }
+      }
+      /*
+      if (typeof(calendar) === 'undefined') {
+        console.log('calendar undefined');
+      } else if (typeof(calendar) === 'object') {
+        if (calendar instanceof FullCalendar.Calendar) {
+          console.log('calendar is set');
+        } else {
+          console.log('calendar is something else');
+        }
+      }
+      */
+      if (setCalendar) {
+        calendar = new FullCalendar.Calendar(calendarEl, {
           schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-        allDaySlot: false,
-        // if in month view for a non-multi-day room and the user clicks a date, go to agenda day view
+          allDaySlot: false,
+          // if in month view for a non-multi-day room and the user clicks a date, go to agenda day view
 
-        dateClick: function(info) {
-          if (info.view.type === 'dayGridMonth' && !multiDay) {
-            calendar.gotoDate(info.dateStr);
-            calendar.changeView('timeGridDay');
-          }
-        },
-        datesSet: function(viewDate) {
-          // when rendering the calendar, add a permalink to the date and view if room config added permalink id
-          if ($('#stanford-r25-permalink').length) {
-            var permalink = location.origin + location.pathname +
-              '?view=' + viewDate.view.type + '&date=' +
-              calendar.formatIso(calendar.getDate()).substring(0,10);
-            $('#stanford-r25-permalink').html('<a href="' + permalink + '">Permalink to this page</a>');
-          }
-          // if there is an upper limit on calendar view, hide (or show) the 'Next' button
-          if ( calendarLimit < viewDate.end) {
-            $("#calendar .fc-next-button").hide();
-            return false;
-          }
-          else {
-            $("#calendar .fc-next-button").show();
-          }
-        },
-        dayMaxEventRows: true,
-        eventDidMount: function(info) {
+          dateClick: function (info) {
+            if (info.view.type === 'dayGridMonth' && !multiDay) {
+              calendar.gotoDate(info.dateStr);
+              calendar.changeView('timeGridDay');
+            }
+          },
+          datesSet: function (viewDate) {
+            // when rendering the calendar, add a permalink to the date and view if room config added permalink id
+            if ($('#stanford-r25-permalink').length) {
+              var permalink = location.origin + location.pathname +
+                '?view=' + viewDate.view.type + '&date=' +
+                calendar.formatIso(calendar.getDate()).substring(0, 10);
+              $('#stanford-r25-permalink').html('<a href="' + permalink + '">Permalink to this page</a>');
+            }
+            // if there is an upper limit on calendar view, hide (or show) the 'Next' button
+            if (calendarLimit < viewDate.end) {
+              $("#calendar .fc-next-button").hide();
+              return false;
+            }
+            else {
+              $("#calendar .fc-next-button").show();
+            }
+          },
+          dayMaxEventRows: true,
+          eventDidMount: function (info) {
             if (qtip) {
               var tooltip = new tippy(info.el, {
                 allowHTML: true,
@@ -138,89 +156,98 @@ var qtip = false;  // assume we don't have the qtip library to start
                 trigger: 'click',
               });
             }
-         },
-        events: {
-          url: 'r25_feed',
-          type: 'POST',
-          data: {
-            room_id: stanford_r25_room,
           },
-        },
-        headerToolbar: {
+          events: {
+            url: 'r25_feed',
+            type: 'POST',
+            data: {
+              room_id: stanford_r25_room,
+            },
+          },
+          headerToolbar: {
             left: 'today prev,next',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        // set the default date and view, either from our cookies (see above) or for current date and month
-        initialDate: defaultDate,
-        initialView: defaultView,
-        loading: function (bool) {
+          },
+          // set the default date and view, either from our cookies (see above) or for current date and month
+          initialDate: defaultDate,
+          initialView: defaultView,
+          loading: function (bool) {
             if (bool) {
               $('body').css('cursor', 'progress');
             }
             else {
               $('body').css('cursor', 'default');
-            }},
-        // when the user clicks and drags to select a date and time, populate the date, time, and duration fields
-        // in the reservation form and set the focus to the required headcount field. Also display an error alert
-        // if the user tries to select more than the meximum minutes duration
-        select: function (selectInfo) {
+            }
+          },
+          // when the user clicks and drags to select a date and time, populate the date, time, and duration fields
+          // in the reservation form and set the focus to the required headcount field. Also display an error alert
+          // if the user tries to select more than the meximum minutes duration
+          select: function (selectInfo) {
             var start = selectInfo.start;
             var end = selectInfo.end;
             var endStr = '';
-            //$('#edit-stanford-r25-booking-date-datepicker-popup-0').val(start.format('YYYY-MM-DD'));
-            //$('#edit-stanford-r25-booking-date-timeEntry-popup-1').val(start.format('hh:mm a'));
+            var okaytosubmit = true;
             // account for multi-day rooms that have an end date/time instead of a duration
             if (multiDay) {
               var endMonth = parseInt(end.getMonth()) + 1;
               endStr = '-end-' + end.getFullYear() + '-' + endMonth.toString() +
                 '-' + end.getDate() + '-' + end.getHours() + '-' +
                 end.getMinutes();
-
-              //$('#edit-stanford-r25-booking-enddate-datepicker-popup-0').val(end.format('YYYY-MM-DD'));
-              //$('#edit-stanford-r25-booking-enddate-timeEntry-popup-1').val(end.format('hh:mm a'));
-            } else {
+            }
+            else {
               var duration = (end - start) / 60000;
               if (maxDuration > 0 && duration > maxDuration) {
                 var maxStr = '';
                 if (maxDuration > 120) {
                   maxStr = (maxDuration / 60) + ' hours';
-                } else {
+                }
+                else {
                   maxStr = maxDuration + ' minutes';
                 }
+                okaytosubmit = false;
                 window.alert('Maximum booking duration is ' + maxStr + '. For longer please contact a department administrator.');
-              } else {
+              }
+              else {
                 var durationIndex = (duration / 30) - 1;
                 endStr = '-duration-' + durationIndex.toString();
-                //$('#edit-stanford-r25-booking-duration').val(duration_index);
               }
             }
-            var link = $('#stanford-r25-reservation a').attr('href');
-            var month = parseInt(start.getMonth()) + 1;
-            var startStr = start.getFullYear() + '-' + month.toString() + '-' +
-              start.getDate() + '-' + start.getHours() + '-' +
-              start.getMinutes() + endStr;
-            link = link.replace('now',startStr);
-            var ajaxSettings = {
-              url: link,
-              dialogType: 'modal',
-              dialog: { width: 800 },
-            };
-            var myAjaxObject = Drupal.ajax(ajaxSettings);
-            myAjaxObject.execute();
-        },
-        // set whether the calendar is selectable, as defined up above
-        selectable: selectable,
-        selectConstraint: selectConstraint,
-        // don't let users select time slots that cross existing reservations
-        selectOverlap: false,
-        // set default timezone
-        timezone: drupalSettings.stanfordEarthR25.stanfordR25Timezone,
-        error: function () {
+            if (okaytosubmit) {
+              // as mentioned above, when the user submits a reservation requests, save the date and calendar view to cookies
+              var view = calendar.view;
+              document.cookie = 'stanford-r25-view=' + view.type;
+              document.cookie = 'stanford-r25-date=' + start.toString();
+              var link = $('#stanford-r25-reservation a').attr('href');
+              var month = parseInt(start.getMonth()) + 1;
+              var startStr = start.getFullYear() + '-' + month.toString() + '-' +
+                start.getDate() + '-' + start.getHours() + '-' +
+                start.getMinutes() + endStr;
+              link = link.replace('now', startStr);
+              //$('#stanford-r25-reservation a').click();
+              var ajaxSettings = {
+                url: link,
+                dialogType: 'modal',
+                dialog: {width: 800},
+              };
+              var myAjaxObject = Drupal.ajax(ajaxSettings);
+              myAjaxObject.execute();
+            }
+          },
+          // set whether the calendar is selectable, as defined up above
+          selectable: selectable,
+          selectConstraint: selectConstraint,
+          // don't let users select time slots that cross existing reservations
+          selectMinDistance: 1,
+          selectOverlap: false,
+          // set default timezone
+          timezone: drupalSettings.stanfordEarthR25.stanfordR25Timezone,
+          error: function () {
             $('#stanford-r25-self-serve-msg').html('Unable to retrieve room schedule from 25Live.');
           },
         });
-        calendar.render();
+      }
+      calendar.render();
 
       $('[id*=edit-stanford-r25-booking].form-time').each(function() {
         $(this).change(function () {
@@ -279,5 +306,10 @@ var qtip = false;  // assume we don't have the qtip library to start
   function deleteCookie(name) {
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
   }
+
+  $.fn.stanfordEarthR25Message = function(data) {
+    $(this).scrollTop(0);
+    //alert($(this).html());
+  };
 
 }) (jQuery, Drupal, drupalSettings);

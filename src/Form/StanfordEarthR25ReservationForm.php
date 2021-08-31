@@ -2,6 +2,7 @@
 
 namespace Drupal\stanford_earth_r25\Form;
 
+use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormBase;
@@ -12,6 +13,7 @@ use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\HtmlCommand;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -336,17 +338,34 @@ class StanfordEarthR25ReservationForm extends FormBase {
    */
   public function submitModalFormAjax(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
+    $storage = $form_state->getStorage();
     // If there are any form errors, re-display the form.
-    if ($form_state->hasAnyErrors()) {
+    if ($form_state->hasAnyErrors() || !empty($storage['stanford_earth_r25']['r25_messages'])) {
       $error_list = '<ul>';
-      foreach ($form_state->getErrors() as $error_field => $error_value) {
-        $error_list .= '<li>' . $error_value->render() . '</li>';
+      if ($form_state->hasAnyErrors()) {
+        foreach ($form_state->getErrors() as $error_field => $error_value) {
+          $error_list .= '<li>' . $error_value->render() . '</li>';
+        }
+      }
+      if (!empty($storage['stanford_earth_r25']['r25_messages'])) {
+        foreach ($storage['stanford_earth_r25']['r25_messages'] as $r25_message) {
+          $error_list .= '<li>' . $r25_message . '</li>';
+        }
       }
       $error_list .= '</ul>';
       $form_state->clearErrors();
       \Drupal::messenger()->deleteAll();
       $response->addCommand(new HtmlCommand('#stanford-r25-ajax-messages', $error_list));
+      //$response->addCommand(new InvokeCommand('#drupal-modal', 'stanfordEarthR25Message', []));
+      $response->addCommand(new InvokeCommand('#drupal-modal', 'scrollTop', [0]));
+    } else
+    {
+      $response->addCommand(new CloseModalDialogCommand());
     }
+ // else {
+   //   $response->addCommand(new OpenModalDialogCommand("Success!", 'The modal form has been submitted.', ['width' => 800]));
+   // }
+
     return $response;
   }
 
@@ -363,10 +382,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $room = $user_input['stanford_r25_booking_roomid'];
     $booking_info = array();  // store booking info in form storage after validation
     $rooms = [];
-    $adminSettings = [];
     if (!empty($room)) {
       $rooms[$room] = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room)->getRawData();
-      $adminSettings = \Drupal::config('stanford_earth_r25.adminsettings')->getRawData();
     }
 
     // make sure we have a valid room id in the form input
@@ -469,7 +486,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     // store booking info in form storage
     $booking_info['dates'] = $date_strs;
-    $form_state->setStorage($booking_info);
+    $storage = ['stanford_earth_r25' =>
+      ['booking_info' => $booking_info]];
+    $form_state->setStorage($storage);
 
   }
 
@@ -477,18 +496,345 @@ class StanfordEarthR25ReservationForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $xyz = 1;
-    /*
-         // as mentioned above, when the user submits a reservation requests, save the date and calendar view to cookies
-   $('#stanford-r25-reservation').submit(function (event) {
-       var view = $('#calendar').fullCalendar('getView');
-       document.cookie = "stanford-r25-view=" + view.name;
-       document.cookie = "stanford-r25-date=" + $('#edit-stanford-r25-booking-date-datepicker-popup-0').val();
-       return true;
-   });
 
-  */
+    $storage = $form_state->getStorage();
+    $r25_messages = [];
+    $booking_info = $storage['stanford_earth_r25']['booking_info'];
+    // make sure the user has access, that the needed information is available, and the room is bookable
+    if (empty($booking_info['dates']) || empty($booking_info['room'])) {
+      $r25_messages[] = new TranslatableMarkup('Insufficient booking information was provided.');
+      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+      $form_state->setStorage($storage);
+      return;
+    }
+
+    $event_state = intval($booking_info['room']['displaytype']);
+    $event_state = 0;
+    if ($event_state < StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE ||
+      $event_state > StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_CONFIRMED) {
+      $r25_messages[] = new TranslatableMarkup('This room may not be reserved through this website.');
+      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+      $form_state->setStorage($storage);
+      return;
+    }
+
+    $entity = \Drupal::entityTypeManager()->getStorage('stanford_earth_r25_location')
+      ->load($booking_info['room']['id']);
+    $can_book = StanfordEarthR25Util::_stanford_r25_can_book_room($entity);
+    if (!$can_book['can_book']) {
+      $r25_messages[] = new TranslatableMarkup('You do not have permission to book this room.');
+      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+      $form_state->set($storage);
+      return;
+    }
+
+    $adminSettings = \Drupal::config('stanford_earth_r25.adminsettings')->getRawData();
+
+    $mail_list = '';  // we'll build a list of email addresses to send reservation info to
+
+    // tentative reservations will generate 25Live "to do tasks" for approvers if the room
+    // has an approver security group id associated with it.
+    $todo_insert = '';
+    if ($event_state == STANFORD_R25_ROOM_STATUS_TENTATIVE &&
+      !empty($booking_info['room']['approver_secgroup_id'])
+    )
+    {
+      // get the list of email addresses for the security group that can do the approvals
+      $approver_list =
+        StanfordEarthR25Util::_stanford_r25_security_group_emails($booking_info['room']['approver_secgroup_id']);
+      if (!empty($approver_list)) {
+        // for each approver in the security group, add their email address to the list and
+        // create a "to do task" XML snippet with their 25Live id and the event information
+        // to be added to the request XML.
+        $contact_id = '';
+        if (!empty($adminSettings['stanford_r25_credential_contact_id'])) {
+          $contact_id = $adminSettings['stanford_r25_credential_contact_id'];
+        }
+        $todo_str = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') .
+          '/templates/stanford_r25_reserve_todo.xml');
+        foreach ($approver_list as $key => $value) {
+          $todo_temp = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $todo_str);
+          $todo_temp = str_replace('[r25_approver_id]', $key, $todo_temp);
+          $todo_temp = str_replace('[r25_credential_id]', $contact_id, $todo_temp);
+          $todo_insert .= $todo_temp;
+          if (!empty($mail_list)) {
+            $mail_list .= ', ';
+          }
+          $mail_list .= $value;
+        }
+      }
+    }
+
+    // if there are 25Live custom attributes associated with this event, add the XML snippet for each attribute
+    // with its id, type, and value to the request XML.
+    $attr_insert = '';
+    $attr_str = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') .
+      '/templates/stanford_r25_reserve_attr.xml');
+    $room = $booking_info['room'];
+    $form_vals = $form_state->getValues();
+    if (!empty($room['event_attribute_fields'])) {
+      foreach ($room['event_attribute_fields'] as $key => $value) {
+        if (!empty($form_vals['stanford_r25_booking_attr' . $key])) {
+          $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
+          $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
+          $attr_temp = str_replace('[r25_attr_value]', $form_vals['stanford_r25_booking_attr' . $key], $attr_temp);
+          $attr_insert .= $attr_temp;
+        }
+      }
+    }
+    // if there is a 25Live custom attribute we've defined for contact information, add the XML snippet for it to the request
+    if (!empty($room['contact_attr_field'])) {
+      foreach ($room['contact_attr_field'] as $key => $value) {
+        if (!empty($form_vals['stanford_r25_contact_' . $key])) {
+          $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
+          $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
+          $attr_temp = str_replace('[r25_attr_value]', $form_vals['stanford_r25_contact_' . $key], $attr_temp);
+          $attr_insert .= $attr_temp;
+        }
+      }
+    }
+
+    // get the XML template for creating an event and replace tokens with data for this reservation
+    $event_state = $event_state - 1;
+    $xml_file = '/templates/stanford_r25_reserve.xml';
+    $xml = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') . $xml_file); //'/stanford_r25_reserve.xml');
+    $xml = str_replace('[r25_event_name]', $form_vals['stanford_r25_booking_reason'], $xml);
+    $parent_id = 'unknown';
+    if (!empty($adminSettings['stanford_r25_parent_event_id'])) {
+      $parent_id = $adminSettings['stanford_r25_parent_event_id'];
+    }
+    $xml = str_replace('[r25_parent_id]', $parent_id, $xml);
+    $event_type = 'unknown';
+    if (!empty($adminSettings['stanford_r25_event_type'])) {
+      $event_type = $adminSettings['stanford_r25_event_type'];
+    }
+    $xml = str_replace('[r25_event_type]', $event_type, $xml);
+    $xml = str_replace('[r25_event_state]', $event_state, $xml);
+    $org_id = 'unknown';
+    if (!empty($adminSettings['stanford_r25_org_id'])) {
+      $org_id = $adminSettings['stanford_r25_org_id'];
+    }
+    $xml = str_replace('[r25_organization_id]', $org_id, $xml);
+    $xml = str_replace('[r25_expected_headcount]', $form_state->getCompleteForm()['stanford_r25_booking_headcount']['#options'][$form_vals['stanford_r25_booking_headcount']], $xml);
+    $xml = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $xml);
+    $xml = str_replace('[r25_end_date_time]', $booking_info['dates']['end'], $xml);
+    $xml = str_replace('[r25_space_id]', $booking_info['room']['space_id'], $xml);
+    $xml = str_replace('[r25_todo]', $todo_insert, $xml);
+    $xml = str_replace('[r25_attr]', $attr_insert, $xml);
+
+    // we want to put some information about the user making this request into the event description to be displayed on the calendar
+    $user = \Drupal::currentUser();
+    $contact_info = $user->getDisplayName() . "\r\n" .
+      $user->getEmail() . "\r\n";
+    $res_username = '';
+    $res_usermail = '';
+    if ($user->id() === 0) {
+      $user_input = $form_state->getUserInput();
+      if (!empty($user_input['external_username'])) {
+        $res_username = $user_input['external_username'];
+      }
+      if (!empty($user_input['external_usermail'])) {
+        $res_usermail = $user_input['external_usermail'];
+      }
+    }
+    else {
+      $res_username = $user->getDisplayName();
+      $res_usermail = $user->getEmail();
+    }
+    $contact_str = '<p>Self service reservation made by ' . $res_username . ' - <a href="mailto:' . $res_usermail . '">click to contact by email.</a></p>';
+    $contact_str = htmlspecialchars($contact_str);
+    // send the request to our api function'
+    $xml = str_replace('[r25_created_by]', $contact_str, $xml);
+    // send the request to our api function
+    $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
+    $r25_result = $r25_service->r25_api_call('reserve', $xml);
+    // check the results to see if our reservation attempt was successful
+    $success = false;
+    if ($r25_result['status']['status'] === true) {
+      $result = $r25_result['output'];
+      // a successful return with no status message is assumed to be a success since that's how the webservices api works. go figure.
+      // if we use the setting that returns a positive return code for success, then other information is missing.
+      if (empty($result['index']['R25:MSG_ID'][0])) {
+        // check if the result has the location and time we requested
+        if (!empty($result['index']['R25:SPACE_ID'][0]) &&
+          $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] == $booking_info['room']['space_id'] &&
+        !empty($result['index']['R25:EVENT_START_DT'][0]) &&
+        $result['vals'][$result['index']['R25:EVENT_START_DT'][0]]['value'] == $booking_info['dates']['start'] &&
+        !empty($result['index']['R25:EVENT_END_DT'][0]) &&
+        $result['vals'][$result['index']['R25:EVENT_END_DT'][0]]['value'] == $booking_info['dates']['end']
+        ) {
+          $success = TRUE;
+        }
+      }
+      else {
+        // even though we should not see a success code, we do want to check if we got a failure code, which is anything but the
+        // two defined success codes.
+        $msg_index = $result['index']['R25:MSG_ID'][0];
+        if (!empty($result['vals'][$msg_index]['value'])) {
+          if ($result['vals'][$msg_index]['value'] === 'EV_I_SAVE' ||
+            $result['vals'][$msg_index]['value'] === 'EV_I_CREATED'
+          ) {
+            $success = TRUE;
+          }
+        }
+      }
+    }
+
+    // if the reservation request was successful, we want to add any billing
+    // information to the request if defined, display a success message on the
+    // page, and send an email to any approvers or others specified.
+    if ($success) {
+
+      // if the booking was successful, format and display a message to that effect
+      $date = DrupalDateTime::createFromFormat(DATE_W3C, $booking_info['dates']['start']);
+      $state = intval($result['vals'][$result['index']['R25:STATE'][0]]['value']);
+      $msg = $booking_info['room']['label'] . ' has a <b>' . $result['vals'][$result['index']['R25:STATE_NAME'][0]]['value'] . '</b> reservation for "' . $form_vals['stanford_r25_booking_reason'] . '" on  ' . $date->format("l, F j, Y g:i a") . '.';
+      if (intval($result['vals'][$result['index']['R25:STATE'][0]]['value']) == 1) {
+        $msg .= ' The room administrator will confirm or deny your request.';
+      }
+      $this->messenger()->addMessage($this->t($msg));
+
+      // if this event is billable, we have to retrieve billing XML for the event, update
+      // the billing group code, and PUT the XML back to the 25Live system.
+      $estimated_charge = 0;
+      $billable = FALSE;
+      $eventid = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
+      if (!empty($booking_info['room']['auto_billing_code'])) {
+        $bill_code = $booking_info['room']['auto_billing_code'];
+        $billable = TRUE;
+        // TBD replace drupal_alter with Module Handler
+        //drupal_alter('stanford_r25_isbillable', $billable);
+        if ($billable) {
+          $billing_get = _stanford_r25_api_call('billing-get', $eventid);
+          $billing_xml = $billing_get['raw-xml'];
+          $est_ptr = strpos($billing_xml, 'status="est"');
+          $billing_xml = substr($billing_xml, 0, $est_ptr) . 'status="mod"' . substr($billing_xml, $est_ptr + 12);
+          $space_code = strpos($billing_xml, $booking_info['room']['space_id']);
+          $bill_tmp = substr($billing_xml, 0, $space_code);
+          $est_ptr = strrpos($bill_tmp, 'status="est"');
+          $billing_xml = substr($billing_xml, 0, $est_ptr) . 'status="mod"' . substr($billing_xml, $est_ptr + 12);
+          $est_ptr = strpos($billing_xml, '<r25:rate_group_id/>', $space_code);
+          $billing_xml = substr($billing_xml, 0, $est_ptr) . '<r25:rate_group_id>' . $bill_code . '</r25:rate_group_id>' .
+            substr($billing_xml, $est_ptr + 20);
+
+          $history_ptr = strpos($billing_xml, '<r25:history_type_id>4');
+          $est_ptr = strrpos(substr($billing_xml, 0, $history_ptr), '"est"');
+          $billing_xml = substr($billing_xml, 0, $est_ptr) . '"mod"' . substr($billing_xml, $est_ptr + 5);
+          $hist_dt_ptr1 = strpos($billing_xml, '<r25:history_dt>', $history_ptr);
+          $hist_dt_ptr2 = strpos($billing_xml, '</r25:history_dt>', $history_ptr);
+          $billing_xml = substr($billing_xml, 0, $hist_dt_ptr1 + 16) .
+            $booking_info['dates']['start'] . substr($billing_xml, $hist_dt_ptr2);
+          $r25_results = _stanford_r25_api_call('billing-put', $billing_xml, $eventid);
+          if ($r25_results['status']['status']) {
+            $result = $r25_results['output'];
+            if (!empty($result['index']['R25:BILL_ITEM_TYPE_NAME']) &&
+              is_array($result['index']['R25:BILL_ITEM_TYPE_NAME'])
+            ) {
+              foreach ($result['index']['R25:BILL_ITEM_TYPE_NAME'] as $key => $value) {
+                if (!empty($result['vals'][$value]['value']) &&
+                  $result['vals'][$value]['value'] === 'GRAND TOTAL'
+                ) {
+                  if (!empty($result['index']['R25:TOTAL_CHARGE'][$key])) {
+                    $key2 = $result['index']['R25:TOTAL_CHARGE'][$key];
+                    if (!empty($result['vals'][$key2]['value'])) {
+                      $estimated_charge = intval($result['vals'][$key2]['value']);
+                    }
+                  }
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // send an email about the booking if mail list is set
+      if (!empty($mail_list) && !empty($booking_info['room']['email_list'])) {
+        $mail_list .= ', ';
+      }
+      $mail_list .= $booking_info['room']['email_list'];
+      $body = array();
+      $body[] = "A " . $result['vals'][$result['index']['R25:STATE_NAME'][0]]['value'] . " reservation has been made";
+      $subject = '';
+      if ($state == 1) {
+        // this is the email for a tentative booking
+        $subject = 'Room Reservation Request - ACTION REQUIRED';
+        $body[0] .= ' requiring your approval.';
+        $body[] = 'You may view this request in 25Live and confirm or deny it at this link (requires you first be logged in to 25Live): ';
+        $body[] = 'https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
+        $body[] = '';
+      }
+      else if ($state == 2) {
+        // this is the email for a confirmed booking
+        $subject = 'Room Reservation';
+        $body[0] .= '.';
+        $body[] = 'View the reservation at: https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
+      }
+
+      $body[] = "Room: " . $booking_info['room']['label'];
+      if (!empty($form_vals['stanford_r25_booking_duration'])) {
+        $body[] = "Date: " . $date->format("l, F j, Y g:i a");
+        $duration = (intval($form_vals['stanford_r25_booking_duration']) * 30) + 30;
+        if ($duration > 120) {
+          $body[] = 'Duration: ' . $duration / 60 . ' hours';
+        }
+        else {
+          $body[] = 'Duration: ' . $duration . ' minutes';
+        }
+      }
+      else {
+        $body[] = "Start Date: " . $date->format("l, F j, Y g:i a");
+        $enddate = DrupalDateTime::createFromFormat(DATE_W3C, $booking_info['dates']['end']);
+        //$enddate = DateTime::createFromFormat(DATE_W3C, $booking_info['dates']['end']);
+        $body[] = "End Date: " . $enddate->format("l, F j, Y g:i a");
+      }
+      $body[] = "Reason: " . $form_vals['stanford_r25_booking_reason'];
+      $body[] = "Requested by: " . $res_username . " " . $res_usermail;
+      if ($estimated_charge > 0) {
+        $body[] = "Estimated Fee: $" . $estimated_charge;
+      }
+      $params = array(
+        'body' => $body,
+        'subject' => $subject
+      );
+      $mailManager = \Drupal::service('plugin.manager.mail');
+      $module = 'stanford_earth_r25';
+      $key = 'r25_operation';
+      $to = $res_usermail;
+      $params['message'] = $body;
+      $params['r25_operation'] = $subject;
+      $langcode = \Drupal::currentUser()->getPreferredLangcode();
+      $send = true;
+      $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+      if (!empty($room['postprocess_booking']) && !empty($res_usermail)) {
+        $stanford_r25_postprocess = [
+          'room' => $booking_info['room'],
+          'dates' => $booking_info['dates'],
+          'mailto' => $res_usermail,
+          'event_name' => $booking_info['stanford_r25_booking_reason'],
+          'eventid' => $eventid,
+          'est_charge' => $estimated_charge
+        ];
+        $storage['stanford_earth_r25']['stanford_r25_postprocess'] = $stanford_r25_postprocess;
+        $form_state->setStorage($storage);
+      }
+    }
+    else {
+      // display a message if the booking failed
+      //$this->messenger()->addMessage($this->t('The system was unable to book your room. This may be because of a time conflict with another meeting, or because someone else booked it first or because of problems communicating with 25Live. Please try again.'));
+      $body = array();
+      $event_id = 0;
+      if (!empty($result['index']['R25:EVENT_ID'][0]) && !empty($result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'])) {
+        $event_id = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
+        $body[] = 'failed reservation at: https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $event_id;
+        StanfordEarthR25Util::_stanford_r25_api_call('delete', $event_id);
+      }
+    }
+
+    // remove the storage we set up in validate
+    //$form_state->setStorage([]);
 
   }
 
 }
+

@@ -6,7 +6,7 @@ stanford_earth_r25_calendar:
   js:
     https://unpkg.com/@popperjs/core@2: { external: true, defer: true, async: true }
     https://unpkg.com/tippy.js@6: { external: true, defer: true, async: true }
-    js/fullcalendar/lib/main.min.js: {}
+    js/fullcalendar/lib/main.js: {}
     js/stanford_earth_r25_fullcal.js: {}
   dependencies:
     - core/jquery
