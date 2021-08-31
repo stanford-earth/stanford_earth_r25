@@ -86,7 +86,7 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
       $markup_str .= '<br /><br />Good news! Your credentials are set and valid and your site can currently connect to the R25 API.';
     }
     $form['description'] = array(
-      '#markup' => t($markup_str),
+      '#markup' => $this->t($markup_str),
     );
 
     $form['stanford_r25_credential'] = [

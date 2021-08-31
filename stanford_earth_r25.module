@@ -16,21 +16,26 @@
  *   The parameter array whose contents can be used to format the message.
  */
 function stanford_earth_r25_mail($key, array &$message, array $params) {
-
   $options = array(
     'langcode' => $message['langcode'],
   );
 
+  $body = '';
+  if (!empty($params['message']) && is_array($params['message'])) {
+    foreach ($params['message'] as $msgline) {
+      $body .= $msgline . '<br />';
+    }
+  }
   switch ($key) {
     case 'r25_operation':
       $message['from'] = \Drupal::config('system.site')->get('mail');
       $message['subject'] = t('@operation', array('@operation' => $params['r25_operation']), $options);
-      $message['body'][] = $params['message'];
+      $message['body'][] = $body;
       break;
     case 'r25_error':
       $message['from'] = \Drupal::config('system.site')->get('mail');
       $message['subject'] = t('R25 API error: @title', ['@title' => $params['r25']]);
-      $message['body'][] = $params['message'];
+      $message['body'][] = $body;
       break;
   }
 }

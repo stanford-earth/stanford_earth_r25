@@ -157,13 +157,22 @@ var calendar;
               });
             }
           },
-          events: {
-            url: 'r25_feed',
-            type: 'POST',
-            data: {
-              room_id: stanford_r25_room,
-            },
-          },
+          eventSources: [
+            {
+              url: 'r25_feed',
+              method: 'POST',
+              extraParams: {
+                room_id: stanford_r25_room,
+              },
+            }
+          ],
+//          events: {
+//            url: 'r25_feed',
+//            type: 'POST',
+//            data: {
+//              room_id: stanford_r25_room,
+//            },
+//          },
           headerToolbar: {
             left: 'today prev,next',
             center: 'title',
@@ -307,9 +316,24 @@ var calendar;
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
   }
 
+  function refetchEvents(source) {
+    source.refetch();
+  }
+
+  $.fn.stanfordEarthR25Refresh = function() {
+    var sources = calendar.getEventSources();
+    if (sources.length) {
+      setTimeout(refetchEvents, 5000, sources[0]);
+      //sources[0].refetch();
+    }
+  };
+
+  // unused - but keep around just in case
+  /*
   $.fn.stanfordEarthR25Message = function(data) {
     $(this).scrollTop(0);
     //alert($(this).html());
   };
+  */
 
 }) (jQuery, Drupal, drupalSettings);

@@ -104,7 +104,38 @@ class StanfordEarthR25ReservationForm extends FormBase {
           '#type' => 'markup',
           '#markup' => "<p>This room only accepts tentative reservations which must be approved by the room's administrator.</p>",
         );
+    }
+
+    // display some reservation instructions if available, replacing
+    // the [max_duration] tag with the room's maximum meeting duration.
+    // Use the site-wide booking instruction unless the room as an override.
+    $max_hours = 2;
+    if (!empty($rooms[$room]['max_hours'])) {
+      $max_hours = intval($rooms[$room]['max_hours']);
+      if ($max_hours == 0) {
+        $max_hours = 24;
       }
+    }
+
+    if (!empty($rooms[$room]['override_booking_instructions']['value'])) {
+      $booking_instr = $rooms[$room]['override_booking_instructions'];
+    }
+    else {
+      $booking_instr = [
+        'value' => '',
+        'format' => null
+      ];
+      if (!empty($adminSettings['stanford_r25_booking_instructions']['value'])) {
+        $booking_instr = $adminSettings['stanford_r25_booking_instructions'];
+      }
+    }
+    if (!empty($booking_instr['value'])) {
+      $booking_instr['value'] = str_replace('[max_duration]', $max_hours, $booking_instr['value']);
+    }
+    $form['r25_instructions'] = array(
+      '#type' => 'markup',
+      '#markup' => check_markup($booking_instr['value'], $booking_instr['format']),
+    );
 
     // use the Drupal date popup for date and time picking
     $dayParts = [];
@@ -139,13 +170,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
         // for non-multi-day rooms. default booking duration is limited to 2 hours
         // in 30 minute increments, but the room config can have a different value.
         // A value of 0 hours is the same as a value of 24 hours.
-        $max_hours = 2;
-        if (!empty($rooms[$room]['max_hours'])) {
-          $max_hours = intval($rooms[$room]['max_hours']);
-          if ($max_hours == 0) {
-            $max_hours = 24;
-          }
-        }
         $hours_array = array();
         if ($max_hours > 2) {
           for ($i = 0; $i < $max_hours; $i++) {
@@ -305,29 +329,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
       ],
     ];
 
-    // display some reservation instructions if available, replacing
-    // the [max_duration] tag with the room's maximum meeting duration.
-    // Use the site-wide booking instruction unless the room as an override.
-    if (!empty($rooms[$room]['override_booking_instructions']['value'])) {
-      $booking_instr = $rooms[$room]['override_booking_instructions'];
-    }
-    else {
-      $booking_instr = [
-        'value' => '',
-        'format' => null
-      ];
-      if (!empty($adminSettings['stanford_r25_booking_instructions']['value'])) {
-        $booking_instr = $adminSettings['stanford_r25_booking_instructions'];
-      }
-    }
-    if (!empty($booking_instr['value'])) {
-      $booking_instr['value'] = str_replace('[max_duration]', $max_hours, $booking_instr['value']);
-    }
-    $form['r25_instructions'] = array(
-      '#type' => 'markup',
-      '#markup' => check_markup($booking_instr['value'], $booking_instr['format']),
-    );
-
     $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
 
     return $form;
@@ -337,35 +338,45 @@ class StanfordEarthR25ReservationForm extends FormBase {
    * AJAX callback handler that displays any errors or a success message.
    */
   public function submitModalFormAjax(array $form, FormStateInterface $form_state) {
-    $response = new AjaxResponse();
     $storage = $form_state->getStorage();
+    $r25_messages = [];
+    if (!empty($storage['stanford_earth_r25']['r25_messages'])) {
+      $r25_messages = $storage['stanford_earth_r25']['r25_messages'];
+    }
+    $form_state->setStorage([]);
+
+    $response = new AjaxResponse();
     // If there are any form errors, re-display the form.
-    if ($form_state->hasAnyErrors() || !empty($storage['stanford_earth_r25']['r25_messages'])) {
-      $error_list = '<ul>';
-      if ($form_state->hasAnyErrors()) {
-        foreach ($form_state->getErrors() as $error_field => $error_value) {
-          $error_list .= '<li>' . $error_value->render() . '</li>';
-        }
-      }
-      if (!empty($storage['stanford_earth_r25']['r25_messages'])) {
-        foreach ($storage['stanford_earth_r25']['r25_messages'] as $r25_message) {
-          $error_list .= '<li>' . $r25_message . '</li>';
-        }
+    if ($form_state->hasAnyErrors()) {
+      $error_list = '<ul style="color:red">';
+      foreach ($form_state->getErrors() as $error_field => $error_value) {
+        $error_list .= '<li>' . $error_value->render() . '</li>';
       }
       $error_list .= '</ul>';
       $form_state->clearErrors();
       \Drupal::messenger()->deleteAll();
       $response->addCommand(new HtmlCommand('#stanford-r25-ajax-messages', $error_list));
-      //$response->addCommand(new InvokeCommand('#drupal-modal', 'stanfordEarthR25Message', []));
       $response->addCommand(new InvokeCommand('#drupal-modal', 'scrollTop', [0]));
-    } else
+    }
+    else if (!empty($r25_messages))
     {
+      if (count($r25_messages) == 1) {
+        $msg_list = '<span style="color:red">' . $r25_messages[0] . '</span>';
+      }
+      else {
+        $msg_list = '<ul style="color:red">';
+        foreach ($r25_messages as $r25_message) {
+          $msg_list .= '<li>' . $r25_message . '</li>';
+        }
+        $msg_list .= '</ul>';
+      }
+      $msg = new TranslatableMarkup($msg_list);
+      $response->addCommand(new OpenModalDialogCommand("Booking Result", $msg->render(), ['width' => 800]));
+      $response->addCommand(new InvokeCommand(null, 'stanfordEarthR25Refresh'));
+    }
+    else {
       $response->addCommand(new CloseModalDialogCommand());
     }
- // else {
-   //   $response->addCommand(new OpenModalDialogCommand("Success!", 'The modal form has been submitted.', ['width' => 800]));
-   // }
-
     return $response;
   }
 
@@ -497,22 +508,23 @@ class StanfordEarthR25ReservationForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
+    $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
+
     $storage = $form_state->getStorage();
     $r25_messages = [];
     $booking_info = $storage['stanford_earth_r25']['booking_info'];
     // make sure the user has access, that the needed information is available, and the room is bookable
     if (empty($booking_info['dates']) || empty($booking_info['room'])) {
-      $r25_messages[] = new TranslatableMarkup('Insufficient booking information was provided.');
+      $r25_messages[] = new TranslatableMarkup('<span style="color:red;">Insufficient booking information was provided.</span>');
       $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
       $form_state->setStorage($storage);
       return;
     }
 
     $event_state = intval($booking_info['room']['displaytype']);
-    $event_state = 0;
     if ($event_state < StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE ||
       $event_state > StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_CONFIRMED) {
-      $r25_messages[] = new TranslatableMarkup('This room may not be reserved through this website.');
+      $r25_messages[] = new TranslatableMarkup('<span style="color:red;">This room may not be reserved through this website.</span>');
       $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
       $form_state->setStorage($storage);
       return;
@@ -522,9 +534,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
       ->load($booking_info['room']['id']);
     $can_book = StanfordEarthR25Util::_stanford_r25_can_book_room($entity);
     if (!$can_book['can_book']) {
-      $r25_messages[] = new TranslatableMarkup('You do not have permission to book this room.');
+      $r25_messages[] = new TranslatableMarkup('<span style="color:red;">You do not have permission to book this room.</span>');
       $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-      $form_state->set($storage);
+      $form_state->setStorage($storage);
       return;
     }
 
@@ -692,7 +704,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
       if (intval($result['vals'][$result['index']['R25:STATE'][0]]['value']) == 1) {
         $msg .= ' The room administrator will confirm or deny your request.';
       }
-      $this->messenger()->addMessage($this->t($msg));
+      $r25_messages[] = new TranslatableMarkup('<span style="color:green;">' . $msg . '</span>');
+      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+      $form_state->setStorage($storage);
 
       // if this event is billable, we have to retrieve billing XML for the event, update
       // the billing group code, and PUT the XML back to the 25Live system.
@@ -705,8 +719,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
         // TBD replace drupal_alter with Module Handler
         //drupal_alter('stanford_r25_isbillable', $billable);
         if ($billable) {
-          $billing_get = _stanford_r25_api_call('billing-get', $eventid);
-          $billing_xml = $billing_get['raw-xml'];
+          $r25_result = $r25_service->r25_api_call('billing-get', $eventid);
+          $billing_xml = $r25_result['raw-xml'];
           $est_ptr = strpos($billing_xml, 'status="est"');
           $billing_xml = substr($billing_xml, 0, $est_ptr) . 'status="mod"' . substr($billing_xml, $est_ptr + 12);
           $space_code = strpos($billing_xml, $booking_info['room']['space_id']);
@@ -724,7 +738,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           $hist_dt_ptr2 = strpos($billing_xml, '</r25:history_dt>', $history_ptr);
           $billing_xml = substr($billing_xml, 0, $hist_dt_ptr1 + 16) .
             $booking_info['dates']['start'] . substr($billing_xml, $hist_dt_ptr2);
-          $r25_results = _stanford_r25_api_call('billing-put', $billing_xml, $eventid);
+          $r25_results = $r25_service->r25_api_call('billing-put', $billing_xml, $eventid);
           if ($r25_results['status']['status']) {
             $result = $r25_results['output'];
             if (!empty($result['index']['R25:BILL_ITEM_TYPE_NAME']) &&
@@ -800,12 +814,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $mailManager = \Drupal::service('plugin.manager.mail');
       $module = 'stanford_earth_r25';
       $key = 'r25_operation';
-      $to = $res_usermail;
+      $to = $mail_list;
       $params['message'] = $body;
       $params['r25_operation'] = $subject;
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $send = true;
-      $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+      $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+
       if (!empty($room['postprocess_booking']) && !empty($res_usermail)) {
         $stanford_r25_postprocess = [
           'room' => $booking_info['room'],
@@ -821,18 +836,17 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     else {
       // display a message if the booking failed
-      //$this->messenger()->addMessage($this->t('The system was unable to book your room. This may be because of a time conflict with another meeting, or because someone else booked it first or because of problems communicating with 25Live. Please try again.'));
+      $r25_messages[] = new TranslatableMarkup('<span style="color:red";>The system was <strong>unable</strong> to book your room. This may be because of a time conflict with another meeting, or because someone else booked it first or because of problems communicating with 25Live. Please try again.</span>');
+      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+      $form_state->setStorage($storage);
       $body = array();
       $event_id = 0;
       if (!empty($result['index']['R25:EVENT_ID'][0]) && !empty($result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'])) {
         $event_id = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
         $body[] = 'failed reservation at: https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $event_id;
-        StanfordEarthR25Util::_stanford_r25_api_call('delete', $event_id);
+        $r25_service->r25_api_call('delete', $event_id);
       }
     }
-
-    // remove the storage we set up in validate
-    //$form_state->setStorage([]);
 
   }
 

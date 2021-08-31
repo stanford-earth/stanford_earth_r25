@@ -300,4 +300,125 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
     return $blacked_out;
   }
 
+  public static function _stanford_r25_user_can_cancel_or_confirm($room_id, $event_id, $op) {
+    // first get the event's XML from 25Live
+    $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
+    $r25_result = $r25_service->r25_api_call('event-get', $event_id);
+    $result = false;
+    if ($r25_result['status']['status'] === TRUE) {
+      $result = $r25_result['output'];
+    }
+    if ($result) {
+      // make sure the event is for the requested room so nobody pulls a fast one.
+      $rooms = [];
+      if (!empty($room_id)) {
+        $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
+        $rooms[$room_id] = $config->getRawData();
+      }
+
+      if (empty($result['index']['R25:SPACE_ID']) || !is_array($result['index']['R25:SPACE_ID']) ||
+        $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] != $rooms[$room_id]['space_id']
+      ) {
+        \Drupal::messenger()->addMessage('Room mismatch for confirm or cancel event.', TYPE_ERROR);
+        return FALSE;
+      }
+
+      // default is that user can't do operation (confirm or cancel)
+      $can_cancel = FALSE;
+      global $user;
+
+      // if the user is user1 or has administer rights in Drupal, let them do operation
+      $user = \Drupal::currentUser();
+      if ($user->id() == 1 || $user->hasPermission('administer stanford r25')) {
+        $can_cancel = TRUE;
+      }
+      else {
+        // allow users to cancel events they created, either through this module or directly in 25Live
+        if (!empty($user->getEmail()) && $op === 'cancel') {
+          // see if requestor email matches or is quickbook. If quickbook, we must check the user's email differently
+          $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+          $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
+
+          // get the R25 user id and email address for the user that scheduled the event.
+          $scheduler_id = 0;
+          $scheduler_email = '';
+          if (!empty($result['index']['R25:ROLE_NAME']) && is_array($result['index']['R25:ROLE_NAME'])) {
+            foreach ($result['index']['R25:ROLE_NAME'] as $key => $value) {
+              if (!empty($result['vals'][$value]['value']) && $result['vals'][$value]['value'] === 'Scheduler') {
+                if (!empty($result['index']['R25:CONTACT_ID'][$key]) &&
+                  !empty($result['vals'][$result['index']['R25:CONTACT_ID'][$key]]['value'])
+                ) {
+                  $scheduler_id = intval($result['vals'][$result['index']['R25:CONTACT_ID'][$key]]['value']);
+                  if (!empty($result['index']['R25:EMAIL'][$key]) &&
+                    !empty($result['vals'][$result['index']['R25:EMAIL'][$key]]['value'])
+                  ) {
+                    $scheduler_email = $result['vals'][$result['index']['R25:EMAIL'][$key]]['value'];
+                  }
+                }
+                break;
+              }
+            }
+          }
+
+          if ($scheduler_id > 0) {
+            // if the reservation was made with quickbook, we need to pull the requestor's email address out of the event description
+            if ($quickbook_id == $scheduler_id) {
+              $scheduler_email = '';
+              if (!empty($result['index']['R25:TEXT_TYPE_NAME']) && is_array($result['index']['R25:TEXT_TYPE_NAME'])) {
+                foreach ($result['index']['R25:TEXT_TYPE_NAME'] as $key => $value) {
+                  if (!empty($result['vals'][$value]['value']) && $result['vals'][$value]['value'] === 'Description') {
+                    if (!empty($result['index']['R25:TEXT'][$key]) &&
+                      !empty($result['vals'][$result['index']['R25:TEXT'][$key]]['value'])
+                    ) {
+                      $desc = $result['vals'][$result['index']['R25:TEXT'][$key]]['value'];
+                      $mailto_pos = strpos($desc, '"mailto:');
+                      if ($mailto_pos !== FALSE) {
+                        $mailto_endpos = strpos($desc, '"', $mailto_pos + 8);
+                        if ($mailto_endpos !== FALSE) {
+                          $scheduler_email = substr($desc, $mailto_pos + 8, $mailto_endpos - ($mailto_pos + 8));
+                        }
+                      }
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+
+            // if the Drupal user's email address is the same as the 25Live scheduler's, then the user can cancel the event.
+            if (!empty($scheduler_email) && $user->getEmail() === $scheduler_email) {
+              $can_cancel = TRUE;
+            }
+          }
+        }
+      }
+
+      // if $can_cancel is false, we should check if the user is in a security group that can still be
+      // allowed to cancel or confirm the event
+      if (!$can_cancel) {
+        // if the room has a security group set for event confirmation, we have the group id stored in the room array
+        if (!empty($rooms[$room_id]['approver_secgroup_id'])) {
+          // get an array of email addresses for the people in the room's approver security group
+          $approvers = StanfordEarthR25Util::_stanford_r25_security_group_emails($rooms[$room_id]['approver_secgroup_id']);
+          // see if the Drupal user's email address is in the array of approvers
+          $can_cancel = in_array($user->getEmail(), $approvers);
+        }
+      }
+
+      if ($can_cancel) {
+        // if the user can cancel (or confirm) the event, return the event's XML arrays to the caller
+        $output = $result;
+      }
+      else {
+        // otherwise just output false
+        $output = FALSE;
+      }
+    }
+    else {
+      // set an error message if we couldn't contact 25Live.
+      \Drupal::messenger()->addMessage('Unable to retrieve data from 25Live. Please try again later.', TYPE_ERROR);
+      $output = FALSE;
+    }
+    return $output;
+  }
 }

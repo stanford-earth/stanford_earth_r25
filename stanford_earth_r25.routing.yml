@@ -98,17 +98,22 @@ stanford_earth_r25_location.reservation:
   requirements:
     _permission: 'book r25 rooms'
 
-#  // links to cancel reservations displayed on fullcalendar
-#  // parameters are room machine id, R25 event id, and instance date (needed for recurring events)
-#  // access argument is simply if user can book rooms, but more sophisticated permission checking is done in the callback
-# $items['r25/%/cancel_reservation/%/%'] = array(
-#  'title' => 'Cancel Reservation',
-#  'page callback' => 'drupal_get_form',
-#  'page arguments' => array('_stanford_r25_cancel_reservation', 1, 3, 4),
-#  'access arguments' => array('book r25 rooms'),
-#  'type' => MENU_CALLBACK,
-#  'file' => 'stanford_r25.pages.inc',
-#  );
+stanford_earth_r25_location.cancel:
+  path: '/r25/cancel/{location_id}/{event_id}/{start}'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25CancelController::cancel'
+    _title: 'Stanford R25 Cancel Reservation'
+  options:
+    parameters:
+      location_id:
+        type: string
+      event_id:
+        type: string
+      start:
+        type: string
+  requirements:
+    _permission: 'book r25 rooms'
+
 #  // links to confirm reservations displayed on fullcalendar
 ##  // parameters are room machine id, R25 event id, and instance date (for display only)
  # // access argument is simply if user can book rooms, but more sophisticated permission checking is done in the callback

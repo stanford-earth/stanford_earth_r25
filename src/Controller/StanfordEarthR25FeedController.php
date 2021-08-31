@@ -216,7 +216,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
             $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to confirm reservation</a>';
           }
           if ($can_cancel) {
-            $url = Url::fromUserInput('/r25/' . $room_id . '/cancel_reservation/' . $items[$key]['event_id'] . '/' .
+            $url = Url::fromUserInput('/r25/cancel/' . $room_id . '/' . $items[$key]['event_id'] . '/' .
               $items[$key]['start'])->toString();
             $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to cancel reservation</a>';
           }
