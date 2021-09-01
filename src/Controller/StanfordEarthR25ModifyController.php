@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
@@ -11,11 +12,13 @@ use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
+use Drupal\Core\Url;
+use Drupal\Core\Routing\LocalRedirectResponse;
 
 /**
- * Provides a reservation cancel page.
+ * Provides a reservation cancel/modify page.
  */
-class StanfordEarthR25CancelController extends ControllerBase {
+class StanfordEarthR25ModifyController extends ControllerBase {
 
   /**
    * The form builder.
@@ -25,7 +28,7 @@ class StanfordEarthR25CancelController extends ControllerBase {
   protected $formBuilder;
 
   /**
-   * The StanfordEarthR25CancelController constructor.
+   * The StanfordEarthR25ModifyController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
    *   The form builder.
@@ -53,17 +56,18 @@ class StanfordEarthR25CancelController extends ControllerBase {
    *
    * @return array
    */
-  public function cancel($location_id, $event_id, $start) {
+  public function modify($op, $location_id, $event_id, $start) {
     $event = StanfordEarthR25Util::_stanford_r25_user_can_cancel_or_confirm($location_id,
-      $event_id, 'cancel');
+      $event_id, $op);
     if (!$event) {
-      $url = Url::fromRoute('system.403');
-      $response = new RedirectResponse($url->toString());
+      $response = ['#markup' => 'Unable to ' . $op . ' event ' . $event_id];
+      //$url = Url::fromRoute('system.403');
+      //$response = new LocalRedirectResponse($url->toString());
     } else {
-      $response = new AjaxResponse();
       $form_state = new FormState();
       $form_state->addBuildInfo('args',
         [
+          $op,
           $location_id,
           $event_id,
           $start
@@ -78,11 +82,8 @@ class StanfordEarthR25CancelController extends ControllerBase {
         ]
       );
       // Get the modal form using the form builder.
-      $cancel_form = $this->formBuilder->buildForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25CancelForm', $form_state);
-      $response = [$cancel_form];
-      //$modal_form = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25CancelForm', $location_id, $event_id, $start, $event);
-      // Add an AJAX command to open a modal dialog with the form as the content.
-      //$response->addCommand(new OpenModalDialogCommand('Cancel Reservation', $modal_form, ['width' => '800']));
+      $modify_form = $this->formBuilder->buildForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ModifyForm', $form_state);
+      $response = [$modify_form];
     }
     return $response;
   }

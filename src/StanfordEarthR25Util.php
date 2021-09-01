@@ -4,6 +4,7 @@ namespace Drupal\stanford_earth_r25;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
+use Drupal\Core\Messenger\MessengerInterface;
 
 /**
  * Encapsulates information and utility methods.
@@ -181,7 +182,8 @@ class StanfordEarthR25Util {
             $photo = $photo_status['output'];
             $destination = SELF::_stanford_r25_file_path($photo_id);
             if (!file_save_data($photo, $destination, FILE_EXISTS_REPLACE)) {
-              \Drupal::messenger()->addMessage('Unable to save image for R25 Location ' . $space_id, TYPE_ERROR);
+              \Drupal::messenger()->addMessage('Unable to save image for R25 Location ' . $space_id,
+                MessengerInterface::TYPE_ERROR);
               $photo_id = NULL;
             }
           }
@@ -319,7 +321,8 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
       if (empty($result['index']['R25:SPACE_ID']) || !is_array($result['index']['R25:SPACE_ID']) ||
         $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] != $rooms[$room_id]['space_id']
       ) {
-        \Drupal::messenger()->addMessage('Room mismatch for confirm or cancel event.', TYPE_ERROR);
+        \Drupal::messenger()->addMessage('Room mismatch for confirm or cancel event.',
+          MessengerInterface::TYPE_ERROR);
         return FALSE;
       }
 
@@ -407,7 +410,7 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
 
       if ($can_cancel) {
         // if the user can cancel (or confirm) the event, return the event's XML arrays to the caller
-        $output = $result;
+        $output = $r25_result;
       }
       else {
         // otherwise just output false
@@ -421,4 +424,62 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
     }
     return $output;
   }
+
+  // build a comma-delimited string of email addresses associated with a reservation
+  public static function _stanford_r25_build_event_email_list($results, $secgroup_id, $extra_list) {
+
+    $user = \Drupal::currentUser();
+    // get a list of email addresses for approvers for the event's room's security group
+    $mail_array = SELF::_stanford_r25_security_group_emails($secgroup_id);
+
+    // add on any extra email addresses for the room
+    if (!empty($extra_list)) {
+      $extras = explode(',', $extra_list);
+      $mail_array = array_merge($mail_array, $extras);
+    }
+
+    // add the current user to the list
+    if (!empty($user->getEmail())) {
+      $mail_array[] = $user->getEmail();
+    }
+
+    // if the event was not done with quickbook, add the scheduler's email to the list
+    // if the event *was* done with quickbook, pull the scheduler's email id from the event text
+    $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+    $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
+    $quickbook = FALSE;
+    if (!empty($results['index']['R25:ROLE_NAME']) && is_array($results['index']['R25:ROLE_NAME'])) {
+      foreach ($results['index']['R25:ROLE_NAME'] as $key => $value) {
+        if ($results['vals'][$value]['value'] == 'Scheduler') {
+          if ($results['vals'][$results['index']['R25:CONTACT_ID'][$key]]['value'] == $quickbook_id) {
+            $quickbook = TRUE;
+          }
+          else {
+            $mail_array[] = $results['vals'][$results['index']['R25:EMAIL'][$key]]['value'];
+          }
+        }
+      }
+    }
+    if ($quickbook) {
+      if (!empty($results['index']['R25:TEXT_TYPE_NAME']) && is_array($results['index']['R25:TEXT_TYPE_NAME'])) {
+        foreach ($results['index']['R25:TEXT_TYPE_NAME'] as $key => $value) {
+          if ($results['vals'][$value]['value'] == 'Description') {
+            $desc = $results['vals'][$results['index']['R25:TEXT'][$key]]['value'];
+            if (strpos($desc, 'mailto:', 0) !== FALSE) {
+              $mailto_start = strpos($desc, 'mailto:', 0) + 7;
+              $mailto_end = strpos($desc, '"', $mailto_start);
+              $mail_array[] = substr($desc, $mailto_start, $mailto_end - $mailto_start);
+            }
+          }
+        }
+      }
+    }
+
+    // get rid of duplicate email addresses
+    $mail_array = array_unique($mail_array);
+
+    // return the result as a string
+    return implode(', ', $mail_array);
+  }
+
 }

@@ -98,13 +98,15 @@ stanford_earth_r25_location.reservation:
   requirements:
     _permission: 'book r25 rooms'
 
-stanford_earth_r25_location.cancel:
-  path: '/r25/cancel/{location_id}/{event_id}/{start}'
+stanford_earth_r25_location.modify:
+  path: '/r25/modify/{op}/{location_id}/{event_id}/{start}'
   defaults:
-    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25CancelController::cancel'
-    _title: 'Stanford R25 Cancel Reservation'
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ModifyController::modify'
+    _title: 'Stanford R25 Modify Reservation'
   options:
     parameters:
+      op:
+        type: string
       location_id:
         type: string
       event_id:

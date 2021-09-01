@@ -210,19 +210,17 @@ class StanfordEarthR25FeedController extends ControllerBase {
             }
           }
 
-          /*
           if ($can_confirm) {
-            $url = Url::fromUserInput('/r25/' . $room_id . '/confirm_reservation/' . $items[$key]['event_id'] . '/' .
+            $url = Url::fromUserInput('/r25/modify/confirm/' . $room_id . '/' . $items[$key]['event_id'] . '/' .
               $items[$key]['start'])->toString();
             $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to confirm reservation</a>';
           }
           if ($can_cancel) {
-            $url = Url::fromUserInput('/r25/cancel/' . $room_id . '/' . $items[$key]['event_id'] . '/' .
+            $url = Url::fromUserInput('/r25/modify/cancel/' . $room_id . '/' . $items[$key]['event_id'] . '/' .
               $items[$key]['start'])->toString();
             $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to cancel reservation</a>';
           }
-          */
-          
+
           if ($approver) {
             $url = 'https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $items[$key]['event_id'];
             $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to manage in 25Live</a>';
