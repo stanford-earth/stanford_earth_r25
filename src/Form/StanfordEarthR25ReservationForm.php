@@ -377,6 +377,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     else {
       $response->addCommand(new CloseModalDialogCommand());
     }
+    $response->addCommand(new InvokeCommand('body', 'stanfordEarthR25DefaultCursor'));
     return $response;
   }
 

@@ -261,8 +261,9 @@ var calendar;
       }
       calendar.render();
 
-      $('a.r25-ajax-link').click(function(){
-        alert('clicky!');
+      $('.js-form-submit').click(function(){
+        $(this).stanfordEarthR25ProgressCursor();
+        //$('body').css('cursor', 'progress');
       });
 
       $('[id*=edit-stanford-r25-booking].form-time').each(function() {
@@ -333,6 +334,14 @@ var calendar;
       setTimeout(refetchEvents, 5000, sources[0]);
       //sources[0].refetch();
     }
+  };
+
+  $.fn.stanfordEarthR25ProgressCursor = function() {
+    $('body').css('cursor', 'progress');
+  };
+
+  $.fn.stanfordEarthR25DefaultCursor = function() {
+    $('body').css('cursor', 'default');
   };
 
   // unused - but keep around just in case
