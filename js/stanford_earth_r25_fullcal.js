@@ -155,7 +155,7 @@ var calendar;
                 theme: 'stanford-earth-r25',
                 trigger: 'click',
               });
-            }
+             }
           },
           eventSources: [
             {
@@ -166,6 +166,9 @@ var calendar;
               },
             }
           ],
+          //eventSourceSuccess: function(content, xhr) {
+          //  console.log('event source success.');
+          //},
 //          events: {
 //            url: 'r25_feed',
 //            type: 'POST',
@@ -257,6 +260,10 @@ var calendar;
         });
       }
       calendar.render();
+
+      $('a.r25-ajax-link').click(function(){
+        alert('clicky!');
+      });
 
       $('[id*=edit-stanford-r25-booking].form-time').each(function() {
         $(this).change(function () {

@@ -6,6 +6,7 @@ use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\File\FileSystem;
@@ -17,11 +18,15 @@ use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Url;
 
 /**
- * Contains Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm.
+ * Contains Drupal\stanford_earth_r25\Form\StanfordEarthR25CancelForm.
  */
-class StanfordEarthR25ReservationForm extends FormBase {
+class StanfordEarthR25CancelForm extends ConfirmFormBase {
+
+  protected $location_id;
 
   /**
    * {@inheritdoc}
@@ -33,28 +38,20 @@ class StanfordEarthR25ReservationForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $room = NULL, $event_id,
-                            $start = NULL, $event_data = NULL) {
-
-    $result = $event_data;
+  public function buildForm(array $form, FormStateInterface $form_state, $location_id = NULL, $event_id = NULL,
+                            $start = NULL) {
+    $storage = $form_state->getStorage();
+    $result = $storage['stanford_earth_r25']['event_info'];
     $rooms = [];
+    $room_id = $location_id;
+    $this->location_id = $location_id;
     $adminSettings = [];
-    if (!empty($room)) {
-      $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room);
-      $rooms[$room] = $config->getRawData();
+    if (!empty($room_id)) {
+      $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
+      $rooms[$room_id] = $config->getRawData();
       $config = \Drupal::config('stanford_earth_r25.adminsettings');
       $adminSettings = $config->getRawData();
     }
-    $form['#prefix'] = '<div id="modal_cancel_form">';
-    $form['#suffix'] = '</div>';
-
-    // AJAX messages.
-    $form['stanford_r25_ajax_messages'] = [
-      '#type' => 'container',
-      '#attributes' => [
-        'id' => 'stanford-r25-ajax-messages',
-      ],
-    ];
 
     // get the event title from the XML for display
     $title = '';
@@ -73,7 +70,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     $msg = 'Do you want to cancel reservation "';
     if (!empty($title)) {
-      $msg .= check_plain($title);
+      $msg .= Html::escape($title);
     }
     else {
       $msg .= $event_id;
@@ -135,84 +132,31 @@ class StanfordEarthR25ReservationForm extends FormBase {
       );
     }
 
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['send'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Cancel Reservation'),
-      '#attributes' => [
-        'class' => [
-          'use-ajax',
-        ],
-      ],
-      '#ajax' => [
-        'callback' => [$this, 'submitModalFormAjax'],
-        'event' => 'click',
-      ],
-    ];
-
-    $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
-
-    return $form;
-  }
-
-  /**
-   * AJAX callback handler that displays any errors or a success message.
-   */
-  public function submitModalFormAjax(array $form, FormStateInterface $form_state) {
-    $storage = $form_state->getStorage();
-    $r25_messages = [];
-    if (!empty($storage['stanford_earth_r25']['r25_messages'])) {
-      $r25_messages = $storage['stanford_earth_r25']['r25_messages'];
-    }
-    $form_state->setStorage([]);
-
-    $response = new AjaxResponse();
-    // If there are any form errors, re-display the form.
-    if ($form_state->hasAnyErrors()) {
-      $error_list = '<ul style="color:red">';
-      foreach ($form_state->getErrors() as $error_field => $error_value) {
-        $error_list .= '<li>' . $error_value->render() . '</li>';
-      }
-      $error_list .= '</ul>';
-      $form_state->clearErrors();
-      \Drupal::messenger()->deleteAll();
-      $response->addCommand(new HtmlCommand('#stanford-r25-ajax-messages', $error_list));
-      $response->addCommand(new InvokeCommand('#drupal-modal', 'scrollTop', [0]));
-    }
-    else if (!empty($r25_messages))
-    {
-      if (count($r25_messages) == 1) {
-        $msg_list = '<span style="color:red">' . $r25_messages[0] . '</span>';
-      }
-      else {
-        $msg_list = '<ul style="color:red">';
-        foreach ($r25_messages as $r25_message) {
-          $msg_list .= '<li>' . $r25_message . '</li>';
-        }
-        $msg_list .= '</ul>';
-      }
-      $msg = new TranslatableMarkup($msg_list);
-      $response->addCommand(new OpenModalDialogCommand("Booking Result", $msg->render(), ['width' => 800]));
-      $response->addCommand(new InvokeCommand(null, 'stanfordEarthR25Refresh'));
-    }
-    else {
-      $response->addCommand(new CloseModalDialogCommand());
-    }
-    return $response;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // TODO: Implement submitForm() method.
+    $xyz = 1;
+  }
+
+  public function getConfirmText() {
+    return $this->t('Cancel reservation');
+    //return parent::getConfirmText(); // TODO: Change the autogenerated stub
+  }
+
+  public function getCancelText() {
+    return $this->t('Return to calendar');
+  }
+
+  public function getQuestion() {
+    return $this->t('Cancel Reservation?');
+  }
+
+  public function getCancelUrl() {
+    return new Url('entity.stanford_earth_r25_location.calendar',['r25_location' => $this->location_id]);
   }
 
 }
