@@ -1,0 +1,10 @@
+{
+  "name": "stanford-earth/stanford_earth_r25",
+  "description": "Manages room reservations using R25.",
+  "type": "stanford-module",
+  "homepage": "https://github.com/stanford-earth/stanford_earth_r25",
+  "authors": [],
+  "license": "GPL-3.0+",
+  "minimum-stability": "dev",
+  "require": {}
+}
