@@ -110,7 +110,7 @@ stanford_earth_r25_location.*:
               type: boolean
               label: 'Contact attribute'
     auto_billing_code:
-      type string
+      type: string
       label: 'Auto-Bill Rate Group ID'
     location_info:
       type: sequence
