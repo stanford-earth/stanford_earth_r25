@@ -102,17 +102,6 @@ var calendar;
           setCalendar = false;
         }
       }
-      /*
-      if (typeof(calendar) === 'undefined') {
-        console.log('calendar undefined');
-      } else if (typeof(calendar) === 'object') {
-        if (calendar instanceof FullCalendar.Calendar) {
-          console.log('calendar is set');
-        } else {
-          console.log('calendar is something else');
-        }
-      }
-      */
       if (setCalendar) {
         calendar = new FullCalendar.Calendar(calendarEl, {
           schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
@@ -144,6 +133,11 @@ var calendar;
           },
           dayMaxEventRows: true,
           eventDidMount: function (info) {
+            // fc elements appear to be mis-aligned.
+            var fcTop = parseInt(info.el.parentElement.style.top,10) - 12;
+            info.el.parentElement.style.top = fcTop.toString() + 'px';
+            var fcBottom = parseInt(info.el.parentElement.style.bottom, 10) + 12;
+            info.el.parentElement.style.bottom = fcBottom.toString() + 'px';
             if (qtip) {
               var tooltip = new tippy(info.el, {
                 allowHTML: true,
@@ -166,16 +160,6 @@ var calendar;
               },
             }
           ],
-          //eventSourceSuccess: function(content, xhr) {
-          //  console.log('event source success.');
-          //},
-//          events: {
-//            url: 'r25_feed',
-//            type: 'POST',
-//            data: {
-//              room_id: stanford_r25_room,
-//            },
-//          },
           headerToolbar: {
             left: 'today prev,next',
             center: 'title',

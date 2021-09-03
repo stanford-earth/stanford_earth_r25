@@ -136,15 +136,24 @@ class StanfordEarthR25Util {
           }
         }
         // get the room capacity for the layout
-        $room_info['capacity'] = empty($results['index']['R25:LAYOUT_CAPACITY'][$default_layout]) ? NULL :
-          $results['vals'][$results['index']['R25:LAYOUT_CAPACITY'][$default_layout]]['value'];
+        $room_info['capacity'] = NULL;
+        if (!empty($results['index']['R25:LAYOUT_CAPACITY'][$default_layout])) {
+          $room_info['capacity'] = $results['vals'][$results['index']['R25:LAYOUT_CAPACITY'][$default_layout]]['value'];
+        }
         // get any comments and instructions about the room
-        $room_info['comments'] = empty($results['index']['R25:COMMENTS'][0]) ? NULL : $results['vals'][$results['index']['R25:COMMENTS'][0]]['value'];
-        $room_info['layout_name'] = empty($results['index']['R25:LAYOUT_NAME'][$default_layout]) ? NULL :
-          $results['vals'][$results['index']['R25:LAYOUT_NAME'][$default_layout]]['value'];
-        $room_info['layout_instruction'] = empty($results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]) ? NULL :
-          empty($results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value']) ? NULL :
-            $results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value'];
+        $room_info['comments'] = NULL;
+        if (!empty($results['index']['R25:COMMENTS'][0])) {
+          $room_info['comments'] = $results['vals'][$results['index']['R25:COMMENTS'][0]]['value'];
+        }
+        $room_info['layout_name'] = NULL;
+        if (!empty($results['index']['R25:LAYOUT_NAME'][$default_layout])) {
+          $room_info['layout_name'] = $results['vals'][$results['index']['R25:LAYOUT_NAME'][$default_layout]]['value'];
+        }
+        $room_info['layout_instruction'] = NULL;
+        if (!empty($results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]) &&
+          !empty($results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value'])) {
+          $room_info['layout_instruction'] = $results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value'];
+        }
         // build a list of features for the room layout
         $layout_features = '';
         $first_feature = TRUE;
@@ -157,7 +166,10 @@ class StanfordEarthR25Util {
             $first_feature = FALSE;
           }
         }
-        $room_info['layout_features'] = empty($layout_features) ? NULL : $layout_features;
+        $room_info['layout_features'] = NULL;
+        if (!empty($layout_features)) {
+          $room_info['layout_features'] = $layout_features;
+        }
         // build a list of categories for the room
         $layout_categories = '';
         $first_category = TRUE;
@@ -170,7 +182,10 @@ class StanfordEarthR25Util {
             $first_category = FALSE;
           }
         }
-        $room_info['layout_categories'] = empty($layout_categories) ? NULL : $layout_categories;
+        $room_info['layout_categories'] = NULL;
+        if (!empty($layout_categories)) {
+          $room_info['layout_categories']= $layout_categories;
+        }
 
         // get a room photo if available and store in Drupal files
         $photo_id = NULL;
@@ -318,8 +333,8 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
         $rooms[$room_id] = $config->getRawData();
       }
 
-      if (empty($result['index']['R25:SPACE_ID']) || !is_array($result['index']['R25:SPACE_ID']) ||
-        $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] != $rooms[$room_id]['space_id']
+      if ((empty($result['index']['R25:SPACE_ID'])) || (!is_array($result['index']['R25:SPACE_ID'])) ||
+        ($result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] != $rooms[$room_id]['space_id'])
       ) {
         \Drupal::messenger()->addMessage('Room mismatch for confirm or cancel event.',
           MessengerInterface::TYPE_ERROR);
