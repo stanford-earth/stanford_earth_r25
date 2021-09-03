@@ -183,11 +183,11 @@ class StanfordEarthR25LocationForm extends EntityForm {
     );
     // whether to email members of the security group and additional email list when an event is canceled or confirmed
     // through this website
-    $form['email_confirms_and_cancels'] = array(
+    $form['email_cancellations'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Email cancellations to approvers'),
       '#return_value' => 1,
-      '#default_value' => $location->get('email_confirms_and_cancels'),
+      '#default_value' => $location->get('email_cancellations'),
       '#description' => $this->t('Check if room approvers should receive an email when a user self-service cancels a reservation.'),
     );
     // additional email addresses to get confirm,cancel, and tentative reservation emails.

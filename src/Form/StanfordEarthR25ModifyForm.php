@@ -89,8 +89,8 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $msg .= $event_id;
     }
     $msg .= '"';
-    if (!empty($rooms[$room_id]['display_name'])) {
-      $msg .= ' in room ' . $rooms[$room_id]['display_name'];
+    if (!empty($rooms[$room_id]['label'])) {
+      $msg .= ' in room ' . $rooms[$room_id]['label'];
     }
     if (!empty($start)) {
       $startdate = DrupalDateTime::createFromFormat(DATE_W3C, $start);
@@ -257,7 +257,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
 
       $body = array();
       $body[] = 'A Room Reservation ' . $opout . ' request was sent by ' . $user->getDisplayName();
-      $body[] = ' for "' . $title . '" in room ' . $rooms[$room_id]['display_name'];
+      $body[] = ' for "' . $title . '" in room ' . $rooms[$room_id]['label'];
       $startdate = DrupalDateTime::createFromFormat(DATE_W3C, $this->start);
       if ($event_count > 1) {
         if ($user_input['series'] == 1) {
