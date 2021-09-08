@@ -40,6 +40,20 @@ function stanford_earth_r25_mail($key, array &$message, array $params) {
   }
 }
 
+/**
+ * Hook to establish twig template for module.
+ *
+ * @param array $existing
+ *   Array of existing implementations.
+ * @param string $type
+ *   How the theme is being implemented.
+ * @param string $theme
+ *   The name of the theme being implemented.
+ * @param string $path
+ *   The directory path of the module.
+ * @return array
+ *   Theme template information.
+ */
 function stanford_earth_r25_theme($existing, $type, $theme, $path) {
 
   return [
@@ -63,15 +77,25 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_element_info_alter().
+ *
+ * @param array $types
+ *   Array of form fields that can be altered.
  */
 function stanford_earth_r25_element_info_alter(array &$types) {
+  // Set process callback for datetime field being used in reservations.
   $types['datetime']['#process'][] = '_stanford_earth_r25_datetime_set_format';
 }
 
 /**
- * Element process callback for datetime fields.
+ * Process callback for datetime form fields.
+ *
+ * @param array $element
+ *   The form field element being processed.
+ * @return array
+ *   The modified form element.
  */
 function _stanford_earth_r25_datetime_set_format($element) {
+  // Remove seconds in browsers that support HTML5 type=date.
   if ($element['#date_time_element'] !== 'none') {
     $element['#date_time_format'] = 'H:i';
   }
@@ -80,9 +104,7 @@ function _stanford_earth_r25_datetime_set_format($element) {
     $parts = array_splice($parts, 0, 2);
     $element['time']['#value'] = implode(':', $parts);
   }
-  // Remove seconds in browsers that support HTML5 type=date.
-
-  // Remove seconds in browsers that support HTML5 type=date.
+  // Set the keyboard step for time fields to 30 minutes.
   $element['time']['#attributes']['step'] = '1800';
   return $element;
 }

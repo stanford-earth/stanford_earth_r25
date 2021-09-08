@@ -3,17 +3,10 @@
 namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Form\FormState;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
-use Drupal\Core\Url;
-use Drupal\Core\Routing\LocalRedirectResponse;
 
 /**
  * Provides a reservation cancel/modify page.
@@ -55,30 +48,30 @@ class StanfordEarthR25ModifyController extends ControllerBase {
    * Returns a calendar page render array.
    *
    * @return array
+   *   Page markup.
    */
   public function modify($op, $location_id, $event_id, $start) {
-    $event = StanfordEarthR25Util::_stanford_r25_user_can_cancel_or_confirm($location_id,
+    $event = StanfordEarthR25Util::stanfordR25UserCanCancelOrConfirm($location_id,
       $event_id, $op);
     if (!$event) {
       $response = ['#markup' => 'Unable to ' . $op . ' event ' . $event_id];
-      //$url = Url::fromRoute('system.403');
-      //$response = new LocalRedirectResponse($url->toString());
-    } else {
+    }
+    else {
       $form_state = new FormState();
       $form_state->addBuildInfo('args',
         [
           $op,
           $location_id,
           $event_id,
-          $start
+          $start,
         ]
       );
       $form_state->setStorage(
         [
           'stanford_earth_r25' =>
             [
-              'event_info' => $event
-            ]
+              'event_info' => $event,
+            ],
         ]
       );
       // Get the modal form using the form builder.

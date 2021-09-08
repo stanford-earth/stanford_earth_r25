@@ -54,6 +54,14 @@
   padding-bottom: 10px;
 }
 
+.r25-booking-success {
+  color: green;
+}
+
+.r25-booking-failure {
+  color: red;
+}
+
 .tippy-box[data-theme~='stanford-earth-r25'] {
   background-color: lightgoldenrodyellow;
   color: black;

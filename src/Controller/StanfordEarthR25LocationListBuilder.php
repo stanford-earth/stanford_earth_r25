@@ -4,7 +4,6 @@ namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Url;
 
 /**
  * Provides a listing of Stanford Earth R25 Locations.
@@ -30,20 +29,13 @@ class StanfordEarthR25LocationListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
- /*
-    $row['label'] = [
-      '#type' => 'link',
-      '#url' => Url::fromUserInput('/r25/' . $entity->id() . '/r25_feed'),
-      '#title' => $entity->label(),
-    ];
-    //'<a href="https://ksharp-earth.stanford.edu/r25/'.$entity->id().'/calendar">'.$entity->label().'</a>';
- */
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
     $caltype = $entity->get('caltype');
     if ($caltype == 1) {
       $caltype = '25Live Publisher';
-    } else {
+    }
+    else {
       $caltype = 'Fullcalendar';
     }
     $row['caltype'] = $caltype;
@@ -51,24 +43,22 @@ class StanfordEarthR25LocationListBuilder extends ConfigEntityListBuilder {
     $displayType = $entity->get('displaytype');
     if ($displayType == 0) {
       $displayType = 'Disabled';
-    } else if ($displayType == 1) {
+    }
+    elseif ($displayType == 1) {
       $displayType = 'Read-Only Calendar';
-    } else if ($displayType == 2) {
+    }
+    elseif ($displayType == 2) {
       $displayType = 'Tentative Bookings';
-    } else if ($displayType == 3) {
+    }
+    elseif ($displayType == 3) {
       $displayType = 'Confirmed Bookings';
-    } else{
+    }
+    else {
       $displayType = 'Unknown';
     }
     $row['displaytype'] = $displayType;
     $row['approver_secgroup_name'] = $entity->get('approver_secgroup_name');
     $row['updated'] = $entity->get('updated');
-    /*
-    $header['space_id'] = $this->t('25Live Space ID');
-    $header['displaytype'] = $this->('Reservation Type');
-    $header['updated'] = $this->('Last updated');
-*/
-    // You probably want a few more properties here...
 
     return $row + parent::buildRow($entity);
   }

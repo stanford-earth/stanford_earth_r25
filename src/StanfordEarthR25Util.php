@@ -3,7 +3,6 @@
 namespace Drupal\stanford_earth_r25;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 use Drupal\Core\Messenger\MessengerInterface;
 
 /**
@@ -11,13 +10,13 @@ use Drupal\Core\Messenger\MessengerInterface;
  */
 class StanfordEarthR25Util {
 
-  // define room status codes as constants
+  // Define room status codes as constants.
   const STANFORD_R25_ROOM_STATUS_DISABLED = 0;
   const STANFORD_R25_ROOM_STATUS_READONLY = 1;
   const STANFORD_R25_ROOM_STATUS_TENTATIVE = 2;
   const STANFORD_R25_ROOM_STATUS_CONFIRMED = 3;
 
-  // define authentication methods as constants
+  // Define authentication methods as constants.
   const STANFORD_R25_AUTH_DRUPAL_ACCT = 1;
   const STANFORD_R25_AUTH_EXTERN_ACCT = 2;
   const STANFORD_R25_AUTH_EITHER_ACCT = 3;
@@ -28,7 +27,7 @@ class StanfordEarthR25Util {
    * @param string $inStr
    *   Input string from text area.
    */
-  public static function parse_blackout_dates($inStr = '') {
+  public static function stanfordR25ParseBlackoutDates($inStr = '') {
     $blackouts = [];
     $blackout_text = trim($inStr);
     if (!empty($blackout_text)) {
@@ -44,12 +43,20 @@ class StanfordEarthR25Util {
     return $blackouts;
   }
 
-  // retrieve the 25Live security group id given the security group name
-  public static function _stanford_r25_secgroup_id($secgroup) {
+  /**
+   * Retrieve the 25Live security group id given the security group name.
+   *
+   * @param string $secgroup
+   *   R25 Security Group Name.
+   *
+   * @return string
+   *   Security group ID number.
+   */
+  public static function stanfordR25SecgroupId(string $secgroup) {
     $groupid = 0;
     if (!empty($secgroup)) {
       $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-      $r25_result = $r25_service->r25_api_call('secgroup', $secgroup);
+      $r25_result = $r25_service->stanfordR25ApiCall('secgroup', $secgroup);
       if ($r25_result['status']['status'] === TRUE) {
         $results = $r25_result['output'];
         if (!empty($results['vals'][$results['index']['R25:SECURITY_GROUP_ID'][0]]['value'])) {
@@ -60,17 +67,27 @@ class StanfordEarthR25Util {
     return $groupid;
   }
 
-  // this function returns an array of email addresses for a 25Live security group
-  // whose id is stored with a room configuration. The array will be stored in the
-  // Drupal cache table unless forced to refresh with the $reset paramater. Saving
-  // the room configuration in its admin page will reset this cached data.
-  public static function _stanford_r25_security_group_emails($secgroup_id = NULL, $reset = FALSE) {
+  /**
+   * Function returns an array of email addresses for a 25Live security group.
+   *
+   * The result array will be stored in the Drupal cache table unless forced to
+   * refresh with the $reset paramater. Savin the room configuration in its
+   * admin page will reset this cached data.
+   *
+   * @param string $secgroup_id
+   *   R25 Security Group id.
+   * @param bool $reset
+   *   Get the list from cache unless $reset = TRUE.
+   *
+   * @return array
+   *   Array of security group email addresses.
+   */
+  public static function stanfordR25SecurityGroupEmails(string $secgroup_id = NULL, $reset = FALSE) {
     if (empty($secgroup_id)) {
       return [];
     }
 
-    // if the information is in the cache and we're not resetting it
-    // then return it from the cache
+    // Get information from cache unless we are resetting it.
     $cid = 'stanford_r25:approvers:' . $secgroup_id;
     if (!$reset) {
       if ($cache = \Drupal::cache()->get($cid)) {
@@ -82,7 +99,7 @@ class StanfordEarthR25Util {
     // group members from the 25Live API and store them in the cache.
     $list = [];
     $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-    $r25_result = $r25_service->r25_api_call('r25users', $secgroup_id);
+    $r25_result = $r25_service->stanfordR25ApiCall('r25users', $secgroup_id);
     if ($r25_result['status']['status'] === TRUE) {
       $sec_result = $r25_result['output'];
       if (!empty($sec_result['index']['R25:CONTACT_ID']) &&
@@ -104,8 +121,16 @@ class StanfordEarthR25Util {
     return $list;
   }
 
-  // builds a URI for room photos pulled from 25Live using directory set in config pages
-  public static function _stanford_r25_file_path($photo_id) {
+  /**
+   * Builds URI for room photo pulled from 25Live using directory set in config.
+   *
+   * @param string $photo_id
+   *   The photo_id.
+   *
+   * @return string
+   *   The photo URI.
+   */
+  public static function stanfordR25FilePath($photo_id) {
     $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
     $image_directory = $config->get('stanford_r25_room_image_directory');
     if (empty($image_directory)) {
@@ -114,19 +139,25 @@ class StanfordEarthR25Util {
     return 'public://' . $image_directory . '/R25_' . $photo_id . '.jpg';
   }
 
-
-  // query the 25Live database for a bunch of information about the room
-  // and return in an array. Also save room image.
-  public static function _stanford_r25_get_room_info($space_id = NULL) {
+  /**
+   * Get room information from its configuration.
+   *
+   * @param string $space_id
+   *   The room id for the reservation.
+   *
+   * @return array
+   *   The room info array.
+   */
+  public static function stanfordR25GetRoomInfo($space_id = NULL) {
     $room_info = [];
     $default_layout = 0;
     if (!empty($space_id)) {
-      // get the room info using the api
+      // Get the room info using the api.
       $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-      $r25_result = $r25_service->r25_api_call('roominfo', $space_id);
+      $r25_result = $r25_service->stanfordR25ApiCall('roominfo', $space_id);
       if ($r25_result['status']['status'] === TRUE) {
         $results = $r25_result['output'];
-        // identify the default room layout, if one is defined, otherwise use the first one
+        // Identify default room layout, if defined, else use the 1st one.
         if (!empty($results['index']['R25:DEFAULT_LAYOUT']) && is_array($results['index']['R25:DEFAULT_LAYOUT'])) {
           foreach ($results['index']['R25:DEFAULT_LAYOUT'] as $dlkey => $dlval) {
             if ($results['vals'][$dlval]['value'] == 'T') {
@@ -135,12 +166,12 @@ class StanfordEarthR25Util {
             }
           }
         }
-        // get the room capacity for the layout
+        // Get the room capacity for the layout.
         $room_info['capacity'] = NULL;
         if (!empty($results['index']['R25:LAYOUT_CAPACITY'][$default_layout])) {
           $room_info['capacity'] = $results['vals'][$results['index']['R25:LAYOUT_CAPACITY'][$default_layout]]['value'];
         }
-        // get any comments and instructions about the room
+        // Get any comments and instructions about the room.
         $room_info['comments'] = NULL;
         if (!empty($results['index']['R25:COMMENTS'][0])) {
           $room_info['comments'] = $results['vals'][$results['index']['R25:COMMENTS'][0]]['value'];
@@ -154,7 +185,7 @@ class StanfordEarthR25Util {
           !empty($results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value'])) {
           $room_info['layout_instruction'] = $results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value'];
         }
-        // build a list of features for the room layout
+        // Build a list of features for the room layout.
         $layout_features = '';
         $first_feature = TRUE;
         if (!empty($results['index']['R25:FEATURE_NAME'][0])) {
@@ -170,7 +201,7 @@ class StanfordEarthR25Util {
         if (!empty($layout_features)) {
           $room_info['layout_features'] = $layout_features;
         }
-        // build a list of categories for the room
+        // Build a list of categories for the room.
         $layout_categories = '';
         $first_category = TRUE;
         if (!empty($results['index']['R25:CATEGORY_NAME'][0])) {
@@ -184,18 +215,18 @@ class StanfordEarthR25Util {
         }
         $room_info['layout_categories'] = NULL;
         if (!empty($layout_categories)) {
-          $room_info['layout_categories']= $layout_categories;
+          $room_info['layout_categories'] = $layout_categories;
         }
 
-        // get a room photo if available and store in Drupal files
+        // Get a room photo if available and store in Drupal files.
         $photo_id = NULL;
         if (!empty($results['index']['R25:LAYOUT_PHOTO_ID'][$default_layout])
         ) {
           $photo_id = $results['vals'][$results['index']['R25:LAYOUT_PHOTO_ID'][$default_layout]]['value'];
-          $photo_status = $r25_service->r25_api_call('roomphoto', $photo_id);
+          $photo_status = $r25_service->stanfordR25ApiCall('roomphoto', $photo_id);
           if ($photo_status['status']['status'] === TRUE) {
             $photo = $photo_status['output'];
-            $destination = SELF::_stanford_r25_file_path($photo_id);
+            $destination = self::stanfordR25FilePath($photo_id);
             if (!file_save_data($photo, $destination, FILE_EXISTS_REPLACE)) {
               \Drupal::messenger()->addMessage('Unable to save image for R25 Location ' . $space_id,
                 MessengerInterface::TYPE_ERROR);
@@ -212,88 +243,75 @@ class StanfordEarthR25Util {
     return $room_info;
   }
 
-// function that checks if the current user can book a room, based on
-// room machine_id and how the room is authenticated
+  /**
+   * Check if current user can book a specific room.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   *   Room entity to compare against the current user.
+   *
+   * @return array
+   *   Array, once containing authenticion info but now just bookable boolean.
+   */
+  public static function stanfordR25CanBookRoom(EntityInterface $r25_location = NULL) {
 
-public static function _stanford_r25_can_book_room(EntityInterface $r25_location = NULL) {
-
-    // default return array; user is an internal (Drupal) user
-    // who can not book the room
+    // Default return array; user is an internal (Drupal) user who can not book.
     $can_book = [
       'can_book' => FALSE,
       'auth' => 'internal',
       'external_module' => '',
-      'external_acct' => FALSE
+      'external_acct' => FALSE,
     ];
-    $room_id = null;
+    $room_id = NULL;
     if (!empty($r25_location)) {
       $room_id = $r25_location->id();
     }
-    if (!empty($room_id)) {  // only check if we have a room id, obviously
+    // Only check if we have a room id, obviously.
+    if (!empty($room_id)) {
       $authentication_type = $r25_location->get('authentication_type');
-      if (!empty($authentication_type)) {   // only continue if room has an auth type
-        // if the room uses internal Drupal accounts, simply check if the current user has the permission
-        // if the user is Drupal user 1 or can administer rooms, let them approve
-        // and cancel events
+      if (!empty($authentication_type)) {
+        // Only continue if room has an auth type and check user permissions.
         $user = \Drupal::currentUser();
-        if (($authentication_type == SELF::STANFORD_R25_AUTH_DRUPAL_ACCT ||
-            $authentication_type == SELF::STANFORD_R25_AUTH_EITHER_ACCT) &&
-          $user->hasPermission('book r25 rooms'))
-        {
+        if (($authentication_type == self::STANFORD_R25_AUTH_DRUPAL_ACCT ||
+            $authentication_type == self::STANFORD_R25_AUTH_EITHER_ACCT) &&
+            $user->hasPermission('book r25 rooms')) {
           $can_book['can_book'] = TRUE;
         }
-        /* TBD
-        else {
-          // if the user can't book by Drupal permission, and the room supports
-          // external accounts, then check the user that way
-          if ($rooms[$room_id]['authentication'] == STANFORD_R25_AUTH_EXTERN_ACCT ||
-            $rooms[$room_id]['authentication'] == STANFORD_R25_AUTH_EITHER_ACCT
-          ) {
-            $can_book['auth'] = 'external';
-            // see if any module implements hook_stanford_r25_external_user
-            $externs = module_implements('stanford_r25_external_user');
-            if (!empty($externs) && is_array($externs)) {
-              // if so, just use the first one returned
-              $can_book['external_module'] = $externs[0];
-              // call the stanford_r25_external_user hook for the module found
-              // it will return an array of user contact info if okay, or false if not
-              $external_acct = module_invoke($externs[0], 'stanford_r25_external_user');
-              if (!empty($external_acct)) {
-                // we got back a non-empty array, so assume an authenticated user who can book the room
-                $can_book['can_book'] = TRUE;
-                $can_book['external_acct'] = $external_acct;
-              }
-            }
-          }
-        }
-        */
       }
     }
-    return $can_book; // return the array defined above
-
+    // Return the array defined above.
+    return $can_book;
   }
 
-  // function to check if a given date is blacked out based on blackout dates
-  // and current date.
-  // $date is given as a UNIX timestamp
-  public static function _stanford_r25_date_blacked_out($date) {
+  /**
+   * Check if given date is blacked out.
+   *
+   * @param int $date
+   *   date to check - given as UNIX timestamp.
+   *
+   * @return bool
+   *   return TRUE if date is blacked out, false otherwise.
+   */
+  public static function stanfordR25DateBlackedOut($date) {
 
-    // if an empty date is given, return false
+    // If an empty date is given, return false.
     if (empty($date)) {
       return FALSE;
     }
 
-    // if I'm currently in a blackout period, the requested date doesn't matter - we consider it blacked out.
-    // if I'm *not* currently in a blackout period, then the requested date has to be before the next blackout starts.
-    // if I'm currently past the last possible blackout, consider me blacked out so an admin will update the dates.
+    // If I'm currently in a blackout period, the requested date doesn't matter
+    // - we consider it blacked out.
+    // If I'm *not* currently in a blackout period, then the requested date has
+    // to be before the next blackout starts.
+    // If I'm currently past the last possible blackout, consider me blacked out
+    // so an admin will update the dates.
     $blackouts = \Drupal::config('stanford_earth_r25.adminsettings')->get('stanford_r25_blackout_dates');
     if (empty($blackouts)) {
       $blackouts = [];
     }
     $blacked_out = TRUE;
 
-    // first find out if we are currently in a blackout
-    // if not, find out when the next blackout starts
+    // First find out if we are currently in a blackout
+    // if not, find out when the next blackout starts.
     $cur = time();
     $cur_blackout = TRUE;
     $next_blackout = 0;
@@ -310,23 +328,36 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
       }
     }
 
-    // now see if the requested date is before the next blackout
+    // Now see if the requested date is before the next blackout.
     if (!$cur_blackout && $date < $next_blackout) {
       $blacked_out = FALSE;
     }
     return $blacked_out;
   }
 
-  public static function _stanford_r25_user_can_cancel_or_confirm($room_id, $event_id, $op) {
-    // first get the event's XML from 25Live
+  /**
+   * Determine if user can confirm or cancel a reservation.
+   *
+   * @param string $room_id
+   *   The room id for the reservation.
+   * @param string $event_id
+   *   The R25-generated event id.
+   * @param string $op
+   *   Whether we are confirming or canceling.
+   *
+   * @return array
+   *   If the user can perform the operation, return info about the event.
+   */
+  public static function stanfordR25UserCanCancelOrConfirm($room_id, $event_id, $op) {
+    // First get the event's XML from 25Live.
     $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-    $r25_result = $r25_service->r25_api_call('event-get', $event_id);
-    $result = false;
+    $r25_result = $r25_service->stanfordR25ApiCall('event-get', $event_id);
+    $result = FALSE;
     if ($r25_result['status']['status'] === TRUE) {
       $result = $r25_result['output'];
     }
     if ($result) {
-      // make sure the event is for the requested room so nobody pulls a fast one.
+      // Ensure the event is for the requested room so nobody pulls a fast one.
       $rooms = [];
       if (!empty($room_id)) {
         $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
@@ -341,23 +372,26 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
         return FALSE;
       }
 
-      // default is that user can't do operation (confirm or cancel)
+      // Default is that user can't do operation (confirm or cancel).
       $can_cancel = FALSE;
       global $user;
 
-      // if the user is user1 or has administer rights in Drupal, let them do operation
+      // If the user is user1 or has administer rights in Drupal,
+      // let them do operation.
       $user = \Drupal::currentUser();
       if ($user->id() == 1 || $user->hasPermission('administer stanford r25')) {
         $can_cancel = TRUE;
       }
       else {
-        // allow users to cancel events they created, either through this module or directly in 25Live
+        // Allow users to cancel events they created, either through this module
+        // or directly in 25Live.
         if (!empty($user->getEmail()) && $op === 'cancel') {
-          // see if requestor email matches or is quickbook. If quickbook, we must check the user's email differently
+          // See if requestor email matches or is quickbook.
+          // If quickbook, we must check the user's email differently.
           $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
           $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
 
-          // get the R25 user id and email address for the user that scheduled the event.
+          // Get the R25 user id and email address for the event scheduler.
           $scheduler_id = 0;
           $scheduler_email = '';
           if (!empty($result['index']['R25:ROLE_NAME']) && is_array($result['index']['R25:ROLE_NAME'])) {
@@ -379,7 +413,8 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
           }
 
           if ($scheduler_id > 0) {
-            // if the reservation was made with quickbook, we need to pull the requestor's email address out of the event description
+            // If the reservation was made with quickbook, we need to pull the
+            // requestor's email address out of the event description.
             if ($quickbook_id == $scheduler_id) {
               $scheduler_email = '';
               if (!empty($result['index']['R25:TEXT_TYPE_NAME']) && is_array($result['index']['R25:TEXT_TYPE_NAME'])) {
@@ -403,7 +438,8 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
               }
             }
 
-            // if the Drupal user's email address is the same as the 25Live scheduler's, then the user can cancel the event.
+            // If the Drupal user's email address is the same as the 25Live
+            // scheduler's, then the user can cancel the event.
             if (!empty($scheduler_email) && $user->getEmail() === $scheduler_email) {
               $can_cancel = TRUE;
             }
@@ -411,55 +447,70 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
         }
       }
 
-      // if $can_cancel is false, we should check if the user is in a security group that can still be
-      // allowed to cancel or confirm the event
+      // If $can_cancel is false, we should check if the user is in a security
+      // group that can still be allowed to cancel or confirm the event.
       if (!$can_cancel) {
-        // if the room has a security group set for event confirmation, we have the group id stored in the room array
+        // If the room has a security group set for event confirmation,
+        // we have the group id stored in the room array.
         if (!empty($rooms[$room_id]['approver_secgroup_id'])) {
-          // get an array of email addresses for the people in the room's approver security group
-          $approvers = StanfordEarthR25Util::_stanford_r25_security_group_emails($rooms[$room_id]['approver_secgroup_id']);
-          // see if the Drupal user's email address is in the array of approvers
+          // Get an array of email addresses for the people in the room's
+          // approver security group.
+          $approvers = StanfordEarthR25Util::stanfordR25SecurityGroupEmails($rooms[$room_id]['approver_secgroup_id']);
+          // See if the user's email address is in the array of approvers.
           $can_cancel = in_array($user->getEmail(), $approvers);
         }
       }
 
       if ($can_cancel) {
-        // if the user can cancel (or confirm) the event, return the event's XML arrays to the caller
+        // If the user can cancel (or confirm) the event,
+        // return the event's XML arrays to the caller.
         $output = $r25_result;
       }
       else {
-        // otherwise just output false
+        // Otherwise just output false.
         $output = FALSE;
       }
     }
     else {
-      // set an error message if we couldn't contact 25Live.
+      // Set an error message if we couldn't contact 25Live.
       \Drupal::messenger()->addMessage('Unable to retrieve data from 25Live. Please try again later.', TYPE_ERROR);
       $output = FALSE;
     }
     return $output;
   }
 
-  // build a comma-delimited string of email addresses associated with a reservation
-  public static function _stanford_r25_build_event_email_list($results, $secgroup_id, $extra_list) {
+  /**
+   * Build comma-delimited string of email addrs associated with reservation.
+   *
+   * @param array $results
+   *   Results data from R25 API call.
+   * @param string $secgroup_id
+   *   R25 security group id.
+   * @param string $extra_list
+   *   Additional email addresses to attach.
+   *
+   * @return string
+   *   Comma delimited list of email addresses
+   */
+  public static function stanfordR25BuildEventEmailList(array $results, $secgroup_id, $extra_list) {
 
     $user = \Drupal::currentUser();
-    // get a list of email addresses for approvers for the event's room's security group
-    $mail_array = SELF::_stanford_r25_security_group_emails($secgroup_id);
+    // Get list of email addresses for approvers of the room's security group.
+    $mail_array = self::stanfordR25SecurityGroupEmails($secgroup_id);
 
-    // add on any extra email addresses for the room
+    // Add on any extra email addresses for the room.
     if (!empty($extra_list)) {
       $extras = explode(',', $extra_list);
       $mail_array = array_merge($mail_array, $extras);
     }
 
-    // add the current user to the list
+    // Add the current user to the list.
     if (!empty($user->getEmail())) {
       $mail_array[] = $user->getEmail();
     }
 
-    // if the event was not done with quickbook, add the scheduler's email to the list
-    // if the event *was* done with quickbook, pull the scheduler's email id from the event text
+    // If event was not done with quickbook, add scheduler's email to the list.
+    // If event *was* done with quickbook, find scheduler's email id in event.
     $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
     $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
     $quickbook = FALSE;
@@ -490,10 +541,10 @@ public static function _stanford_r25_can_book_room(EntityInterface $r25_location
       }
     }
 
-    // get rid of duplicate email addresses
+    // Get rid of duplicate email addresses.
     $mail_array = array_unique($mail_array);
 
-    // return the result as a string
+    // Return the result as a string.
     return implode(', ', $mail_array);
   }
 

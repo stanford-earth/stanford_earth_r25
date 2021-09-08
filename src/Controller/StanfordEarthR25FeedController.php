@@ -4,18 +4,93 @@ namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
-use Drupal\Core\Mail;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Mail\MailFormatHelper;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
+use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
+
 /**
  * Provide R25 event feed by location to fullcalendar js.
  */
 class StanfordEarthR25FeedController extends ControllerBase {
 
-  private function _stanford_r25_feed_get_value(&$results, $name, $key) {
+  /**
+   * Page cache kill switch.
+   *
+   * @var Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   *   The kill switch service.
+   */
+  protected $killSwitch;
+
+  /**
+   * Config factory.
+   *
+   * @var Drupal\Core\Config\ConfigFactory
+   *   The config factory service.
+   */
+  protected $configFactory;
+
+  /**
+   * Current user.
+   *
+   * @var Drupal\Core\Session\AccountInterface
+   *   The current user.
+   */
+  protected $user;
+
+  /**
+   * Stanford R25 API Service.
+   *
+   * @var Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
+   */
+  protected $r25Service;
+
+  /**
+   * StanfordEarthR25FeedController constructor.
+   */
+  public function __construct(KillSwitch $killSwitch,
+                              ConfigFactory $configFactory,
+                              AccountInterface $user,
+                              StanfordEarthR25Service $r25Service) {
+    $this->killSwitch = $killSwitch;
+    $this->configFactory = $configFactory;
+    $this->user = $user;
+    $this->r25Service = $r25Service;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('page_cache_kill_switch'),
+      $container->get('config.factory'),
+      $container->get('current_user'),
+      $container->get('stanford_earth_r25.r25_call')
+    );
+  }
+
+  /**
+   * Return a value from the API XML results.
+   *
+   * @param array $results
+   *   Results array from the API call.
+   * @param string $name
+   *   Index name of the result we're seeking.
+   * @param string $key
+   *   Index key of the result we're seeking.
+   *
+   * @return string
+   *   API result value.
+   */
+  private function stanfordR25FeedGetValue(array &$results, $name, $key) {
     $return_val = '';
     if (isset($results['vals'][$results['index'][$name][$key]]['value'])) {
       $return_val = $results['vals'][$results['index'][$name][$key]]['value'];
@@ -31,23 +106,22 @@ class StanfordEarthR25FeedController extends ControllerBase {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The currently processing request.
    *
-   * @return markup
+   * @return Symfony\Component\HttpFoundation\JsonResponse
+   *   JsonRespone object with calendar feed data.
    */
   public function feed(EntityInterface $r25_location, Request $request) {
 
-    $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-
-    // format the request to the 25Live API from either POST or GET arrays
+    // Format the request to the 25Live API from either POST or GET arrays.
     $room_id = $r25_location->get('id');
     $space_id = $r25_location->get('space_id');
     if (empty($room_id) || empty($space_id)) {
-      throw new Exception\NotFoundHttpException();
+      throw new NotFoundHttpException();
     }
     $params = [];
     if ($request->getMethod() == 'GET') {
       $params = $request->query->all();
     }
-    else if ($request->getMethod() == 'POST') {
+    elseif ($request->getMethod() == 'POST') {
       $params = $request->request->all();
     }
     $start = '';
@@ -55,7 +129,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
     if (!empty($params['start'])) {
       $start = str_replace('-', '', $params['start']);
       if (strpos($start, "T") !== FALSE) {
-        $start = substr($start,0, strpos($start, "T"));
+        $start = substr($start, 0, strpos($start, "T"));
       }
     }
     if (!empty($params['end'])) {
@@ -65,45 +139,45 @@ class StanfordEarthR25FeedController extends ControllerBase {
       }
     }
 
-    // depending on the logged in user requesting this information, we want to include
-    // links to contact the event scheduler, or to confirm or cancel the event
-    $approver_list = array();
+    // Depending on the logged in user requesting this information, we want to
+    // include links to contact the event scheduler, or to confirm or cancel
+    // the event.
+    $approver_list = [];
     $secgroup = $r25_location->get('approver_secgroup_id');
     if (!empty($secgroup)) {
-      $approver_list = StanfordEarthR25Util::_stanford_r25_security_group_emails($secgroup);
+      $approver_list = StanfordEarthR25Util::stanfordR25SecurityGroupEmails($secgroup);
     }
 
     $approver = FALSE;
-    // if the user is Drupal user 1 or can administer rooms, let them approve
-    // and cancel events
-    $user = \Drupal::currentUser();
-    if ($user->hasPermission('administer stanford r25') ||
-      ($user->isAuthenticated() &&
-        in_array($user->getEmail(), $approver_list))) {
+    // If the user is Drupal user 1 or can administer rooms, let them approve
+    // and cancel events.
+    if ($this->user->hasPermission('administer stanford r25') ||
+      ($this->user->isAuthenticated() &&
+        in_array($this->user->getEmail(), $approver_list))) {
       $approver = TRUE;
     }
 
-    // build the 25Live API request with the space id for the requested room and
-    // for the start and end dates requested by fullcalendar
+    // Build the 25Live API request with the space id for the requested room and
+    // for the start and end dates requested by fullcalendar.
     $args = 'space_id=' . $space_id . '&scope=extended&start_dt=' . $start . '&end_dt=' . $end;
     $items = [];
-    // make the API call
-    $r25_result = $r25_service->r25_api_call('feed', $args);
+    // Make the API call.
+    $r25_result = $this->r25Service->stanfordR25ApiCall('feed', $args);
     if ($r25_result['status']['status'] === TRUE &&
       !empty($r25_result['output']['index']['R25:RESERVATION_ID'])) {
 
       $results = $r25_result['output'];
-      // for each result, store the data in the return array
+      // For each result, store the data in the return array.
       foreach ($results['index']['R25:RESERVATION_ID'] as $key => $value) {
         $id = $results['vals'][$value]['value'];
-        $event_id = $this->_stanford_r25_feed_get_value($results, 'R25:EVENT_ID', $key);
-        $title = $this->_stanford_r25_feed_get_value($results, 'R25:EVENT_NAME', $key);
-        $start = $this->_stanford_r25_feed_get_value($results, 'R25:RESERVATION_START_DT', $key);
-        $end = $this->_stanford_r25_feed_get_value($results, 'R25:RESERVATION_END_DT', $key);
-        $headcount = $this->_stanford_r25_feed_get_value($results, 'R25:EXPECTED_COUNT', $key);
-        $state = $this->_stanford_r25_feed_get_value($results, 'R25:STATE', $key);
-        $state_text = $this->_stanford_r25_feed_get_value($results, 'R25:STATE_NAME', $key);
-        $items[] = array(
+        $event_id = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_ID', $key);
+        $title = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_NAME', $key);
+        $start = $this->stanfordR25FeedGetValue($results, 'R25:RESERVATION_START_DT', $key);
+        $end = $this->stanfordR25FeedGetValue($results, 'R25:RESERVATION_END_DT', $key);
+        $headcount = $this->stanfordR25FeedGetValue($results, 'R25:EXPECTED_COUNT', $key);
+        $state = $this->stanfordR25FeedGetValue($results, 'R25:STATE', $key);
+        $state_text = $this->stanfordR25FeedGetValue($results, 'R25:STATE_NAME', $key);
+        $items[] = [
           'id' => $id,
           'event_id' => $event_id,
           'index' => $value,
@@ -115,13 +189,15 @@ class StanfordEarthR25FeedController extends ControllerBase {
           'state_name' => $state_text,
           'scheduled_by' => '',
           'tip' => '',
-        );
+        ];
       }
 
-      // for logged in users, we want to display event status, headcount, and who did the booking
-      if ($user->isAuthenticated()) {
-        // find out if event was *not* scheduled by QuickBook account and then get the scheduler
-        $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+      // For logged in users, we want to display event status, headcount,
+      // and who did the booking.
+      if ($this->user->isAuthenticated()) {
+        // Find out if event was *not* scheduled by QuickBook account and then
+        // get the schedule.
+        $config = $this->configFactory->getEditable('stanford_earth_r25.credentialsettings');
         $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
         foreach ($results['index']['R25:SCHEDULER_ID'] as $key => $value) {
           if (intval($results['vals'][$value]['value']) != $quickbook_id) {
@@ -151,8 +227,9 @@ class StanfordEarthR25FeedController extends ControllerBase {
           }
         }
 
-        // for those items that were scheduled by quickbook, the event description contains the scheduler.
-        // also, certain rooms may want to show the description as the FullCalendar event title
+        // For those items that were scheduled by quickbook, the event
+        // description contains the scheduler. Also, certain rooms may want to
+        // show the description as the FullCalendar event title.
         foreach ($results['index']['R25:EVENT_DESCRIPTION'] as $key => $value) {
           $text = '';
           if (!empty($results['vals'][$results['index']['R25:EVENT_DESCRIPTION'][$key]]['value'])) {
@@ -163,10 +240,10 @@ class StanfordEarthR25FeedController extends ControllerBase {
             while ($index) {
               $index -= 1;
               if (intval($value) > intval($items[$index]['index'])) {
-                // display event description as event title if room is so marked
+                // Display event description as title if room is so marked.
                 if (!empty($r25_location->get('description_as_title')) &&
                   intval($r25_location->get('description_as_title')) == 1) {
-                  $items[$index]['title'] = Mail\MailFormatHelper::htmlToText($text);
+                  $items[$index]['title'] = MailFormatHelper::htmlToText($text);
                 }
                 $items[$index]['description'] = $text;
                 break;
@@ -190,7 +267,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
           if (!empty($item['scheduled_by'])) {
             $items[$key]['tip'] .= '<br />' . $item['scheduled_by'];
           }
-          //drupal_alter('stanford_r25_contact', $items[$key]['tip']);
+          // Hook? drupal_alter('stanford_r25_contact', $items[$key]['tip']).
           $can_cancel = FALSE;
           if ($approver) {
             $can_cancel = TRUE;
@@ -205,7 +282,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
                 $scheduler_email = substr($description, $mailto_pos + 8, $mailto_endpos - ($mailto_pos + 8));
               }
             }
-            if (!empty($scheduler_email) && $scheduler_email === $user->getEmail()) {
+            if (!empty($scheduler_email) && $scheduler_email === $this->user->getEmail()) {
               $can_cancel = TRUE;
             }
           }
@@ -228,7 +305,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
         }
       }
     }
-    \Drupal::service('page_cache_kill_switch')->trigger();
+    $this->killSwitch->trigger();
     return JsonResponse::create($items);
   }
 

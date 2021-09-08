@@ -2,35 +2,23 @@ langcode: en
 status: true
 dependencies: {  }
 id: stanford_earth_r25_adminsettings
-label: R25 Admin Settings
+label: 'R25 Admin Settings'
 description: 'R25 Room Reservation Admin Settings'
 source_type: null
 module: null
-stanford_r25_org_id: '4356'
-stanford_r25_event_type: '416'
-stanford_r25_parent_event_id: '570348'
+stanford_r25_org_id: null
+stanford_r25_event_type: null
+stanford_r25_parent_event_id: null
 stanford_r25_login_msg: 'Reserve this room'
-stanford_r25_login_uri: 'https://earth.stanford.edu/saml_login'
+stanford_r25_login_uri: null
 stanford_r25_ext_login_msg: 'Reserve this room'
 stanford_r25_notpermitted_msg:
   value: "<p><span>You do not have permission to reserve a room using this calendar. If you believe this is in error, please contact your department administrators.</span></p>\r\n"
-  format: content_editor
+  format: null
 stanford_r25_readonly_msg:
   value: "<p><span>This calendar is read-only and can not be used to reserve the room. To reserve this room, please contact your department administrators.</span></p>\r\n"
-  format: content_editor
+  format: null
 stanford_r25_booking_instructions:
   value: "<p><span>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;contact your department administrator. All reservations are subject to approval by your department and the Dean's Office.</span></p>\r\n"
-  format: content_editor
-stanford_r25_blackout_dates:
-  -
-    start: '2021-09-20'
-    end: '2021-10-08'
-  -
-    start: '2022-01-03'
-    end: '2022-01-21'
-  -
-    start: '2022-03-28'
-    end: '2022-04-15'
-  -
-    start: '2022-06-20'
-    end: '2022-07-08'
+  format: null
+stanford_r25_blackout_dates: {  }

@@ -60,10 +60,6 @@ var calendar;
         qtip = true;
       }
 
-      // get the romm id set on the server in Drupal
-      var stanford_r25_room = drupalSettings.stanfordR25Room;
-
-
       var calendarEl = document.getElementById('calendar');
       // get the romm id set on the server in Drupal
       var stanford_r25_room = drupalSettings.stanfordEarthR25.stanfordR25Room;

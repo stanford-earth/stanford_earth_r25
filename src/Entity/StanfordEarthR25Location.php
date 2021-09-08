@@ -250,7 +250,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $auto_billing_code;
 
   /**
-   * Location info from R25
+   * Location info from R25.
    *
    * @var array
    */
@@ -260,7 +260,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * {@inheritdoc}
    */
   public function save() {
-    $location_info = StanfordEarthR25Util::_stanford_r25_get_room_info($this->get('space_id'));
+    $location_info = StanfordEarthR25Util::stanfordR25GetRoomInfo($this->get('space_id'));
     $this->set('updated', \Drupal::service('date.formatter')->format(time()));
     $this->set('location_info', $location_info);
     $return = parent::save();

@@ -116,15 +116,3 @@ stanford_earth_r25_location.modify:
   requirements:
     _permission: 'book r25 rooms'
 
-#  // links to confirm reservations displayed on fullcalendar
-##  // parameters are room machine id, R25 event id, and instance date (for display only)
- # // access argument is simply if user can book rooms, but more sophisticated permission checking is done in the callback
- # // uses the same callback as cancel_reservation, which checks the drupal_path to see which is which
- #$items['r25/%/confirm_reservation/%/%'] = array(
- # 'title' => 'Confirm Reservation',
- # 'page callback' => 'drupal_get_form',
- #'page arguments' => array('_stanford_r25_cancel_reservation', 1, 3, 4),
- # 'access arguments' => array('book r25 rooms'),
- # 'type' => MENU_CALLBACK,
- # 'file' => 'stanford_r25.pages.inc',
- # );

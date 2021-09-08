@@ -2,23 +2,10 @@
 
 namespace Drupal\stanford_earth_r25\Form;
 
-use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\ConfirmFormBase;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\File\FileSystem;
-use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
-use Drupal\Core\Ajax\HtmlCommand;
-use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Datetime\DrupalDateTime;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Url;
 
@@ -27,9 +14,32 @@ use Drupal\Core\Url;
  */
 class StanfordEarthR25ModifyForm extends ConfirmFormBase {
 
-  protected $location_id;
+  /**
+   * The R25 location (room) id.
+   *
+   * @var string
+   */
+  protected $locationId;
+
+  /**
+   * The op: cancel or confirm.
+   *
+   * @var string
+   */
   protected $op;
-  protected $event_id;
+
+  /**
+   * The R25 event id.
+   *
+   * @var string
+   */
+  protected $eventId;
+
+  /**
+   * The event date for dispay purposes.
+   *
+   * @var string
+   */
   protected $start;
 
   /**
@@ -42,20 +52,22 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state,
-                            $op = NULL, $location_id = NULL, $event_id = NULL,
+  public function buildForm(array $form,
+                            FormStateInterface $form_state,
+                            $op = NULL,
+                            $locationId = NULL,
+                            $eventId = NULL,
                             $start = NULL) {
     $storage = $form_state->getStorage();
     $result = $storage['stanford_earth_r25']['event_info']['output'];
     $rooms = [];
-    $room_id = $location_id;
+    $room_id = $locationId;
 
-    $this->location_id = $location_id;
+    $this->locationId = $locationId;
     $this->op = $op;
-    $this->event_id = $event_id;
+    $this->eventId = $eventId;
     $this->start = $start;
 
-    $adminSettings = [];
     if (!empty($room_id)) {
       $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
       $rooms[$room_id] = $config->getRawData();
@@ -66,13 +78,13 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $opout = 'confirmation';
     }
 
-    // get the event title from the XML for display
+    // Get the event title from the XML for display.
     $title = '';
     if (!empty($result['vals'][$result['index']['R25:EVENT_NAME'][0]]['value'])) {
       $title = $result['vals'][$result['index']['R25:EVENT_NAME'][0]]['value'];
     }
 
-    // find out if this is a recurring event so we can ask whether the operation
+    // Find out if this is a recurring event so we can ask whether the operation
     // is for the instance or the entire series.
     $event_count = 0;
     if (!empty($result['index']['R25:RESERVATION_START_DT']) &&
@@ -86,7 +98,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $msg .= Html::escape($title);
     }
     else {
-      $msg .= $event_id;
+      $msg .= $eventId;
     }
     $msg .= '"';
     if (!empty($rooms[$room_id]['label'])) {
@@ -97,19 +109,19 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $msg .= ' for ' . $startdate->format("l, F j, Y g:i a");
     }
     $msg .= '? <br />';
-    $form['room_id'] = array(
+    $form['room_id'] = [
       '#type' => 'hidden',
       '#value' => $room_id,
-    );
-    $form['event_id'] = array(
+    ];
+    $form['event_id'] = [
       '#type' => 'hidden',
       '#value' => $event_id,
-    );
-    $form['really'] = array(
-      '#markup' => t($msg),
-    );
+    ];
+    $form['really'] = [
+      '#markup' => $this->t("@msg", ['@msg' => $msg]),
+    ];
 
-    // if the event is part of a recurring series, display all the dates
+    // If the event is part of a recurring series, display all the dates
     // and let user know confirmation applies to all instances in the series
     // or if operation is cancel, let them choose entire series or occurence.
     if ($event_count > 1) {
@@ -118,7 +130,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
         is_array($result['index']['R25:RESERVATION_START_DT'])
       ) {
         $msg_text .= 'Reservation dates: <br/>';
-        foreach ($result['index']['R25:RESERVATION_START_DT'] as $key => $value) {
+        foreach ($result['index']['R25:RESERVATION_START_DT'] as $value) {
           if (!empty($result['vals'][$value]['value'])) {
             $s_date = DrupalDateTime::createFromFormat(DATE_W3C, $result['vals'][$value]['value']);
             $msg_text .= $s_date->format("l, F j, Y g:i a") . '<br />';
@@ -126,23 +138,24 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
         }
         $msg_text .= '<br />';
       }
-      $form['markup2'] = array(
-        '#markup' => t($msg_text),
-      );
-      $form['series'] = array(
+      $form['markup2'] = [
+        '#markup' => $this->t("@msg_text",
+                        ['@msg_text' => $msg_text]),
+      ];
+      $form['series'] = [
         '#type' => 'radios',
         '#default_value' => 1,
-        '#options' => array(
-          1 => 'Cancel this occurrence',
-          2 => 'Cancel entire series'
-        ),
-      );
+        '#options' => [
+          1 => $this->t('Cancel this occurrence'),
+          2 => $this->t('Cancel entire series'),
+        ],
+      ];
     }
     else {
-      $form['series'] = array(
+      $form['series'] = [
         '#type' => 'hidden',
         '#value' => 2,
-      );
+      ];
     }
 
     return parent::buildForm($form, $form_state);
@@ -157,7 +170,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $opout = 'confirmation';
     }
     $rooms = [];
-    $room_id = $this->location_id;
+    $room_id = $this->locationId;
     if (!empty($room_id)) {
       $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
       $rooms[$room_id] = $config->getRawData();
@@ -225,12 +238,12 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       }
     }
 
-    // put the event XML back to 25Live to set the new cancel or confirm state
+    // Put the event XML back to 25Live to set the new cancel or confirm state.
     $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-    $r25_service->r25_api_call('event-put', $xml_string, $this->event_id);
+    $r25_service->stanfordR25ApiCall('event-put', $xml_string, $this->eventId);
 
-    // if we want to email room approvers or the user about the confirmation
-    // or cancellation, build up the email list and send information
+    // If we want to email room approvers or the user about the confirmation
+    // or cancellation, build up the email list and send information.
     if ($rooms[$room_id]['email_cancellations']) {
       $secgroup_id = '';
       if (!empty($rooms[$room_id]['approver_secgroup_id'])) {
@@ -240,9 +253,9 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       if (!empty($rooms[$room_id]['email_list'])) {
         $additional = $rooms[$room_id]['email_list'];
       }
-      $email_list = StanfordEarthR25Util::_stanford_r25_build_event_email_list($result, $secgroup_id, $additional);
+      $email_list = StanfordEarthR25Util::stanfordR25BuildEventEmailList($result, $secgroup_id, $additional);
       $user = \Drupal::currentUser();
-      // get the event title from the XML for display
+      // Get the event title from the XML for display.
       $title = '';
       if (!empty($result['vals'][$result['index']['R25:EVENT_NAME'][0]]['value'])) {
         $title = $result['vals'][$result['index']['R25:EVENT_NAME'][0]]['value'];
@@ -254,8 +267,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
         $event_count = count($result['index']['R25:RESERVATION_START_DT']);
       }
 
-
-      $body = array();
+      $body = [];
       $body[] = 'A Room Reservation ' . $opout . ' request was sent by ' . $user->getDisplayName();
       $body[] = ' for "' . $title . '" in room ' . $rooms[$room_id]['label'];
       $startdate = DrupalDateTime::createFromFormat(DATE_W3C, $this->start);
@@ -273,14 +285,14 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
         $body[] = ' for the reservation starting ' . $startdate->format("l, F j, Y g:i a");
       }
       $subject = 'Room reservation ' . $opout;
-      $params = array(
+      $params = [
         'body' => $body,
-        'subject' => $subject
-      );
-      $params = array(
+        'subject' => $subject,
+      ];
+      $params = [
         'body' => $body,
-        'subject' => $subject
-      );
+        'subject' => $subject,
+      ];
       $mailManager = \Drupal::service('plugin.manager.mail');
       $module = 'stanford_earth_r25';
       $key = 'r25_operation';
@@ -288,37 +300,59 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $params['message'] = $body;
       $params['r25_operation'] = $subject;
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
-      $send = true;
+      $send = TRUE;
       $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
-
-      //drupal_mail('stanford_r25', $event_id, $email_list, language_default(), $params);
     }
-    // the operation is done, so go back to the calendar page
-    $url = new Url('entity.stanford_earth_r25_location.calendar',['r25_location' => $this->location_id]);
+    // The operation is done, so go back to the calendar page.
+    $url = new Url('entity.stanford_earth_r25_location.calendar',
+      ['r25_location' => $this->locationId]);
     $form_state->setRedirectUrl($url);
-    sleep(5);
-    //$response = new TrustedRedirectResponse($url->toUriString());
-    //$form_state->setResponse($response);
-    //return parent::submit($form, $form_state);
-    //drupal_goto('/r25/' . $room_id . '/calendar');
+    sleep(3);
   }
 
+  /**
+   * Confirm button text.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Button text markup.
+   */
   public function getConfirmText() {
-    return $this->t(ucfirst($this->op) . ' reservation');
-    //return parent::getConfirmText(); // TODO: Change the autogenerated stub
+    $opStr = $this->op;
+    return $this->t('@opstr reservation',
+      ['@opstr' => $opStr]);
   }
 
+  /**
+   * Cancel or Confirm cancel button text.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Cancel text.
+   */
   public function getCancelText() {
     return $this->t('Return to calendar');
   }
 
+  /**
+   * Cancel or Confirm reservation question.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Markup for question.
+   */
   public function getQuestion() {
-    return $this->t(ucfirst($this->op) . ' Reservation?');
+    $opStr = ucfirst($this->op);
+    return $this->t('@opstr Reservation?',
+      ['@opstr' => $opStr]);
   }
 
+  /**
+   * Url to return to if user hits cancel.
+   *
+   * @return \Drupal\Core\Url
+   *   the Url.
+   */
   public function getCancelUrl() {
-    return new Url('entity.stanford_earth_r25_location.calendar',['r25_location' => $this->location_id]);
+    return new Url('entity.stanford_earth_r25_location.calendar',
+      ['r25_location' => $this->locationId]);
   }
 
 }
-

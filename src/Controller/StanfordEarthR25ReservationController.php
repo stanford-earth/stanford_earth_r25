@@ -7,8 +7,6 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
  * Provides a room reservation page.
@@ -42,23 +40,27 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('form_builder')
+      $container->get('form_builder'),
     );
   }
 
   /**
    * Returns a calendar page render array.
    *
-   * @return array
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   Reservation form ajax modal dialog.
    */
   public function reserve($location_id, $start) {
     $response = new AjaxResponse();
 
     // Get the modal form using the form builder.
-    $modal_form = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',$location_id, $start);
+    $modal_form =
+      $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
+        $location_id, $start);
 
     // Add an AJAX command to open a modal dialog with the form as the content.
-    $response->addCommand(new OpenModalDialogCommand('Room Reservation Form', $modal_form, ['width' => '800']));
+    $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
+      $modal_form, ['width' => '800']));
 
     return $response;
   }
