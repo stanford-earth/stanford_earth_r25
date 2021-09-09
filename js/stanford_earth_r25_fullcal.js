@@ -6,7 +6,6 @@ var calendar;
 (function ($, Drupal, drupalSettings) {
 
   'use strict';
-
   Drupal.behaviors.stanford_earth_r25_fullcalendar = {
     attach: function (context, settings) {
 

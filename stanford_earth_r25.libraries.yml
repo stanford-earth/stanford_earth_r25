@@ -11,3 +11,14 @@ stanford_earth_r25_calendar:
   dependencies:
     - core/jquery
     - core/drupalSettings
+
+stanford_earth_r25_spud:
+  css:
+    theme:
+      css/stanford_earth_r25.css: {}
+  js:
+    https://25livepub.collegenet.com/scripts/spuds.js: {external: true, defer: true, async: true}
+    js/stanford_earth_r25_spud.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings

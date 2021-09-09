@@ -115,7 +115,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
     ];
     $form['event_id'] = [
       '#type' => 'hidden',
-      '#value' => $event_id,
+      '#value' => $eventId,
     ];
     $form['really'] = [
       '#markup' => $this->t("@msg", ['@msg' => $msg]),

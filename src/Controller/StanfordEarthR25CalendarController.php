@@ -142,8 +142,12 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $drupalSettings['stanfordR25CalendarLimitMonth'] = $calendar_limit['month'];
       $drupalSettings['stanfordR25CalendarLimitYear'] = $calendar_limit['year'];
 
+      $library = [
+        'core/drupal.dialog.ajax',
+      ];
       if (intval($r25_location->get('caltype')) == 1) {
         $drupalSettings['stanfordR25Spud'] = $r25_location->get('spud_name');
+        $library[] = 'stanford_earth_r25/stanford_earth_r25_spud';
       }
       else {
         // If the calendar is FullCalendar, output links to the required
@@ -152,29 +156,31 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         if ($this->user->isAuthenticated()) {
           $drupalSettings['stanfordR25Qtip'] = 'qtip';
         }
+        $library[] = 'stanford_earth_r25/stanford_earth_r25_calendar';
       }
+
+      $resForm = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm');
+      $this->killSwitch->trigger();
+      return [
+        // Your theme hook name.
+        '#theme' => 'stanford_earth_r25-theme-hook',
+        // Your variables.
+        '#r25_location' => $r25_location,
+        '#photo_url' => $photo_url,
+        '#form' => $resForm,
+        '#attached' => [
+          'library' => $library,
+          'drupalSettings' => [
+            'stanfordEarthR25' => $drupalSettings,
+          ],
+        ],
+      ];
     }
-    $resForm = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm');
-    // If you want modify the form:
-    $resForm['field']['#value'] = 'From my controller';
-    $this->killSwitch->trigger();
-    return [
-      // Your theme hook name.
-      '#theme' => 'stanford_earth_r25-theme-hook',
-      // Your variables.
-      '#r25_location' => $r25_location,
-      '#photo_url' => $photo_url,
-      '#form' => $resForm,
-      '#attached' => [
-        'library' => [
-          'core/drupal.dialog.ajax',
-          'stanford_earth_r25/stanford_earth_r25_calendar',
-        ],
-        'drupalSettings' => [
-          'stanfordEarthR25' => $drupalSettings,
-        ],
-      ],
-    ];
+    else {
+      return [
+        '#markup' => $r25_location->label() . ' is not currently available.',
+      ];
+    }
   }
 
 }

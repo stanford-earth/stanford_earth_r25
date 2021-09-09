@@ -6,10 +6,10 @@
     // get the webname of the "spud" from Drupal
     Drupal.behaviors.stanford_earth_r25_spud = {
       attach: function (context, settings) {
-        if (typeof drupalSettings.stanfordR25Room !== 'undefined') {
+        if (typeof drupalSettings.stanfordEarthR25.stanfordR25Room !== 'undefined') {
 
-          var stanford_r25_room = drupalSettings.stanfordR25Room;
-          var stanford_r25_webname = drupalSettings.stanfordR25Spud;
+          var stanford_r25_room = drupalSettings.stanfordEarthR25.stanfordR25Room;
+          var stanford_r25_webname = drupalSettings.stanfordEarthR25.stanfordR25Spud;
 
           $Trumba.addSpud({
             webName: stanford_r25_webname,
@@ -26,4 +26,4 @@
         }
       }
     };
-})(jQuery, Drupal, drupalSettings);
+}) (jQuery, Drupal, drupalSettings);

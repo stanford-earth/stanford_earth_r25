@@ -108,7 +108,7 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
     // General login settings to use when access is granted to Drupal users
     // via roles and permissions.
     $description = 'Use the "Book R25 Rooms" permission to restrict room reservations to specific roles. If ' .
-      'anonymous users do not permission to book, the login link specified here will appear in place of the ' .
+      'anonymous users do not have permission to book, the login link specified here will appear in place of the ' .
       'booking form.';
     $form['login'] = [
       '#type' => 'fieldset',
@@ -117,13 +117,14 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
     ];
     $login_msg = $config->get('stanford_r25_login_msg');
     if (empty($login_msg)) {
-      $login_msg = 'Reserve this room';
+      $login_msg = 'Login to reserve room';
     }
     $form['login']['stanford_r25_login_msg'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Anonymous User Login Message'),
+      '#title' => $this->t('Anonymous User Login Button'),
       '#description' => $this->t('Potentially helpful reminder for anonymous users that may need to log in before being able to reserve rooms.'),
       '#default_value' => $login_msg,
+      '#required' => TRUE,
     ];
     $login_uri = $config->get('stanford_r25_login_uri');
     if (empty($login_uri)) {
@@ -133,41 +134,29 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
     $form['login']['stanford_r25_login_uri'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Login URL'),
-      '#description' => $this->t('Login URI for the reservation form if user is anonymous. Login message field must be set for this to show. Defaults to /user/login'),
+      '#description' => $this->t('Login URI for the reservation form if user is anonymous. Defaults to /user/login'),
       '#default_value' => $login_uri,
+      '#required' => TRUE,
     ];
+
+    $reserve_msg = $config->get('stanford_r25_reserve_msg');
+    if (empty($reserve_msg)) {
+      $reserve_msg = 'Reserve room';
+    }
+    $form['login']['stanford_r25_reserve_msg'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Authenticated User Reserve Button'),
+      '#description' => $this->t('Button text to reserve room. Defaults to "Reserve Room"'),
+      '#default_value' => $reserve_msg,
+      '#required' => TRUE,
+    ];
+
     $description = 'Contact information for room reservations will consist of the user account name and email ' .
       'address unless it is overridden by an implementation of hook_stanford_r25_contact_alter(&$contact_string). ' .
       'If multiple modules implement the hook, the value will be set by the last module invoked.';
     $form['login']['login_contact_info'] = [
       '#type' => 'markup',
       '#markup' => $description,
-    ];
-
-    // Advanced settings for external non-Drupal logins; may require 3rd party
-    // contrib module for authentication sample module for authenticating
-    // anonymous users, user0_webauth, is included in this package.
-    $description = 'If you need to allow room reservations by users who authenticate through an external ' .
-      'system but who do not get get Drupal accounts (for example, rooms bookable by entire campus versus ' .
-      'rooms bookable only within the organization for which there are Drupal accounts) you must implement ' .
-      'hooks for hook_stanford_r25_external_link and hook_stanford_r25_external_user. See the included ' .
-      'user0_webauth module for an example.';
-    $form['external'] = [
-      '#type' => 'fieldset',
-      '#title' => 'Advanced Restrictions',
-      '#description' => $this->t("@description", ['@description' => $description]),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    ];
-    $form['external']['stanford_r25_ext_login_msg'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Unauthenticated User Login Message'),
-      '#description' => $this->t('Potentially helpful reminder for anonymous users that may need to log in before being able to reserve rooms.'),
-      '#default_value' => $login_msg,
-    ];
-    $form['external']['external_contact_info'] = [
-      '#type' => 'markup',
-      '#markup' => 'Contact information for room reservations will be blank unless it is set by an implementation of hook_stanford_r25_external_user_display(&$acct_array). If multiple modules implement the hook, the value will be set by the first module found.',
     ];
 
     // Messages if room is not reservable or user has no permission to reserve.
@@ -189,7 +178,6 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
       '#format' => $default_not_permitted['format'],
       '#base_type' => 'textarea',
     ];
-    // Messages if room is not reservable or user has no permission to reserve.
     $default_readonly_msg = $config->get('stanford_r25_readonly_msg');
     if (empty($default_readonly_msg)) {
       $default_readonly_msg = [];

@@ -47,28 +47,41 @@
     {% endif %}
   {% endif %}
 </div>
+{% set displaytype = r25_location.get('displaytype') %}
+{% if displaytype is empty %}
+  {%set displaytype = 0 %}
+{% endif %}
 <div id="stanford-r25-reservation">
-  {% set room_id = r25_location.id() %}
-  {% set start = 'now' %}
-  {% if logged_in %}
-    {{ link('Reserve This Room',
-      "internal:/r25/reservation/#{room_id}/#{start}",
-      { 'class':['use-ajax', 'button']} ) }}
-    <span>&nbsp;Click here or select a timeslot on the calendar to reserve.</span>
-  {% else %}
-    {{ link('Login to Reserve Room',
-      "internal:/saml_login?destination=/r25/#{room_id}/calendar",
-      { 'class':['button']} ) }}
-    <span>&nbsp;You must login in order to reserve this room.</span>
+  {% if displaytype > 1 %}
+    {% set room_id = r25_location.id() %}
+    {% set start = 'now' %}
+    {% if user.hasPermission('book r25 rooms') %}
+      {% set  btn_txt = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_reserve_msg') %}
+      {{ link("#{btn_txt}",
+        "internal:/r25/reservation/#{room_id}/#{start}",
+        { 'class':['use-ajax', 'button']} ) }}
+      <span>&nbsp;Click here or select a timeslot on the calendar to reserve.</span>
+    {% else %}
+      {% if logged_in %}
+        <span>You do not have permission to reserve this room.</span>
+      {% else %}
+        {% set btn_txt = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_login_msg') %}
+        {% set login_uri = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_login_uri') %}
+        {{ link("#{btn_txt}",
+          "internal:#{login_uri}?destination=/r25/#{room_id}/calendar",
+          { 'class':['button']} ) }}
+        <span>&nbsp;You must login in order to reserve this room.</span>
+      {% endif %}
+    {% endif %}
   {% endif %}
 </div>
 
 <div id="#stanford-r25-self-serve-msg"></div>
-<div id="stanford-r25-calendar">
 {% set caltype = r25_location.get('caltype') %}
 {% if caltype is empty %}
   {% set caltype = 0 %}
 {% endif %}
+<div id="stanford-r25-calendar">
 {% if caltype == 1 %}
   <div id="control-spud"></div>
   <div id="calendar-spud">This feature is not yet implemented.</div>

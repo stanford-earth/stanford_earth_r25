@@ -126,7 +126,10 @@ class StanfordEarthR25Service {
       }
       $credential = '';
       if (!empty($credential_path)) {
-        $credential = trim(file_get_contents($credential_path));
+        $credential = @file_get_contents($credential_path);
+        if (!empty($credential)) {
+          $credential = trim($credential);
+        }
       }
       // Add the 25Live admin credential to the url and force it to https.
       if (empty($credential) || empty($url)) {

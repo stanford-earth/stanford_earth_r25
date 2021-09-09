@@ -9,9 +9,8 @@ module: null
 stanford_r25_org_id: null
 stanford_r25_event_type: null
 stanford_r25_parent_event_id: null
-stanford_r25_login_msg: 'Reserve this room'
+stanford_r25_login_msg: 'Login to reserve room'
 stanford_r25_login_uri: null
-stanford_r25_ext_login_msg: 'Reserve this room'
 stanford_r25_notpermitted_msg:
   value: "<p><span>You do not have permission to reserve a room using this calendar. If you believe this is in error, please contact your department administrators.</span></p>\r\n"
   format: null
