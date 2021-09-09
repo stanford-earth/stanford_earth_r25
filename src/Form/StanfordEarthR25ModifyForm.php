@@ -108,7 +108,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $startdate = DrupalDateTime::createFromFormat(DATE_W3C, $start);
       $msg .= ' for ' . $startdate->format("l, F j, Y g:i a");
     }
-    $msg .= '? <br />';
+    $msg .= '? ';
     $form['room_id'] = [
       '#type' => 'hidden',
       '#value' => $room_id,
@@ -307,7 +307,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
     $url = new Url('entity.stanford_earth_r25_location.calendar',
       ['r25_location' => $this->locationId]);
     $form_state->setRedirectUrl($url);
-    sleep(3);
+    sleep(5);
   }
 
   /**
