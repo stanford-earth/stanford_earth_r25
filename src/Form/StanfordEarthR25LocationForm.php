@@ -368,7 +368,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     $status = $location->save();
 
     if ($status === SAVED_NEW) {
-      $this->messenger()->addMessage($this->t('%Location label created.', [
+      $this->messenger()->addMessage($this->t('Location %label created.', [
         '%label' => $location->label(),
       ]));
     }
