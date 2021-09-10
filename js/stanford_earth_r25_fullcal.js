@@ -240,6 +240,16 @@ var calendar;
       }
       calendar.render();
 
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function (mutation) {
+          if ($('.ajax-progress-throbber').length) {
+            $('.ajax-progress-throbber').get(0).scrollIntoView(false);
+          }
+        });
+      });
+      var elementToObserve = $('#drupal-modal').get(0);
+      observer.observe(elementToObserve, {subtree: true, childList: true});
+
       $('.js-form-submit').click(function(){
         $(this).stanfordEarthR25ProgressCursor();
         //$('body').css('cursor', 'progress');
