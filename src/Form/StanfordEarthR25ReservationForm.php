@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Render\Renderer;
 use Drupal\Core\Messenger\Messenger;
+use Drupal\Core\Extension\ModuleHandler;
 
 /**
  * Drupal Ajax form to reserve a 25Live room.
@@ -68,6 +69,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
   protected $messenger;
 
   /**
+   * Drupal Module Handler
+   *
+   * @var Drupal\Core\Extension\ModuleHandler
+   */
+  protected $moduleHandler;
+
+  /**
    * Class constructor.
    */
   public function __construct(AccountInterface $user,
@@ -75,13 +83,15 @@ class StanfordEarthR25ReservationForm extends FormBase {
                               StanfordEarthR25Service $r25Service,
                               EntityTypeManager $entityTypeManager,
                               Renderer $renderer,
-                              Messenger $messenger) {
+                              Messenger $messenger,
+                              ModuleHandler $moduleHandler) {
     $this->user = $user;
     $this->mailManager = $mailManager;
     $this->r25Service = $r25Service;
     $this->entityTypeManager = $entityTypeManager;
     $this->renderer = $renderer;
     $this->messenger = $messenger;
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -96,7 +106,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $container->get('stanford_earth_r25.r25_call'),
       $container->get('entity_type.manager'),
       $container->get('renderer'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('module_handler')
     );
   }
 
@@ -302,7 +313,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Max headcount for a room comes from parameter passed to the function.
     $form['stanford_r25_booking_headcount'] = [
       '#type' => 'select',
-      '#title' => $this->t('Headcount'),
+      '#title' => $this->t('Headcount (required)'),
       '#options' => [],
       '#required' => TRUE,
     ];
@@ -317,7 +328,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Every booking needs some reason text.
     $form['stanford_r25_booking_reason'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Reason'),
+      '#title' => $this->t('Reason (required)'),
       '#required' => TRUE,
       '#maxlength' => 40,
     ];
@@ -740,21 +751,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     // We want to put some information about the user making this request into
     // the event description to be displayed on the calendar.
-    $res_username = '';
+    $res_username = 'Anonymous';
     $res_usermail = '';
-    if ($this->user->id() === 0) {
-      $user_input = $form_state->getUserInput();
-      if (!empty($user_input['external_username'])) {
-        $res_username = $user_input['external_username'];
-      }
-      if (!empty($user_input['external_usermail'])) {
-        $res_usermail = $user_input['external_usermail'];
-      }
-    }
-    else {
+    if ($this->user->isAuthenticated()) {
       $res_username = $this->user->getDisplayName();
       $res_usermail = $this->user->getEmail();
     }
+    $this->moduleHandler->alter('stanford_r25_contact', $res_username);
     $contact_str = '<p>Self service reservation made by ' . $res_username . ' - <a href="mailto:' . $res_usermail . '">click to contact by email.</a></p>';
     $contact_str = htmlspecialchars($contact_str);
     // Send the request to our api function.

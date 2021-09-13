@@ -1,0 +1,6 @@
+name: 'Stanford Earth Hartley'
+type: module
+description: 'Hartley conference center submodule for R25 Reservations'
+core_version_requirement: ^8 || ^9
+package: Stanford
+version: 8.x-1.0-dev

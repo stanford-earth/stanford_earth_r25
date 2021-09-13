@@ -201,20 +201,38 @@ class StanfordEarthR25FeedController extends ControllerBase {
         $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
         foreach ($results['index']['R25:SCHEDULER_ID'] as $key => $value) {
           if (intval($results['vals'][$value]['value']) != $quickbook_id) {
-            $text = '';
-            if (isset($results['vals'][$results['index']['R25:SCHEDULER_ID'][$key]]['value'])) {
-              $text = 'Reservation scheduled in 25Live by ' .
-                $results['vals'][$results['index']['R25:SCHEDULER_NAME'][$key]]['value'] . '.';
+            $scheduler_name = '';
+            if (isset($results['vals'][$results['index']['R25:SCHEDULER_ID'][$key]]['value']) &&
+              isset($results['vals'][$results['index']['R25:SCHEDULER_NAME'][$key]]['value'])) {
+              $scheduler_name = $results['vals'][$results['index']['R25:SCHEDULER_NAME'][$key]]['value'];
+              if (!empty($scheduler_name) && strpos($scheduler_name, ',') !== FALSE) {
+                $name_array = explode(',', $scheduler_name);
+                foreach ($name_array as $nkey => $name) {
+                  $scheduler_name = '';
+                  $subname = ucfirst(trim($name));
+                  if ($nkey == 0) {
+                    $last = $subname;
+                  } else {
+                    $scheduler_name .= $subname . ' ';
+                  }
+                }
+                $scheduler_name .= $last;
+              }
             }
+            $email = '';
             if (isset($results['vals'][$results['index']['R25:SCHEDULER_EMAIL'][$key]]['value'])) {
               $email = $results['vals'][$results['index']['R25:SCHEDULER_EMAIL'][$key]]['value'];
-              if (empty($text)) {
-                $text = 'Reservation scheduled in 25Live by ' . $email . '.';
-              }
-              $text .= '&nbsp;<a href="mailto:' . $email . '">Click to contact scheduler by email</a>.';
             }
-            if (empty($text)) {
-              $text = 'Scheduler is unknown.';
+            if (empty($scheduler_name)) {
+              if (empty($email)) {
+                $scheduler_name = 'Unknown user. Please check 25Live audit trail.';
+              } else {
+                $scheduler_name = $email;
+              }
+            }
+            $text = 'Reservation scheduled in 25Live by ' . $scheduler_name . '.';
+            if (!empty($email)) {
+              $text .= '&nbsp;<a href="mailto:' . $email . '">Click to contact scheduler by email</a>.';
             }
             $index = count($items);
             while ($index) {
@@ -256,18 +274,19 @@ class StanfordEarthR25FeedController extends ControllerBase {
           if (intval($item['state']) == 1) {
             $items[$key]['backgroundColor'] = 'goldenrod';
             $items[$key]['textColor'] = 'black';
+            $items[$key]['title'] .= ' (' . $item['state_name'] . ')';
             if ($approver) {
               $can_confirm = TRUE;
             }
           }
-          $items[$key]['tip'] = 'Status: ' . $item['state_name'] . '<br />' . 'Headcount: ' . $item['headcount'];
+          $toolTipStr = 'Status: ' . $item['state_name'] . '<br />' . 'Headcount: ' . $item['headcount'];
           if (!empty($item['description'])) {
-            $items[$key]['tip'] .= '<br />' . $item['description'];
+            $toolTipStr .= '<br />' . $item['description'];
           }
           if (!empty($item['scheduled_by'])) {
-            $items[$key]['tip'] .= '<br />' . $item['scheduled_by'];
+            $toolTipStr .= '<br />' . $item['scheduled_by'];
           }
-          // Hook? drupal_alter('stanford_r25_contact', $items[$key]['tip']).
+          $items[$key]['tip'] = $toolTipStr;
           $can_cancel = FALSE;
           if ($approver) {
             $can_cancel = TRUE;

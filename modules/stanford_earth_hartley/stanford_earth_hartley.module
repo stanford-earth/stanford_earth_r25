@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Implements stanford_earth_r25 hooks for Hartley Conf Center`.
+ */
+
+/**
+ * Implements hook_stanford_r25_contact_alter().
+ */
+function stanford_earth_hartley_stanford_r25_contact_alter(&$contactStr) {
+  $xyz = 1;
+}
