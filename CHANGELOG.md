@@ -1,5 +1,15 @@
 # Stanford Earth R25
 
+8.x-1.0-alpha4
+-------------------------------------------------------------------------
+_Release Date: 2021-09-15_
+
+- EARTH-0000 Remove external authentication method options.
+- EARTH-0000 Contact info fixes and implement hook_alter for contact.
+- EARTH-0000 Scroll "please wait" throbber into view on modal dialog.
+- EARTH-0000 Remove <br /> from confirm/cancel are-you-sure message.
+- EARTH-0000 Fix create location message.
+
 8.x-1.0-alpha3
 --------------------------------------------------------------------------------
 _Release Date: 2021-09-09_
