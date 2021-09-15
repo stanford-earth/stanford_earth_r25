@@ -46,7 +46,6 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "approver_secgroup_name",
  *     "approver_secgroup_id",
  *     "email_cancellations",
- *     "authentication_type",
  *     "multi_day",
  *     "postprocess_booking",
  *     "override_booking_instructions",
@@ -185,13 +184,6 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var bool
    */
   protected $email_cancellations;
-
-  /**
-   * Authentication method.
-   *
-   * @var int
-   */
-  protected $authentication_type;
 
   /**
    * Allow multi-day reservations.

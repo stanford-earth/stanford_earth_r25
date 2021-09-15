@@ -53,9 +53,6 @@ stanford_earth_r25_location.*:
     email_cancellations:
       type: boolean
       label: 'Email Cancellations to Approvers'
-    authentication_type:
-      type: int
-      label: 'Authentication Method'
     multi_day:
       type: boolean
       label: 'Allow Multi-Day Reservations'

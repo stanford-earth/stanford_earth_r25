@@ -16,11 +16,6 @@ class StanfordEarthR25Util {
   const STANFORD_R25_ROOM_STATUS_TENTATIVE = 2;
   const STANFORD_R25_ROOM_STATUS_CONFIRMED = 3;
 
-  // Define authentication methods as constants.
-  const STANFORD_R25_AUTH_DRUPAL_ACCT = 1;
-  const STANFORD_R25_AUTH_EXTERN_ACCT = 2;
-  const STANFORD_R25_AUTH_EITHER_ACCT = 3;
-
   /**
    * Parse a blackout date text area into an array of start and end dates.
    *
@@ -250,16 +245,13 @@ class StanfordEarthR25Util {
    *   Room entity to compare against the current user.
    *
    * @return array
-   *   Array, once containing authenticion info but now just bookable boolean.
+   *   Array, once containing authentication info but now just bookable boolean.
    */
   public static function stanfordR25CanBookRoom(EntityInterface $r25_location = NULL) {
 
     // Default return array; user is an internal (Drupal) user who can not book.
     $can_book = [
       'can_book' => FALSE,
-      'auth' => 'internal',
-      'external_module' => '',
-      'external_acct' => FALSE,
     ];
     $room_id = NULL;
     if (!empty($r25_location)) {
@@ -267,16 +259,10 @@ class StanfordEarthR25Util {
     }
     // Only check if we have a room id, obviously.
     if (!empty($room_id)) {
-      $authentication_type = $r25_location->get('authentication_type');
-      if (!empty($authentication_type)) {
-        // Only continue if room has an auth type and check user permissions.
         $user = \Drupal::currentUser();
-        if (($authentication_type == self::STANFORD_R25_AUTH_DRUPAL_ACCT ||
-            $authentication_type == self::STANFORD_R25_AUTH_EITHER_ACCT) &&
-            $user->hasPermission('book r25 rooms')) {
+        if ($user->hasPermission('book r25 rooms')) {
           $can_book['can_book'] = TRUE;
         }
-      }
     }
     // Return the array defined above.
     return $can_book;

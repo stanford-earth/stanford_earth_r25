@@ -217,23 +217,6 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('Some uncommonly used options.'),
       '#open' => FALSE,
     ];
-    // Whether the room allows reservations only by drupal permission,
-    // or only by external authentication, or either.
-    $authtype = $location->get('authentication_type');
-    if (empty($authtype)) {
-      $authtype = 1;
-    }
-    $form['advanced']['authentication_type'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Authentication Method'),
-      '#default_value' => $authtype,
-      '#options' => [
-        1 => $this->t('Internal (Drupal) Accounts'),
-        2 => $this->t('External (Non-Drupal) Login'),
-        3 => $this->t('Both Internal and External'),
-      ],
-      '#description' => $this->t('Whether the room is bookable based on Drupal accounts, roles, and permissions or through external means.'),
-    ];
     // Whether the room may be reserved for multiple-day events.
     $form['advanced']['multi_day'] = [
       '#type' => 'checkbox',

@@ -394,30 +394,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
-    // TBD
-    // If the user making the reservation has authenticated in some external
-    // fashion (is not logged in as a Drupal user) then we should have been
-    // passed the user's displayname and email address in the function call.
-    // save them as hidden fields on the reservation form.
-    if (!empty($external_acct) && is_array($external_acct)) {
-      if (!empty($external_acct['R25_EXTERNAL_DISPLAYNAME']) &&
-        is_string($external_acct['R25_EXTERNAL_DISPLAYNAME'])
-      ) {
-        $form['external_username'] = [
-          '#type' => 'hidden',
-          '#value' => $external_acct['R25_EXTERNAL_DISPLAYNAME'],
-        ];
-      }
-      if (!empty($external_acct['R25_EXTERNAL_MAIL']) &&
-        is_string($external_acct['R25_EXTERNAL_MAIL'])
-      ) {
-        $form['external_usermail'] = [
-          '#type' => 'hidden',
-          '#value' => $external_acct['R25_EXTERNAL_MAIL'],
-        ];
-      }
-    }
-
     $form['actions'] = [
       '#type' => 'actions',
     ];
