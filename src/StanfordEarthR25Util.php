@@ -4,6 +4,7 @@ namespace Drupal\stanford_earth_r25;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\File\FileSystemInterface;
 
 /**
  * Encapsulates information and utility methods.
@@ -222,7 +223,9 @@ class StanfordEarthR25Util {
           if ($photo_status['status']['status'] === TRUE) {
             $photo = $photo_status['output'];
             $destination = self::stanfordR25FilePath($photo_id);
-            if (!file_save_data($photo, $destination, FILE_EXISTS_REPLACE)) {
+            if (!file_save_data($photo, 
+                                $destination, 
+                                FileSystemInterface::EXISTS_REPLACE)) {
               \Drupal::messenger()->addMessage('Unable to save image for R25 Location ' . $space_id,
                 MessengerInterface::TYPE_ERROR);
               $photo_id = NULL;
