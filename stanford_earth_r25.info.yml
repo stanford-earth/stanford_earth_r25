@@ -3,4 +3,4 @@ type: module
 description: 'Service makes calls to R25 API, returns data.'
 core_version_requirement: ^8 || ^9
 package: Stanford
-version: 8.x-1.0-dev
+version: 8.x-1.0-alpha5
