@@ -1,5 +1,11 @@
 # Stanford Earth R25
 
+8.x-1.0-alpha6
+-------------------------------------------------------------------------
+_Release Date: 2021-10-06_
+
+- EARTH-0000 Adds functionality to override view and book permissions by room.
+
 8.x-1.0-alpha5
 -------------------------------------------------------------------------
 _Release Date: 2021-09-25_

@@ -1,5 +1,5 @@
 # [Stanford Earth R25](https://github.com/stanford-earth/stanford_earth_r25)
-##### Version: 8.x-1.x-dev
+##### Version: 8.x-1.x-alpha6
 
 Maintainers: [ksharp](https://github.com/ksharp-drupal)
 
