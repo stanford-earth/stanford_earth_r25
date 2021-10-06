@@ -11,8 +11,9 @@
 function stanford_earth_r25_custom_stanford_r25_contact_alter(&$contactStr) {
   $users = \Drupal::entityTypeManager()->getStorage('user')
     ->loadByProperties(['name' => $contactStr]);
-  if (!empty($users) && count($users) > 0) {
+  if (!empty($users)) {
     foreach ($users as $user) {
+      /** @var \Drupal\user\Entity\User $user */
       $displayName = $user->get('field_s_person_display_name')->getValue();
       if (!empty($displayName[0]['value'])) {
         $contactStr = $displayName[0]['value'];

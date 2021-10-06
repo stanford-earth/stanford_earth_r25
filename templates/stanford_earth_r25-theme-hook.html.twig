@@ -55,7 +55,7 @@
   {% if displaytype > 1 %}
     {% set room_id = r25_location.id() %}
     {% set start = 'now' %}
-    {% if user.hasPermission('book r25 rooms') %}
+    {% if canBook is not empty %}
       {% set  btn_txt = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_reserve_msg') %}
       {{ link("#{btn_txt}",
         "internal:/r25/reservation/#{room_id}/#{start}",

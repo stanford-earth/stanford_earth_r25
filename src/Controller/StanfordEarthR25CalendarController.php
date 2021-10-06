@@ -103,6 +103,12 @@ class StanfordEarthR25CalendarController extends ControllerBase {
     // reservable.
     $status = intval($status);
 
+    // Double-check if the user can view the calendar based on overrides.
+    if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
+                                                      $this->user)) {
+      $status = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_DISABLED;
+    }
+
     // Make sure we have an enabled room, otherwise display error msg (below).
     if ($status > StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_DISABLED) {
       // Set some JavaScript variables to be used at the browser by
@@ -110,8 +116,9 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $drupalSettings['stanfordR25Room'] = $r25_location->toArray();
       $drupalSettings['stanfordR25Status'] = $status;
       $drupalSettings['stanfordR25MaxHours'] = $r25_location->get('max_hours');
-      $bookable = StanfordEarthR25Util::stanfordR25CanBookRoom($r25_location);
-      $can_book = ($bookable['can_book'] ? 1 : 0);
+      $bookable = StanfordEarthR25Util::stanfordR25CanBookRoom($r25_location,
+        $this->user);
+      $can_book = ($bookable ? 1 : 0);
       $drupalSettings['stanfordR25Access'] = $can_book;
       $drupalSettings['stanfordR25DefaultView'] = $r25_location->get('default_view');
       if (!empty($params['view'])) {
@@ -135,7 +142,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $calendar_limit = [
         'room' => $r25_location->toArray(),
         'month' => date('n'),
-        'year' => date('Y') + 1,
+        'year' => strval(intval(date('Y')) + 1),
       ];
       // TBD.
       // Hook-drupal_alter('stanford_r25_fullcalendar_limit', $calendar_limit).
@@ -168,6 +175,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         '#r25_location' => $r25_location,
         '#photo_url' => $photo_url,
         '#form' => $resForm,
+        '#canBook' => $bookable,
         '#attached' => [
           'library' => $library,
           'drupalSettings' => [
@@ -177,6 +185,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       ];
     }
     else {
+      $this->killSwitch->trigger();
       return [
         '#markup' => $r25_location->label() . ' is not currently available.',
       ];

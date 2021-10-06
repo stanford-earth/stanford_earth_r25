@@ -69,6 +69,7 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
         'r25_location' => NULL,
         'photo_url' => '',
         'form' => NULL,
+        'canBook' => FALSE,
       ],
     ],
   ];

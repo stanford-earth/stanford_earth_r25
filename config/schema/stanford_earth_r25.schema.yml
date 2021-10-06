@@ -25,7 +25,7 @@ stanford_earth_r25_location.*:
       label: 'Location Display Options'
     caltype:
       type: int
-      label: 'Calendary Display Type'
+      label: 'Calendar Display Type'
     max_hours:
       type: int
       label: 'Maximum Reservation Hours'
@@ -109,6 +109,18 @@ stanford_earth_r25_location.*:
     auto_billing_code:
       type: string
       label: 'Auto-Bill Rate Group ID'
+    override_view_roles:
+      type: sequence
+      label: 'Override View Roles'
+      sequence:
+        type: string
+        label: 'Drupal Role'
+    override_book_roles:
+      type: sequence
+      label: 'Override Book Roles'
+      sequence:
+        type: string
+        label: 'Drupal Role'
     location_info:
       type: sequence
       label: 'R25 Location Info'

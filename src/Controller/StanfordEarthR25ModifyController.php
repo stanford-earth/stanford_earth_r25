@@ -6,12 +6,21 @@ use Drupal\Core\Form\FormState;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
  * Provides a reservation cancel/modify page.
  */
 class StanfordEarthR25ModifyController extends ControllerBase {
+
+  /**
+   * Current user.
+   *
+   * @var Drupal\Core\Session\AccountInterface
+   *   The current user.
+   */
+  protected $user;
 
   /**
    * The form builder.
@@ -23,10 +32,14 @@ class StanfordEarthR25ModifyController extends ControllerBase {
   /**
    * The StanfordEarthR25ModifyController constructor.
    *
+   * @param \Drupal\Core\Session\AccountInterface $user
+   *   The current user.
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
    *   The form builder.
    */
-  public function __construct(FormBuilder $formBuilder) {
+  public function __construct(AccountInterface $user,
+                              FormBuilder $formBuilder) {
+    $this->user = $user;
     $this->formBuilder = $formBuilder;
   }
 
@@ -40,6 +53,7 @@ class StanfordEarthR25ModifyController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('current_user'),
       $container->get('form_builder')
     );
   }

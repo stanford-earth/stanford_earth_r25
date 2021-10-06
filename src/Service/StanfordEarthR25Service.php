@@ -5,7 +5,7 @@ namespace Drupal\stanford_earth_r25\Service;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Mail\MailManager;
-use Drupal\Core\Session\AccountProxy;
+use Drupal\Core\Session\AccountInterface;
 use GuzzleHttp\ClientInterface;
 
 /**
@@ -45,7 +45,7 @@ class StanfordEarthR25Service {
   /**
    * The current user.
    *
-   * @var \Drupal\Core\Session\AccountProxy
+   * @var \Drupal\Core\Session\AccountInterface
    */
   protected $currentUser;
 
@@ -67,14 +67,14 @@ class StanfordEarthR25Service {
    *   The logger factory service.
    * @param \Drupal\Core\Mail\MailManager $mailmgr
    *   The mail manager service.
-   * @param \Drupal\Core\Session\AccountProxy $curUser
+   * @param \Drupal\Core\Session\AccountInterface $curUser
    *   The current Drupal user.
    */
   public function __construct(ClientInterface $http_client,
                               ConfigFactory $config = NULL,
                               LoggerChannelFactoryInterface $logger_factory,
                               MailManager $mailmgr,
-                              AccountProxy $curUser) {
+                              AccountInterface $curUser) {
     $this->httpClient = $http_client;
     $this->config = $config->get('stanford_earth_r25.credentialsettings');
     $this->logger = $logger_factory->get('system');

@@ -69,7 +69,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
   protected $messenger;
 
   /**
-   * Drupal Module Handler
+   * Drupal Module Handler.
    *
    * @var Drupal\Core\Extension\ModuleHandler
    */
@@ -498,8 +498,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Make sure the current user has permission to book the room.
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($room);
-    $can_book = StanfordEarthR25Util::stanfordR25CanBookRoom($entity);
-    if (!$can_book['can_book']) {
+    if (!StanfordEarthR25Util::stanfordR25CanBookRoom($entity, $this->user)) {
       $form_state->setErrorByName('stanford_r25_booking_reason',
         new TranslatableMarkup('User does not have permission to book rooms.'));
       return;
@@ -622,8 +621,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
-    $can_book = StanfordEarthR25Util::stanfordR25CanBookRoom($entity);
-    if (!$can_book['can_book']) {
+    if (!StanfordEarthR25Util::stanfordR25CanBookRoom($entity, $this->user)) {
       $r25_messages['failure'][] = new TranslatableMarkup('You do not have permission to book this room.');
       $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
       $form_state->setStorage($storage);

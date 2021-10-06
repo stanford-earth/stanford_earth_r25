@@ -54,6 +54,8 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "contact_attribute",
  *     "contact_attribute_field",
  *     "auto_billing_code",
+ *     "override_view_roles",
+ *     "override_book_roles",
  *     "location_info"
  *   },
  *   links = {
@@ -240,6 +242,20 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var string
    */
   protected $auto_billing_code;
+
+  /**
+   * Override View Roles.
+   *
+   * @var array
+   */
+  protected $override_view_roles;
+
+  /**
+   * Override Book Roles.
+   *
+   * @var array
+   */
+  protected $override_book_roles;
 
   /**
    * Location info from R25.

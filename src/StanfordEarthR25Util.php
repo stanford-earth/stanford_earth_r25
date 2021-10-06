@@ -5,6 +5,7 @@ namespace Drupal\stanford_earth_r25;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Encapsulates information and utility methods.
@@ -223,8 +224,8 @@ class StanfordEarthR25Util {
           if ($photo_status['status']['status'] === TRUE) {
             $photo = $photo_status['output'];
             $destination = self::stanfordR25FilePath($photo_id);
-            if (!file_save_data($photo, 
-                                $destination, 
+            if (!file_save_data($photo,
+                                $destination,
                                 FileSystemInterface::EXISTS_REPLACE)) {
               \Drupal::messenger()->addMessage('Unable to save image for R25 Location ' . $space_id,
                 MessengerInterface::TYPE_ERROR);
@@ -242,33 +243,81 @@ class StanfordEarthR25Util {
   }
 
   /**
-   * Check if current user can book a specific room.
+   * Check if current user can view a specific room's calendar.
    *
    * @param \Drupal\Core\Entity\EntityInterface $r25_location
    *   Room entity to compare against the current user.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Account to check against override_view_roles for location.
    *
-   * @return array
-   *   Array, once containing authentication info but now just bookable boolean.
+   * @return bool
+   *   Boolean indicating the room is viewable.
    */
-  public static function stanfordR25CanBookRoom(EntityInterface $r25_location = NULL) {
-
-    // Default return array; user is an internal (Drupal) user who can not book.
-    $can_book = [
-      'can_book' => FALSE,
-    ];
+  public static function stanfordR25CanViewRoom(EntityInterface $r25_location = NULL,
+                                                AccountInterface $account = NULL) {
+    // Check if the user can view the room calendar depending on Drupal
+    // permissions and the location's override settings.
+    $canView = FALSE;
     $room_id = NULL;
     if (!empty($r25_location)) {
       $room_id = $r25_location->id();
     }
-    // Only check if we have a room id, obviously.
-    if (!empty($room_id)) {
-        $user = \Drupal::currentUser();
-        if ($user->hasPermission('book r25 rooms')) {
-          $can_book['can_book'] = TRUE;
+    if (!empty($room_id) && !empty($account)) {
+      $canView = $account->hasPermission('view r25 room calendars');
+      $roles = $account->getRoles();
+      $override_view_roles = $r25_location->get('override_view_roles');
+      if (!empty($override_view_roles) && is_array($override_view_roles)) {
+        foreach ($override_view_roles as $role => $role_allowed) {
+          if (!empty($role) && $role === $role_allowed) {
+            $canView = FALSE;
+            if (in_array($role, $roles)) {
+              $canView = TRUE;
+              break;
+            }
+          }
         }
+      }
     }
-    // Return the array defined above.
-    return $can_book;
+    return $canView;
+  }
+
+  /**
+   * Check if current user can book a specific room.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   *   Room entity to compare against the current user.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Account to check against override_view_roles for location.
+   *
+   * @return bool
+   *   Boolean indicating that the room is bookable by the user.
+   */
+  public static function stanfordR25CanBookRoom(EntityInterface $r25_location = NULL,
+                                                AccountInterface $account = NULL) {
+    // Check if the user can book the room location depending on Drupal
+    // permissions and the location's override settings.
+    $canBook = FALSE;
+    $room_id = NULL;
+    if (!empty($r25_location)) {
+      $room_id = $r25_location->id();
+    }
+    if (!empty($room_id) && !empty($account)) {
+      $canBook = $account->hasPermission('book r25 rooms');
+      $roles = $account->getRoles();
+      $override_book_roles = $r25_location->get('override_book_roles');
+      if (!empty($override_book_roles) && is_array($override_book_roles)) {
+        foreach ($override_book_roles as $role => $role_allowed) {
+          if (!empty($role) && $role === $role_allowed) {
+            $canBook = FALSE;
+            if (in_array($role, $roles)) {
+              $canBook = TRUE;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return $canBook;
   }
 
   /**

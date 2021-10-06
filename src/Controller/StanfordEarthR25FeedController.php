@@ -117,6 +117,14 @@ class StanfordEarthR25FeedController extends ControllerBase {
     if (empty($room_id) || empty($space_id)) {
       throw new NotFoundHttpException();
     }
+
+    // Double-check if the user can view the calendar based on overrides.
+    if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
+                                                      $this->user)) {
+      $this->killSwitch->trigger();
+      return JsonResponse::create([]);
+    }
+
     $params = [];
     if ($request->getMethod() == 'GET') {
       $params = $request->query->all();
@@ -212,7 +220,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
                   $subname = ucfirst(trim($name));
                   if ($nkey == 0) {
                     $last = $subname;
-                  } else {
+                  }
+                  else {
                     $scheduler_name .= $subname . ' ';
                   }
                 }
@@ -226,7 +235,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
             if (empty($scheduler_name)) {
               if (empty($email)) {
                 $scheduler_name = 'Unknown user. Please check 25Live audit trail.';
-              } else {
+              }
+              else {
                 $scheduler_name = $email;
               }
             }

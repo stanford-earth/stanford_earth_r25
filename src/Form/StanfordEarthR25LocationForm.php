@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
@@ -57,28 +58,17 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#disabled' => !$location->isNew(),
     ];
 
-    // Whether the calendar page uses 25Live Publisher embeds or fullcalendar.
-    // Only fullcalendar allows selection of dates, times, and durations from
-    // the calendar.
-    $form['caltype'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Calendar Display Options'),
-      '#default_value' => $location->get('caltype'),
-      '#options' => [
-        1 => $this->t('25Live Publisher'),
-        2 => $this->t('FullCalendar'),
-      ],
-      '#description' => $this->t('Whether to use the 25Live Publisher read-only calendar display or the interactive FullCalendar display.'),
-      '#required' => TRUE,
-    ];
-
     // Room display type - whether it should display a calendar and allow
     // reservations, display a calendar without allowing reservations, or
     // display a calendar and allow tentative or confirmed reservations.
+    $displaytype = $location->get('displaytype');
+    if (empty($displaytype)) {
+      $displaytype = "1";
+    }
     $form['displaytype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Room Display Options'),
-      '#default_value' => $location->get('displaytype'),
+      '#default_value' => $displaytype,
       '#options' => [
         0 => $this->t('Disabled'),
         1 => $this->t('Read-Only Calendar'),
@@ -90,10 +80,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
     ];
 
     // Whether the initial calendar display is Month, Week, or Day.
+    $defaultView = $location->get('default_view');
+    if (empty($defaultView)) {
+      $defaultView = "2";
+    }
     $form['default_view'] = [
       '#type' => 'radios',
       '#title' => $this->t('Default Calendar View'),
-      '#default_value' => $location->get('default_view'),
+      '#default_value' => $defaultView,
       '#options' => [
         1 => $this->t('Daily'),
         2 => $this->t('Weekly'),
@@ -104,27 +98,17 @@ class StanfordEarthR25LocationForm extends EntityForm {
     ];
 
     // Maximum number of hours for a booking. Ignored for multi-day bookable.
+    $maxHours = $location->get('max_hours');
+    if (empty($maxHours)) {
+      $maxHours = "2";
+    }
     $form['max_hours'] = [
       '#title' => $this->t('Maximum Reservation (Hours)'),
       '#type' => 'textfield',
       '#required' => TRUE,
       '#size' => 30,
-      '#default_value' => $location->get('max_hours'),
+      '#default_value' => $maxHours,
       '#description' => $this->t('The maximum number of hours for a reservation via this interface. Set to 0 for no limit.'),
-    ];
-
-    // 25Live Publisher name of calendar if using it; otherwise leave blank.
-    $form['spud_name'] = [
-      '#title' => $this->t('25Live Publisher Webname'),
-      '#type' => 'textfield',
-      '#size' => 30,
-      '#default_value' => $location->get('spud_name'),
-      '#description' => $this->t('The 25Live Publisher webname or "spud" name for this room\'s public calendar display. Required for 25Live Publisher display.'),
-      '#states' => [
-        'required' => [
-          ':input[name="caltype"]' => ['value' => 1],
-        ],
-      ],
     ];
 
     // Internal 25Live "space id" for the room. Can be found in results from
@@ -147,23 +131,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
         ],
       ],
     ];
-    // The event description field found in the 25Live event wizard allows more
-    // characters than the event title.
-    $form['description_as_title'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show event description as event name in FullCalendar'),
-      '#return_value' => 1,
-      '#default_value' => $location->get('description_as_title'),
-      '#description' => $this->t("Check if you would like to use the Event Description field instead of the Event Name in the FullCalendar time slot."),
-    ];
-    // Give users a way to get back to a particular fullcalendar date and view.
-    $form['permalink'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Show a permlink on FullCalendar pages for the view and date'),
-      '#return_value' => 1,
-      '#default_value' => $location->get('permalink'),
-      '#description' => $this->t('Useful if you want to distribute links to specific calendar pages to people.'),
-    ];
+
     // Have room reservations obey site-wide blackout periods.
     $form['honor_blackouts'] = [
       '#type' => 'checkbox',
@@ -172,6 +140,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $location->get('honor_blackouts'),
       '#description' => $this->t('Only allow reservations if current and requested dates are after the end of the most recent blackout period and before the start of the next blackout period.'),
     ];
+
     // The name of the 25Live security group (ususally the same as a Stanford
     // workgroup, but not necessarily so). This will be used to generate and
     // cache a list of email addresses to contact for tentative reservations.
@@ -182,6 +151,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $location->get('approver_secgroup_name'),
       '#description' => $this->t('The R25 Security Group, also a Stanford Workgroup, of those who can approve tentative reservation requests. All members of this group will receive email with the request information.'),
     ];
+
     // The 25Live security group id that corresponds to the security group name.
     // Looked up on form submit.
     $form['approver_secgroup_id'] = [
@@ -191,6 +161,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $location->get('approver_secgroup_id'),
       '#description' => $this->t('The corresponding 25Live id number for the security group specified above.'),
     ];
+
     // Whether to email members of the security group and additional email
     // list when an event is canceled or confirmed through this website.
     $form['email_cancellations'] = [
@@ -200,6 +171,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $location->get('email_cancellations'),
       '#description' => $this->t('Check if room approvers should receive an email when a user self-service cancels a reservation.'),
     ];
+
     // Additional email addresses to get confirm,cancel,
     // and tentative reservation emails.
     $form['email_list'] = [
@@ -217,6 +189,59 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('Some uncommonly used options.'),
       '#open' => FALSE,
     ];
+
+    // Whether the calendar page uses 25Live Publisher embeds or fullcalendar.
+    // Only fullcalendar allows selection of dates, times, and durations from
+    // the calendar.
+    $caltype = $location->get('caltype');
+    if (empty($caltype)) {
+      $caltype = "2";
+    }
+    $form['advanced']['caltype'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Calendar Display Options'),
+      '#default_value' => $caltype,
+      '#options' => [
+        1 => $this->t('25Live Publisher'),
+        2 => $this->t('FullCalendar'),
+      ],
+      '#description' => $this->t('Whether to use the 25Live Publisher read-only calendar display or the interactive FullCalendar display.'),
+      '#required' => TRUE,
+    ];
+
+    // 25Live Publisher name of calendar if using it; otherwise leave blank.
+    $form['advanced']['spud_name'] = [
+      '#title' => $this->t('25Live Publisher Webname'),
+      '#type' => 'textfield',
+      '#size' => 30,
+      '#default_value' => $location->get('spud_name'),
+      '#description' => $this->t('The 25Live Publisher webname or "spud" name for this room\'s public calendar display. Required for 25Live Publisher display.'),
+      '#states' => [
+        'required' => [
+          ':input[name="caltype"]' => ['value' => 1],
+        ],
+      ],
+    ];
+
+    // The event description field found in the 25Live event wizard allows more
+    // characters than the event title.
+    $form['advanced']['description_as_title'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show event description as event name in FullCalendar'),
+      '#return_value' => 1,
+      '#default_value' => $location->get('description_as_title'),
+      '#description' => $this->t("Check if you would like to use the Event Description field instead of the Event Name in the FullCalendar time slot."),
+    ];
+
+    // Give users a way to get back to a particular fullcalendar date and view.
+    $form['advanced']['permalink'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Show a permlink on FullCalendar pages for the view and date'),
+      '#return_value' => 1,
+      '#default_value' => $location->get('permalink'),
+      '#description' => $this->t('Useful if you want to distribute links to specific calendar pages to people.'),
+    ];
+
     // Whether the room may be reserved for multiple-day events.
     $form['advanced']['multi_day'] = [
       '#type' => 'checkbox',
@@ -224,6 +249,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('Start time will refer to first day; end-time will refer to last day; days in-between will be full days.'),
       '#default_value' => $location->get('multi_day'),
     ];
+
     // Whether there are additional 25Live Event Custom Attribute fields that
     // should be added to the reservation form. Provide the comma-separated ids
     // for the wanted attributes; see attribute list at
@@ -298,6 +324,40 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#format' => $override_instr['format'],
       '#base_type' => 'textarea',
     ];
+
+    // Get the user roles.
+    $roles = user_roles();
+    $roleOptions = [];
+    foreach ($roles as $rid => $role) {
+      $roleOptions[$rid] = Html::escape($role->label());
+    }
+
+    // Allow override of which roles can view this location.
+    $overrideViewRoles = $location->get('override_view_roles');
+    if (empty($overrideViewRoles) || !is_array($overrideViewRoles)) {
+      $overrideViewRoles = [];
+    }
+    $form['advanced']['override_view_roles'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Override Location View Roles'),
+      '#options' => $roleOptions,
+      '#default_value' => $overrideViewRoles,
+      '#description' => $this->t("Choose which roles can view this location's calendar. Completely overrides roles set for this permission in Drupal permissions. Leave all blank to use Drupal permissions."),
+    ];
+
+    // Allow override of which roles can book this location.
+    $overrideBookRoles = $location->get('override_book_roles');
+    if (empty($overrideBookRoles) || !is_array($overrideBookRoles)) {
+      $overrideBookRoles = [];
+    }
+    $form['advanced']['override_book_roles'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Override Location Booking Roles'),
+      '#options' => $roleOptions,
+      '#default_value' => $overrideBookRoles,
+      '#description' => $this->t("Choose which roles can book this location. Completely overrides roles set for this permission in Drupal permissions. Leave all blank to use Drupal permissions."),
+    ];
+
     // Set a created date.
     $form['updated'] = [
       '#title' => $this->t('Last updated'),
