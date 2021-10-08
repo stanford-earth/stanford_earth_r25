@@ -22,3 +22,14 @@ stanford_earth_r25_spud:
   dependencies:
     - core/jquery
     - core/drupalSettings
+
+stanford_earth_r25_reservation:
+  css:
+    theme:
+      css/stanford_earth_r25.css: {}
+  js:
+    js/stanford_earth_r25_reservation.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal.dialog.ajax
+    - core/drupalSettings

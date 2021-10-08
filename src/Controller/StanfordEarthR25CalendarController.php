@@ -151,6 +151,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($r25_location, $this->moduleHandler);
       $drupalSettings['stanfordR25CalendarLimitMonth'] = $calendar_limit['month'];
       $drupalSettings['stanfordR25CalendarLimitYear'] = $calendar_limit['year'];
+      $drupalSettings['stanfordR25CalendarLimitDay'] = $calendar_limit['day'];
 
       $library = [
         'core/drupal.dialog.ajax',

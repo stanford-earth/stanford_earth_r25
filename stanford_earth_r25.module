@@ -75,37 +75,3 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
   ];
 
 }
-
-/**
- * Implements hook_element_info_alter().
- *
- * @param array $types
- *   Array of form fields that can be altered.
- */
-function stanford_earth_r25_element_info_alter(array &$types) {
-  // Set process callback for datetime field being used in reservations.
-  $types['datetime']['#process'][] = '_stanford_earth_r25_datetime_set_format';
-}
-
-/**
- * Process callback for datetime form fields.
- *
- * @param array $element
- *   The form field element being processed.
- * @return array
- *   The modified form element.
- */
-function _stanford_earth_r25_datetime_set_format($element) {
-  // Remove seconds in browsers that support HTML5 type=date.
-  if ($element['#date_time_element'] !== 'none') {
-    $element['#date_time_format'] = 'H:i';
-  }
-  if (!empty($element['time']['#value'])) {
-    $parts = explode(':', $element['time']['#value']);
-    $parts = array_splice($parts, 0, 2);
-    $element['time']['#value'] = implode(':', $parts);
-  }
-  // Set the keyboard step for time fields to 30 minutes.
-  $element['time']['#attributes']['step'] = '1800';
-  return $element;
-}

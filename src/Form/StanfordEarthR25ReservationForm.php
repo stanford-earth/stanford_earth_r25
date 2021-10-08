@@ -412,6 +412,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     ];
 
     $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
+    $form['#attached']['library'][] = "stanford_earth_r25/stanford_earth_r25_reservation";
 
     return $form;
   }

@@ -93,7 +93,8 @@ class StanfordEarthR25ReservationController extends ControllerBase {
     }
     else {
       $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
-        'User does not have permission to book this location.', ['width' => '800']));
+        'User does not have permission to book this location.',
+        ['width' => '800', 'closeOnEscape' => TRUE]));
     }
     return $response;
   }
