@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_r25;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -584,6 +585,32 @@ class StanfordEarthR25Util {
 
     // Return the result as a string.
     return implode(', ', $mail_array);
+  }
+
+  /**
+   * Get the calendar limit for the room, in 1-year unless altered by hook.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   *   Room entity to compare against the current user.
+   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   *   The module handler to call alter hooks.
+   *
+   * @return array
+   *   Array containing calendar limit info.
+   */
+  public static function stanfordR25CalendarLimit(EntityInterface $r25_location = NULL,
+                                                ModuleHandler $module_handler = NULL) {
+    // The default calendar limit is for one year in the future, but we have
+    // a hook, hook_stanford_r25_fullcalendar_limit_alter(&$calendar_limit)
+    // where you can change it.
+    $calendar_limit = [
+      'room' => $r25_location->toArray(),
+      'month' => date('n'),
+      'day' => date('d'),
+      'year' => strval(intval(date('Y')) + 1),
+    ];
+    $module_handler->alter('stanford_r25_fullcalendar_limit', $calendar_limit);
+    return $calendar_limit;
   }
 
 }

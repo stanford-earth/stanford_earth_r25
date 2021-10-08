@@ -526,6 +526,22 @@ class StanfordEarthR25ReservationForm extends FormBase {
       return;
     }
 
+    // Make sure the reservation isn't too far in the future.
+    $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($entity,$this->moduleHandler);
+    $bdate = DrupalDateTime::createFromArray([
+      'year' => $calendar_limit['year'],
+      'month' => $calendar_limit['month'],
+      'day' => $calendar_limit['day'],
+      'hour' => "0",
+      'minute' => "0",
+      'seconds' => "0",
+    ]);
+    if ($date->getTimestamp() > $bdate->getTimestamp()) {
+      $form_state->setErrorByName('stanford_r25_booking_date',
+        new TranslatableMarkup("The reservation request is too far in the future."));
+      return;
+    }
+
     // If this is a multi-day capable room, check the end date the same way we
     // just checked the start date, and make sure it isn't earlier than the
     // start date.
@@ -797,8 +813,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       if (!empty($booking_info['room']['auto_billing_code'])) {
         $bill_code = $booking_info['room']['auto_billing_code'];
         $billable = TRUE;
-        // TBD replace drupal_alter with Module Handler.
-        // drupal_alter('stanford_r25_isbillable', $billable);.
+        $this->moduleHandler->alter('stanford_r25_isbillable', $billable);
         if ($billable) {
           $r25_result = $r25_service->stanfordR25ApiCall('billing-get', $eventid);
           $billing_xml = $r25_result['raw-xml'];

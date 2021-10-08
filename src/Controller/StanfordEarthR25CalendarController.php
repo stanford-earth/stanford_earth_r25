@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\Core\Form\FormBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Extension\ModuleHandler;
 
 /**
  * Provides a calendar page.
@@ -43,14 +44,23 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   protected $formBuilder;
 
   /**
+   * Drupal ModuleHandler
+   *
+   * @var Drupal\Core\Extension\ModuleHandler
+   *   Modulehandler to call hooks.
+   */
+
+  /**
    * StanfordEarthR25FeedController constructor.
    */
   public function __construct(KillSwitch $killSwitch,
                               AccountInterface $user,
-                              FormBuilder $formBuilder) {
+                              FormBuilder $formBuilder,
+                              ModuleHandler $moduleHandler) {
     $this->killSwitch = $killSwitch;
     $this->user = $user;
     $this->formBuilder = $formBuilder;
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -60,7 +70,8 @@ class StanfordEarthR25CalendarController extends ControllerBase {
     return new static(
       $container->get('page_cache_kill_switch'),
       $container->get('current_user'),
-      $container->get('form_builder')
+      $container->get('form_builder'),
+      $container->get('module_handler')
     );
   }
 
@@ -136,16 +147,8 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       }
       $drupalSettings['stanfordR25MultiDay'] = $multi_day;
 
-      // The default calendar limit is for one year in the future, but we have
-      // a hook, hook_stanford_r25_fullcalendar_limit_alter(&$calendar_limit)
-      // where you can change it.
-      $calendar_limit = [
-        'room' => $r25_location->toArray(),
-        'month' => date('n'),
-        'year' => strval(intval(date('Y')) + 1),
-      ];
-      // TBD.
-      // Hook-drupal_alter('stanford_r25_fullcalendar_limit', $calendar_limit).
+      // Get the future limit of reservations.
+      $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($r25_location, $this->moduleHandler);
       $drupalSettings['stanfordR25CalendarLimitMonth'] = $calendar_limit['month'];
       $drupalSettings['stanfordR25CalendarLimitYear'] = $calendar_limit['year'];
 
