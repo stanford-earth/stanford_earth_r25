@@ -4,8 +4,8 @@ stanford_earth_r25_calendar:
       css/stanford_earth_r25.css: {}
       js/fullcalendar/lib/main.min.css: {}
   js:
-    https://unpkg.com/@popperjs/core@2: { external: true, defer: true, async: true }
-    https://unpkg.com/tippy.js@6: { external: true, defer: true, async: true }
+    https://unpkg.com/@popperjs/core@2: { type: external }
+    https://unpkg.com/tippy.js@6: { type: external }
     js/fullcalendar/lib/main.js: {}
     js/stanford_earth_r25_fullcal.js: {}
   dependencies:
@@ -17,7 +17,7 @@ stanford_earth_r25_spud:
     theme:
       css/stanford_earth_r25.css: {}
   js:
-    https://25livepub.collegenet.com/scripts/spuds.js: {external: true, defer: true, async: true}
+    https://25livepub.collegenet.com/scripts/spuds.js: { type: external }
     js/stanford_earth_r25_spud.js: {}
   dependencies:
     - core/jquery
