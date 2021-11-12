@@ -16,7 +16,9 @@
           $('.form-date').attr('max', year.toString() + '-' + month.toString() + '-' + day.toString());
           $('.form-time').attr('step', '1800');
           var time = $('.form-time').val();
-          $('.form-time').val(time.substr(0,5));
+          if (time !== undefined) {
+            $('.form-time').val(time.substr(0, 5));
+          }
         });
     }
   };
