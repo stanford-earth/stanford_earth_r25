@@ -15,6 +15,7 @@ use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
+use Drupal\Core\Extension\ModuleHandler;
 
 /**
  * Provide R25 event feed by location to fullcalendar js.
@@ -53,16 +54,26 @@ class StanfordEarthR25FeedController extends ControllerBase {
   protected $r25Service;
 
   /**
+   * Drupal ModuleHandler
+   *
+   * @var Drupal\Core\Extension\ModuleHandler
+   *   Modulehandler to call hooks.
+   */
+  protected $moduleHandler;
+
+  /**
    * StanfordEarthR25FeedController constructor.
    */
   public function __construct(KillSwitch $killSwitch,
                               ConfigFactory $configFactory,
                               AccountInterface $user,
-                              StanfordEarthR25Service $r25Service) {
+                              StanfordEarthR25Service $r25Service,
+                              ModuleHandler $moduleHandler) {
     $this->killSwitch = $killSwitch;
     $this->configFactory = $configFactory;
     $this->user = $user;
     $this->r25Service = $r25Service;
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -73,7 +84,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
       $container->get('page_cache_kill_switch'),
       $container->get('config.factory'),
       $container->get('current_user'),
-      $container->get('stanford_earth_r25.r25_call')
+      $container->get('stanford_earth_r25.r25_call'),
+      $container->get('module_handler')
     );
   }
 
@@ -120,7 +132,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
 
     // Double-check if the user can view the calendar based on overrides.
     if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
-                                                      $this->user)) {
+                                                      $this->user,
+                                                      $this->moduleHandler)) {
       $this->killSwitch->trigger();
       return JsonResponse::create([]);
     }
