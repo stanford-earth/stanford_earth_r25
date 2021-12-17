@@ -49,6 +49,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
    * @var Drupal\Core\Extension\ModuleHandler
    *   Modulehandler to call hooks.
    */
+  protected $moduleHandler;
 
   /**
    * StanfordEarthR25FeedController constructor.
@@ -116,7 +117,8 @@ class StanfordEarthR25CalendarController extends ControllerBase {
 
     // Double-check if the user can view the calendar based on overrides.
     if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
-                                                      $this->user)) {
+                                                      $this->user,
+                                                      $this->moduleHandler)) {
       $status = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_DISABLED;
     }
 

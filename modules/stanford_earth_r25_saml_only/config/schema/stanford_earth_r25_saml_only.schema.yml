@@ -1,0 +1,10 @@
+stanford_earth_r25_location.*.third_party.stanford_earth_r25_saml_only:
+  type: mapping
+  label: 'Additional mapping for SAML-only locations'
+  mapping:
+    allow_non_drupal_saml_users_view:
+      type: boolean
+      label: 'Allow non-Drupal SAML users to view'
+    allow_non_drupal_saml_users_book:
+      type: boolean
+      label: 'Allow non-Drupal SAML users to book'

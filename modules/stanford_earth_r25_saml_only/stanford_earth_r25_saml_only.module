@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * Implements Drupal hooks for stanford_earth_r25_saml_only module.
+ */
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @param array $form
+ *   The Drupal form definition array.
+ * @param array $form_state
+ *   The Drupal form_state array.
+ * @param string $form_id
+ *   The Drupal form_id string.
+ */
+function stanford_earth_r25_saml_only_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ($form_id === 'stanford_earth_r25_location_add_form' ||
+    $form_id === 'stanford_earth_r25_location_edit_form') {
+    $location = $form_state->getFormObject()->getEntity();
+    // Allow SAML-authenticated users without Drupal accounts to view room.
+    $form['advanced']['allow_non_drupal_saml_users_view'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Allow Authenticated non-Drupal Users to View Room'),
+      '#return_value' => 1,
+      '#default_value' => $location->getThirdPartySetting('stanford_earth_r25_saml_only','allow_non_drupal_saml_users_view', null),
+      '#description' => t('Allow SAML-authenticated users without Drupal accounts to view room.'),
+    ];
+    // Allow SAML-authenticated users without Drupal accounts to book room.
+    $form['advanced']['allow_non_drupal_saml_users_book'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Allow Authenticated non-Drupal Users to Book Room'),
+      '#return_value' => 1,
+      '#default_value' => $location->getThirdPartySetting('stanford_earth_r25_saml_only','allow_non_drupal_saml_users_book', null),
+      '#description' => t('Allow SAML-authenticated users without Drupal accounts to book room.'),
+    ];
+    $form['#entity_builders'][] = 'stanford_earth_r25_saml_only_add_form_builder';
+  }
+}
+
+/**
+ * Entity builder for the R25 Location configuration entity.
+ */
+function stanford_earth_r25_saml_only_add_form_builder(
+  $entity_type,
+  Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location $location,
+  &$form,
+  \Drupal\Core\Form\FormStateInterface $form_state) {
+  if ($form_state->getValue('allow_non_drupal_saml_users_view')) {
+    $location->setThirdPartySetting(
+      'stanford_earth_r25_saml_only',
+      'allow_non_drupal_saml_users_view',
+      $form_state->getValue('allow_non_drupal_saml_users_view')
+    );
+  }
+  else {
+    $location->unsetThirdPartySetting('stanford_earth_r25_saml_only', 'allow_non_drupal_saml_users_view');
+  }
+  if ($form_state->getValue('allow_non_drupal_saml_users_book')) {
+    $location->setThirdPartySetting(
+      'stanford_earth_r25_saml_only',
+      'allow_non_drupal_saml_users_book',
+      $form_state->getValue('allow_non_drupal_saml_users_book')
+    );
+  }
+  else {
+    $location->unsetThirdPartySetting('stanford_earth_r25_saml_only', 'allow_non_drupal_saml_users_book');
+  }
+}
+
+/**
+ * Implements hook_stanford_r25_view_calendar_alter().
+ */
+function stanford_earth_r25_saml_only_stanford_r25_view_calendar_alter(
+  &$canView,
+  Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location $location
+) {
+  $saml_view = $location->getThirdPartySetting(
+    'stanford_earth_r25_saml_only',
+    'allow_non_drupal_saml_users_view',
+    false);
+  if (!$canView && $saml_view) {
+    $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
+    if ($simplesaml->isAuthenticated()) {
+      $canView = TRUE;
+    }
+    else {
+      $simplesaml->externalAuthenticate();
+    }
+  }
+}
