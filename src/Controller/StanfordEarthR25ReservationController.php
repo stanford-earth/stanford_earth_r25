@@ -9,6 +9,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
@@ -38,6 +39,14 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   protected $account;
 
   /**
+   * Drupal ModuleHandler
+   *
+   * @var Drupal\Core\Extension\ModuleHandler
+   *   Modulehandler to call hooks.
+   */
+  protected $moduleHandler;
+
+  /**
    * The StanfordEarthR25ReservationController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
@@ -46,13 +55,17 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *   The Drupal entity type manager to load room entity.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current Drupal user account.
+   * @param \Drupal\Core\Extension\ModuleHandler $moduleHandler
+   *   Drupal ModuleHandler to call hooks.
    */
   public function __construct(FormBuilder $formBuilder,
                               EntityTypeManager $entityTypeManager,
-                              AccountInterface $account) {
+                              AccountInterface $account,
+                              ModuleHandler $moduleHandler) {
     $this->formBuilder = $formBuilder;
     $this->entityTypeManager = $entityTypeManager;
     $this->account = $account;
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -67,7 +80,8 @@ class StanfordEarthR25ReservationController extends ControllerBase {
     return new static(
       $container->get('form_builder'),
       $container->get('entity_type.manager'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('module_handler')
     );
   }
 
@@ -82,7 +96,10 @@ class StanfordEarthR25ReservationController extends ControllerBase {
     // Make sure the current user has permission to book the room.
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($location_id);
-    if (StanfordEarthR25Util::stanfordR25CanBookRoom($entity, $this->account)) {
+    if (StanfordEarthR25Util::stanfordR25CanBookRoom(
+      $entity,
+      $this->account,
+      $this->moduleHandler)) {
       // Get the modal form using the form builder.
       $modal_form =
         $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',

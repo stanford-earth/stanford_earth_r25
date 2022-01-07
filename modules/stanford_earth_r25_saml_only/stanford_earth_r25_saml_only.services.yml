@@ -1,0 +1,10 @@
+services:
+  stanford_earth_r25_saml_only.route_subscriber:
+    class: Drupal\stanford_earth_r25_saml_only\Routing\StanfordEarthR25SamlOnlyRouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  stanford_earth_r25_saml_only.booking_access_checker:
+      class: Drupal\stanford_earth_r25_saml_only\Access\StanfordEarthR25SamlOnlyBookingAccess
+      arguments: ['@module_handler', '@entity_type.manager']
+      tags:
+        - { name: access_check, applies_to: _stanford_earth_r25_saml_only_booking_access_checker }

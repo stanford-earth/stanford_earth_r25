@@ -70,6 +70,19 @@ function stanford_earth_r25_saml_only_add_form_builder(
 }
 
 /**
+ * Check if user is SAML authenticated and authenticate if not.
+ */
+function stanford_earth_r25_saml_only_authenticated() {
+  $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
+  if ($simplesaml->isAuthenticated()) {
+    return TRUE;
+  }
+  else {
+    $simplesaml->externalAuthenticate();
+  }
+}
+
+/**
  * Implements hook_stanford_r25_view_calendar_alter().
  */
 function stanford_earth_r25_saml_only_stanford_r25_view_calendar_alter(
@@ -81,12 +94,22 @@ function stanford_earth_r25_saml_only_stanford_r25_view_calendar_alter(
     'allow_non_drupal_saml_users_view',
     false);
   if (!$canView && $saml_view) {
-    $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
-    if ($simplesaml->isAuthenticated()) {
-      $canView = TRUE;
-    }
-    else {
-      $simplesaml->externalAuthenticate();
-    }
+    $canView = stanford_earth_r25_saml_only_authenticated();
+  }
+}
+
+/**
+ * Implements hook_stanford_r25_book_calendar_alter().
+ */
+function stanford_earth_r25_saml_only_stanford_r25_book_calendar_alter(
+  &$canBook,
+  Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location $location
+) {
+  $saml_book = $location->getThirdPartySetting(
+    'stanford_earth_r25_saml_only',
+    'allow_non_drupal_saml_users_book',
+    false);
+  if (!$canBook && $saml_book) {
+    $canBook = stanford_earth_r25_saml_only_authenticated();
   }
 }

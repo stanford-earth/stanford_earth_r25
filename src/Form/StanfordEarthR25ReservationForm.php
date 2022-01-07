@@ -499,10 +499,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Make sure the current user has permission to book the room.
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($room);
-    if (!StanfordEarthR25Util::stanfordR25CanBookRoom($entity, $this->user)) {
-      $form_state->setErrorByName('stanford_r25_booking_reason',
-        new TranslatableMarkup('User does not have permission to book rooms.'));
-      return;
+    if (!StanfordEarthR25Util::stanfordR25CanBookRoom(
+      $entity,
+      $this->user,
+      $this->moduleHandler)) {
+        $form_state->setErrorByName('stanford_r25_booking_reason',
+          new TranslatableMarkup('User does not have permission to book rooms.'));
+        return;
     }
 
     // Make sure we have a valid date.
@@ -638,11 +641,14 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
-    if (!StanfordEarthR25Util::stanfordR25CanBookRoom($entity, $this->user)) {
-      $r25_messages['failure'][] = new TranslatableMarkup('You do not have permission to book this room.');
-      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-      $form_state->setStorage($storage);
-      return;
+    if (!StanfordEarthR25Util::stanfordR25CanBookRoom(
+      $entity,
+      $this->user,
+      $this->moduleHandler)) {
+        $r25_messages['failure'][] = new TranslatableMarkup('You do not have permission to book this room.');
+        $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+        $form_state->setStorage($storage);
+        return;
     }
     $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
     // We'll build a list of email addresses to send reservation info to.

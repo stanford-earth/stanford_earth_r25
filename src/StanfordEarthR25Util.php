@@ -300,12 +300,15 @@ class StanfordEarthR25Util {
    *   Room entity to compare against the current user.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Account to check against override_view_roles for location.
+   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   *   The module handler to call alter hooks.
    *
    * @return bool
    *   Boolean indicating that the room is bookable by the user.
    */
   public static function stanfordR25CanBookRoom(EntityInterface $r25_location = NULL,
-                                                AccountInterface $account = NULL) {
+                                                AccountInterface $account = NULL,
+                                                ModuleHandler $module_handler = NULL) {
     // Check if the user can book the room location depending on Drupal
     // permissions and the location's override settings.
     $canBook = FALSE;
@@ -327,6 +330,13 @@ class StanfordEarthR25Util {
             }
           }
         }
+      }
+      // See if any modules want to override this.
+      if (!empty($module_handler)) {
+        $module_handler->alter(
+          'stanford_r25_book_calendar',
+          $canBook,
+          $r25_location);
       }
     }
     return $canBook;

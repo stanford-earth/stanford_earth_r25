@@ -130,7 +130,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $drupalSettings['stanfordR25Status'] = $status;
       $drupalSettings['stanfordR25MaxHours'] = $r25_location->get('max_hours');
       $bookable = StanfordEarthR25Util::stanfordR25CanBookRoom($r25_location,
-        $this->user);
+        $this->user, $this->moduleHandler);
       $can_book = ($bookable ? 1 : 0);
       $drupalSettings['stanfordR25Access'] = $can_book;
       $drupalSettings['stanfordR25DefaultView'] = $r25_location->get('default_view');
