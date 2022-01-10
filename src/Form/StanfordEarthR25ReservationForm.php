@@ -754,7 +754,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $res_username = $this->user->getDisplayName();
       $res_usermail = $this->user->getEmail();
     }
-    $this->moduleHandler->alter('stanford_r25_contact', $res_username);
+    $this->moduleHandler->alter(
+      'stanford_r25_contact',
+      $res_username,
+      $res_usermail,
+    );
     $contact_str = '<p>Self service reservation made by ' . $res_username . ' - <a href="mailto:' . $res_usermail . '">click to contact by email.</a></p>';
     $contact_str = htmlspecialchars($contact_str);
     // Send the request to our api function.

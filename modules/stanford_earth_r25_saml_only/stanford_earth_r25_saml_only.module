@@ -113,3 +113,28 @@ function stanford_earth_r25_saml_only_stanford_r25_book_calendar_alter(
     $canBook = stanford_earth_r25_saml_only_authenticated();
   }
 }
+
+/**
+ * Implements hook_stanford_r25_contact_alter().
+ */
+function stanford_earth_r25_saml_only_stanford_r25_contact_alter(
+  &$contactName,
+  &$contactMail
+) {
+  $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
+  if ($simplesaml->isAuthenticated()) {
+    $attribs = $simplesaml->getAttributes();
+    if (isset($attribs['displayName'])) {
+      $name = reset($attribs['displayName']);
+      if ($name !== FALSE) {
+        $contactName = $name;
+      }
+    }
+    if (isset($attribs['mail'])) {
+      $mail = reset($attribs['mail']);
+      if ($mail !== FALSE) {
+        $contactMail = $mail;
+      }
+    }
+  }
+}
