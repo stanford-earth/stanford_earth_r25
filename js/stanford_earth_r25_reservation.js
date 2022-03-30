@@ -15,9 +15,15 @@
           var year = drupalSettings.stanfordEarthR25.stanfordR25CalendarLimitYear;
           $('.form-date').attr('max', year.toString() + '-' + month.toString() + '-' + day.toString());
           $('.form-time').attr('step', '1800');
-          var time = $('.form-time').val();
+          var time = $('.js-form-item-stanford-r25-booking-date-time .form-time').val();
+          console.log('start '+time);
           if (time !== undefined) {
-            $('.form-time').val(time.substr(0, 5));
+            $('.js-form-item-stanford-r25-booking-date-time .form-time').val(time.substr(0, 5));
+          }
+          time = $('.js-form-item-stanford-r25-booking-enddate-time .form-time').val();
+          console.log('end '+time);
+          if (time !== undefined) {
+            $('.js-form-item-stanford-r25-booking-enddate-time .form-time').val(time.substr(0, 5));
           }
         });
     }

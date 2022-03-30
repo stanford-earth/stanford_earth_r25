@@ -98,6 +98,20 @@ stanford_earth_r25_location.reservation:
   requirements:
     _permission: 'book r25 rooms'
 
+stanford_earth_r25_location.reservation_nopopup:
+  path: '/r25/reservation/nopopup/{location_id}/{start}'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ReservationController::reserve_nopopup'
+    _title: 'Stanford R25 Reservation Page'
+  options:
+    parameters:
+      location_id:
+        type: string
+      start:
+        type: string
+  requirements:
+    _permission: 'book r25 rooms'
+
 stanford_earth_r25_location.modify:
   path: '/r25/modify/{op}/{location_id}/{event_id}/{start}'
   defaults:
@@ -115,4 +129,3 @@ stanford_earth_r25_location.modify:
         type: string
   requirements:
     _permission: 'book r25 rooms'
-

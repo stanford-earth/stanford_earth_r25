@@ -50,12 +50,13 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "postprocess_booking",
  *     "override_booking_instructions",
  *     "event_attributes",
- *     "event_attributes_field",
+ *     "event_attributes_fields",
  *     "contact_attribute",
  *     "contact_attribute_field",
  *     "auto_billing_code",
  *     "override_view_roles",
  *     "override_book_roles",
+ *     "nopopup_reservation_form",
  *     "location_info"
  *   },
  *   links = {
@@ -220,7 +221,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    *
    * @var array
    */
-  protected $event_attributes_field;
+  protected $event_attributes_fields;
 
   /**
    * Contact attribute.
@@ -258,6 +259,13 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $override_book_roles;
 
   /**
+   * No Pop-up reservation form for location.
+   *
+   * @var bool
+   */
+  protected $nopopup_reservation_form;
+
+  /**
    * Location info from R25.
    *
    * @var array
@@ -271,6 +279,12 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
     $location_info = StanfordEarthR25Util::stanfordR25GetRoomInfo($this->get('space_id'));
     $this->set('updated', \Drupal::service('date.formatter')->format(time()));
     $this->set('location_info', $location_info);
+    $event_attributes_fields =
+      StanfordEarthR25Util::stanfordR25UpdateEventAttributeFields($this->get('event_attributes'));
+    $this->set('event_attributes_fields', $event_attributes_fields);
+    $contact_attribute_field =
+      StanfordEarthR25Util::stanfordR25UpdateEventAttributeFields($this->get('contact_attribute'));
+    $this->set('contact_attribute_field', $contact_attribute_field);
     $return = parent::save();
     return $return;
   }

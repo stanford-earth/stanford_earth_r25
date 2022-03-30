@@ -263,10 +263,10 @@ class StanfordEarthR25LocationForm extends EntityForm {
     ];
     // Whether there is an additional contact attribute defined for your event;
     // provide the attribute id as above.
-    $form['advanced']['contact_attr'] = [
+    $form['advanced']['contact_attribute'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Contact Attribute'),
-      '#default_value' => $location->get('contact_attr'),
+      '#default_value' => $location->get('contact_attribute'),
       '#description' => $this->t("Event Custom Attribute in which we will store the user's contact information."),
     ];
     // A billing code to use if you want to auto-select a billing code
@@ -323,6 +323,15 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $override_instr['value'],
       '#format' => $override_instr['format'],
       '#base_type' => 'textarea',
+    ];
+
+    // Checkbox if you want to the reservation form for the location
+    // to appear on a new page instead of a pop-up form.
+    $form['advanced']['nopopup_reservation_form'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('No Pop-up Reservation Form'),
+      '#description' => $this->t("Check this box if reservation form for this location should be on a new page instead of a pop-up."),
+      '#default_value' => $location->get('nopopup_reservation_form'),
     ];
 
     // Get the user roles.

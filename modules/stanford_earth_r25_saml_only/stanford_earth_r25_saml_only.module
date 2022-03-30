@@ -78,7 +78,11 @@ function stanford_earth_r25_saml_only_authenticated() {
     return TRUE;
   }
   else {
-    $simplesaml->externalAuthenticate();
+    $uri = \Drupal::request()->getRequestUri();
+    if (!empty($uri) &&
+      substr($uri,0, 17) === '/r25/reservation/') {
+      $simplesaml->externalAuthenticate();
+    }
   }
 }
 
@@ -89,12 +93,14 @@ function stanford_earth_r25_saml_only_stanford_r25_view_calendar_alter(
   &$canView,
   Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location $location
 ) {
-  $saml_view = $location->getThirdPartySetting(
-    'stanford_earth_r25_saml_only',
-    'allow_non_drupal_saml_users_view',
-    false);
-  if (!$canView && $saml_view) {
-    $canView = stanford_earth_r25_saml_only_authenticated();
+  if (!$canView) {
+    $saml_view = $location->getThirdPartySetting(
+      'stanford_earth_r25_saml_only',
+      'allow_non_drupal_saml_users_view',
+      FALSE);
+    if ($saml_view) {
+      $canView = stanford_earth_r25_saml_only_authenticated();
+    }
   }
 }
 
@@ -105,12 +111,14 @@ function stanford_earth_r25_saml_only_stanford_r25_book_calendar_alter(
   &$canBook,
   Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location $location
 ) {
-  $saml_book = $location->getThirdPartySetting(
-    'stanford_earth_r25_saml_only',
-    'allow_non_drupal_saml_users_book',
-    false);
-  if (!$canBook && $saml_book) {
-    $canBook = stanford_earth_r25_saml_only_authenticated();
+  if (!$canBook) {
+    $saml_book = $location->getThirdPartySetting(
+      'stanford_earth_r25_saml_only',
+      'allow_non_drupal_saml_users_book',
+      FALSE);
+    if ($saml_book) {
+      $canBook = stanford_earth_r25_saml_only_authenticated();
+    }
   }
 }
 
@@ -136,5 +144,48 @@ function stanford_earth_r25_saml_only_stanford_r25_contact_alter(
         $contactMail = $mail;
       }
     }
+  }
+}
+
+/**
+ * Hook to specify if a SAML-authenticated user is allowed to login.
+ *
+ * @param array $attributes
+ *   The SimpleSAMLphp attributes for this user.
+ *
+ * @return bool
+ *   TRUE if SAML user is allowed to log in, FALSE if not.
+ */
+function stanford_earth_r25_saml_only_simplesamlphp_auth_allow_login(array $attributes) {
+  if (isset($_REQUEST['destination']) &&
+      substr($_REQUEST['destination'],0, 5) === '/r25/') {
+    $module_handler = \Drupal::service('module_handler');
+    foreach ($module_handler->getImplementations('simplesamlphp_auth_allow_login') as $module) {
+      if ($module !== 'stanford_earth_r25_saml_only') {
+        if ($module_handler->invoke($module, 'simplesamlphp_auth_allow_login', [$attributes]) === FALSE) {
+          $redirect = $GLOBALS['base_url'];
+          if (isset($_REQUEST['destination'])) {
+            $redirect .= $_REQUEST['destination'];
+          }
+          header('Location: ' . $redirect);
+          http_response_code(302);
+          exit();
+        }
+      }
+    }
+  }
+  return TRUE;
+}
+
+/**
+ * Implements hook_module_implements_alter() to make sure our
+ * hook_simplesamlphp_auth_allow_login implementation runs first.
+ */
+function stanford_earth_r25_saml_only_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'simplesamlphp_auth_allow_login') {
+    if (array_key_exists('stanford_earth_r25_saml_only', $implementations)) {
+      unset($implementations['stanford_earth_r25_saml_only']);
+    }
+    $implementations = ['stanford_earth_r25_saml_only' => FALSE] + $implementations;
   }
 }

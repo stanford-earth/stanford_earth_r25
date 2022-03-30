@@ -15,8 +15,11 @@ class StanfordEarthR25Util {
 
   // Define room status codes as constants.
   const STANFORD_R25_ROOM_STATUS_DISABLED = 0;
+
   const STANFORD_R25_ROOM_STATUS_READONLY = 1;
+
   const STANFORD_R25_ROOM_STATUS_TENTATIVE = 2;
+
   const STANFORD_R25_ROOM_STATUS_CONFIRMED = 3;
 
   /**
@@ -129,7 +132,8 @@ class StanfordEarthR25Util {
    *   The photo URI.
    */
   public static function stanfordR25FilePath($photo_id) {
-    $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+    $config = \Drupal::configFactory()
+      ->getEditable('stanford_earth_r25.credentialsettings');
     $image_directory = $config->get('stanford_r25_room_image_directory');
     if (empty($image_directory)) {
       $image_directory = '';
@@ -226,10 +230,11 @@ class StanfordEarthR25Util {
             $photo = $photo_status['output'];
             $destination = self::stanfordR25FilePath($photo_id);
             if (!file_save_data($photo,
-                                $destination,
-                                FileSystemInterface::EXISTS_REPLACE)) {
-              \Drupal::messenger()->addMessage('Unable to save image for R25 Location ' . $space_id,
-                MessengerInterface::TYPE_ERROR);
+              $destination,
+              FileSystemInterface::EXISTS_REPLACE)) {
+              \Drupal::messenger()
+                ->addMessage('Unable to save image for R25 Location ' . $space_id,
+                  MessengerInterface::TYPE_ERROR);
               $photo_id = NULL;
             }
           }
@@ -256,9 +261,9 @@ class StanfordEarthR25Util {
    * @return bool
    *   Boolean indicating the room is viewable.
    */
-  public static function stanfordR25CanViewRoom(EntityInterface $r25_location = NULL,
+  public static function stanfordR25CanViewRoom(EntityInterface  $r25_location = NULL,
                                                 AccountInterface $account = NULL,
-                                                ModuleHandler $module_handler = NULL) {
+                                                ModuleHandler    $module_handler = NULL) {
     // Check if the user can view the room calendar depending on Drupal
     // permissions and the location's override settings.
     $canView = FALSE;
@@ -306,9 +311,9 @@ class StanfordEarthR25Util {
    * @return bool
    *   Boolean indicating that the room is bookable by the user.
    */
-  public static function stanfordR25CanBookRoom(EntityInterface $r25_location = NULL,
+  public static function stanfordR25CanBookRoom(EntityInterface  $r25_location = NULL,
                                                 AccountInterface $account = NULL,
-                                                ModuleHandler $module_handler = NULL) {
+                                                ModuleHandler    $module_handler = NULL) {
     // Check if the user can book the room location depending on Drupal
     // permissions and the location's override settings.
     $canBook = FALSE;
@@ -364,7 +369,8 @@ class StanfordEarthR25Util {
     // to be before the next blackout starts.
     // If I'm currently past the last possible blackout, consider me blacked out
     // so an admin will update the dates.
-    $blackouts = \Drupal::config('stanford_earth_r25.adminsettings')->get('stanford_r25_blackout_dates');
+    $blackouts = \Drupal::config('stanford_earth_r25.adminsettings')
+      ->get('stanford_r25_blackout_dates');
     if (empty($blackouts)) {
       $blackouts = [];
     }
@@ -427,8 +433,9 @@ class StanfordEarthR25Util {
       if ((empty($result['index']['R25:SPACE_ID'])) || (!is_array($result['index']['R25:SPACE_ID'])) ||
         ($result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] != $rooms[$room_id]['space_id'])
       ) {
-        \Drupal::messenger()->addMessage('Room mismatch for confirm or cancel event.',
-          MessengerInterface::TYPE_ERROR);
+        \Drupal::messenger()
+          ->addMessage('Room mismatch for confirm or cancel event.',
+            MessengerInterface::TYPE_ERROR);
         return FALSE;
       }
 
@@ -448,7 +455,8 @@ class StanfordEarthR25Util {
         if (!empty($user->getEmail()) && $op === 'cancel') {
           // See if requestor email matches or is quickbook.
           // If quickbook, we must check the user's email differently.
-          $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+          $config = \Drupal::configFactory()
+            ->getEditable('stanford_earth_r25.credentialsettings');
           $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
 
           // Get the R25 user id and email address for the event scheduler.
@@ -533,7 +541,8 @@ class StanfordEarthR25Util {
     }
     else {
       // Set an error message if we couldn't contact 25Live.
-      \Drupal::messenger()->addMessage('Unable to retrieve data from 25Live. Please try again later.', TYPE_ERROR);
+      \Drupal::messenger()
+        ->addMessage('Unable to retrieve data from 25Live. Please try again later.', TYPE_ERROR);
       $output = FALSE;
     }
     return $output;
@@ -571,7 +580,8 @@ class StanfordEarthR25Util {
 
     // If event was not done with quickbook, add scheduler's email to the list.
     // If event *was* done with quickbook, find scheduler's email id in event.
-    $config = \Drupal::configFactory()->getEditable('stanford_earth_r25.credentialsettings');
+    $config = \Drupal::configFactory()
+      ->getEditable('stanford_earth_r25.credentialsettings');
     $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
     $quickbook = FALSE;
     if (!empty($results['index']['R25:ROLE_NAME']) && is_array($results['index']['R25:ROLE_NAME'])) {
@@ -620,7 +630,7 @@ class StanfordEarthR25Util {
    *   Array containing calendar limit info.
    */
   public static function stanfordR25CalendarLimit(EntityInterface $r25_location = NULL,
-                                                ModuleHandler $module_handler = NULL) {
+                                                  ModuleHandler   $module_handler = NULL) {
     // The default calendar limit is for one year in the future, but we have
     // a hook, hook_stanford_r25_fullcalendar_limit_alter(&$calendar_limit)
     // where you can change it.
@@ -632,6 +642,62 @@ class StanfordEarthR25Util {
     ];
     $module_handler->alter('stanford_r25_fullcalendar_limit', $calendar_limit);
     return $calendar_limit;
+  }
+
+  /**
+   * If using custom event attributes, use the ids to retrieve the name and type
+   * of each field.
+   *
+   * @param string $attr_list
+   *   Comma separated string of attribute ids.
+   * @param boolean $contact
+   *   True if this is a contact attribute, false if this is an event attribute.
+   *
+   * @return array
+   *   The attribute fields array.
+   */
+  public static function stanfordR25UpdateEventAttributeFields($attr_list, $contact = FALSE) {
+    $field_info = [];
+    if (!empty($attr_list)) {
+      $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
+      $attrs = explode(",", $attr_list);
+      foreach ($attrs as $attr) {
+        $attr_id = trim($attr);
+        if (substr($attr_id, -1) == '*') {
+          $attr_id = substr($attr_id, 0, strlen($attr_id) - 1);
+        }
+        $r25_result = $r25_service->stanfordR25ApiCall('evatrb', $attr_id);
+        if ($r25_result['status']['status'] === TRUE) {
+          $results = $r25_result['output'];
+          $attrName = '';
+          $attrType = '';
+          if (!empty($results['index']['R25:ATTRIBUTE_NAME']) &&
+            is_array($results['index']['R25:ATTRIBUTE_NAME'])) {
+            $attrNameIdx = reset($results['index']['R25:ATTRIBUTE_NAME']);
+            if (!empty($attrNameIdx) &&
+              !empty($results['vals'][$attrNameIdx]['value'])) {
+              $attrName = $results['vals'][$attrNameIdx]['value'];
+            }
+          }
+          if (!empty($results['index']['R25:ATTRIBUTE_TYPE']) &&
+            is_array($results['index']['R25:ATTRIBUTE_TYPE'])) {
+            $attrTypeIdx = reset($results['index']['R25:ATTRIBUTE_TYPE']);
+            if (!empty($attrTypeIdx) &&
+              !empty($results['vals'][$attrTypeIdx]['value'])) {
+              $attrType = $results['vals'][$attrTypeIdx]['value'];
+            }
+          }
+          if (!empty($attrName) && !empty($attrType)) {
+            $field_info[$attr_id] = [
+              'name' => $attrName,
+              'type' => $attrType,
+              'contact' => $contact,
+            ];
+          }
+        }
+      }
+    }
+    return $field_info;
   }
 
 }

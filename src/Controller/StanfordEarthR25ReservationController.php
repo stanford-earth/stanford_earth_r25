@@ -116,4 +116,28 @@ class StanfordEarthR25ReservationController extends ControllerBase {
     return $response;
   }
 
+  /**
+   * Returns a calendar page render array without a reservation popup.
+   *
+   * @return array
+   *   Calendar page.
+   */
+  public function reserve_nopopup($location_id, $start) {
+    // Make sure the current user has permission to book the room.
+    $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
+      ->load($location_id);
+    if (StanfordEarthR25Util::stanfordR25CanBookRoom(
+      $entity,
+      $this->account,
+      $this->moduleHandler)) {
+      $response =
+        $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
+          $location_id, $start);
+    }
+    else {
+      $response = ['#markup' => 'You do not have permission to book this room.'];
+    }
+    return $response;
+  }
+
 }

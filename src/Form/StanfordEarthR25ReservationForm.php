@@ -172,7 +172,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
   public function buildForm(array $form,
                             FormStateInterface $form_state,
                             $room = NULL,
-                            $start = NULL) {
+                            $start = NULL,
+                            $nopopup = False) {
     $rooms = [];
     $adminSettings = [];
     if (!empty($room)) {
@@ -337,8 +338,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Each of these corresponds to a "custom attribute" for events in 25Live
     // and are specified in our room config as an array of attrib ids,
     // field name, and field type.
-    if (!empty($rooms[$room]['event_attribute_fields'])) {
-      foreach ($rooms[$room]['event_attribute_fields'] as $attr_id => $attr_info) {
+    if (!empty($rooms[$room]['event_attributes_fields'])) {
+      foreach ($rooms[$room]['event_attributes_fields'] as $attr_id => $attr_info) {
         switch ($attr_info['type']) {
           case 'S':
             $field_type = 'textfield';
@@ -365,8 +366,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
 
     // In the room config, we can specify a separate contact field attribute.
-    if (!empty($rooms[$room]['contact_attr_field'])) {
-      foreach ($rooms[$room]['contact_attr_field'] as $attr_id => $attr_info) {
+    if (!empty($rooms[$room]['contact_attribute_field'])) {
+      foreach ($rooms[$room]['contact_attribute_field'] as $attr_id => $attr_info) {
         switch ($attr_info['type']) {
           case 'S':
             $field_type = 'textfield';
@@ -394,27 +395,29 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
-    $form['actions'] = [
-      '#type' => 'actions',
-    ];
-    $form['actions']['send'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Reserve'),
-      '#attributes' => [
-        'class' => [
-          'use-ajax',
+    if (!$nopopup) {
+      $form['actions'] = [
+        '#type' => 'actions',
+      ];
+      $form['actions']['send'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Reserve'),
+        '#attributes' => [
+          'class' => [
+            'use-ajax',
+          ],
         ],
-      ],
-      '#ajax' => [
-        'callback' => [$this, 'submitModalFormAjax'],
-        'event' => 'click',
-      ],
-    ];
+        '#ajax' => [
+          'callback' => [$this, 'submitModalFormAjax'],
+          'event' => 'click',
+        ],
+      ];
 
-    $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
+      $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
+    }
     $form['#attached']['library'][] = "stanford_earth_r25/stanford_earth_r25_reservation";
-
     return $form;
+
   }
 
   /**
@@ -694,8 +697,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '/templates/stanford_r25_reserve_attr.xml');
     $room = $booking_info['room'];
     $form_vals = $form_state->getValues();
-    if (!empty($room['event_attribute_fields'])) {
-      foreach ($room['event_attribute_fields'] as $key => $value) {
+    if (!empty($room['event_attributes_fields'])) {
+      foreach ($room['event_attributes_fields'] as $key => $value) {
         if (!empty($form_vals['stanford_r25_booking_attr' . $key])) {
           $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
           $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
@@ -706,8 +709,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     // If there is a 25Live custom attribute we've defined for contact
     // information, add the XML snippet for it to the request.
-    if (!empty($room['contact_attr_field'])) {
-      foreach ($room['contact_attr_field'] as $key => $value) {
+    if (!empty($room['contact_attribute_field'])) {
+      foreach ($room['contact_attribute_field'] as $key => $value) {
         if (!empty($form_vals['stanford_r25_contact_' . $key])) {
           $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
           $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);

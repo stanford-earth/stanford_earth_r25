@@ -65,7 +65,7 @@ stanford_earth_r25_location.*:
     event_attributes:
       type: string
       label: 'Event Attributes'
-    event_attributes_field:
+    event_attributes_fields:
       type: sequence
       label: 'Event Attribute R25 Info'
       sequence:
@@ -121,6 +121,9 @@ stanford_earth_r25_location.*:
       sequence:
         type: string
         label: 'Drupal Role'
+    nopopup_reservation_form:
+      type: boolean
+      label: 'No Pop-up Reservation Form'
     location_info:
       type: sequence
       label: 'R25 Location Info'
