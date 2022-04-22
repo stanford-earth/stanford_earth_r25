@@ -10,7 +10,7 @@ var calendar;
     attach: function (context, settings) {
 
       // if we are coming back from a reservation, check cookies for date to bring the user back to
-      var defaultDate = readCookie("stanford-r25-date");
+      var defaultDate = readCookie('stanford-r25-date');
       if (defaultDate === null) {
         // if no cookie, see if a date was set by Drupal from a URL parameter
         if (drupalSettings.stanfordEarthR25.hasOwnProperty('stanfordR25ParamDate')) {
@@ -20,6 +20,8 @@ var calendar;
           // otherwise, just use today's date
           defaultDate = new Date();
         }
+      } else {
+        defaultDate = new Date(defaultDate);
       }
       // cookie would be a single-use thing, so delete it
       deleteCookie("stanford-r25-date");
@@ -216,13 +218,18 @@ var calendar;
                 start.getMinutes() + endStr;
               link = link.replace('now', startStr);
               //$('#stanford-r25-reservation a').click();
-              var ajaxSettings = {
-                url: link,
-                dialogType: 'modal',
-                dialog: {width: 800},
-              };
-              var myAjaxObject = Drupal.ajax(ajaxSettings);
-              myAjaxObject.execute();
+              console.log(stanford_r25_room);
+              if (stanford_r25_room['nopopup_reservation_form'] == 1) {
+                window.location.href = link;
+              } else {
+                var ajaxSettings = {
+                  url: link,
+                  dialogType: 'modal',
+                  dialog: {width: 800},
+                };
+                var myAjaxObject = Drupal.ajax(ajaxSettings);
+                myAjaxObject.execute();
+              }
             }
           },
           // set whether the calendar is selectable, as defined up above

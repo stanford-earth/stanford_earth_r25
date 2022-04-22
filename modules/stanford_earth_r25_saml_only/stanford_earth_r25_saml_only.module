@@ -72,17 +72,30 @@ function stanford_earth_r25_saml_only_add_form_builder(
 /**
  * Check if user is SAML authenticated and authenticate if not.
  */
-function stanford_earth_r25_saml_only_authenticated() {
+function stanford_earth_r25_saml_only_authenticated($book = false) {
   $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
   if ($simplesaml->isAuthenticated()) {
     return TRUE;
   }
   else {
     $uri = \Drupal::request()->getRequestUri();
-    if (!empty($uri) &&
-      substr($uri,0, 17) === '/r25/reservation/') {
-      $simplesaml->externalAuthenticate();
+    if (!empty($uri)) {
+      $doAuth = FALSE;
+      if ($book && substr($uri,0, 17) === '/r25/reservation/') {
+        $doAuth = TRUE;
+      }
+      elseif (!$book) {
+        if (substr($uri, 0, 5) === '/r25/') {
+          if (substr($uri, -9, 9) === '/calendar') {
+            $doAuth = TRUE;
+          }
+        }
+      }
+      if ($doAuth) {
+        $simplesaml->externalAuthenticate();
+      }
     }
+    return FALSE;
   }
 }
 
@@ -93,7 +106,7 @@ function stanford_earth_r25_saml_only_stanford_r25_view_calendar_alter(
   &$canView,
   Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location $location
 ) {
-  if (!$canView) {
+  //if (!$canView) {
     $saml_view = $location->getThirdPartySetting(
       'stanford_earth_r25_saml_only',
       'allow_non_drupal_saml_users_view',
@@ -101,7 +114,7 @@ function stanford_earth_r25_saml_only_stanford_r25_view_calendar_alter(
     if ($saml_view) {
       $canView = stanford_earth_r25_saml_only_authenticated();
     }
-  }
+  //}
 }
 
 /**
@@ -117,7 +130,7 @@ function stanford_earth_r25_saml_only_stanford_r25_book_calendar_alter(
       'allow_non_drupal_saml_users_book',
       FALSE);
     if ($saml_book) {
-      $canBook = stanford_earth_r25_saml_only_authenticated();
+      $canBook = stanford_earth_r25_saml_only_authenticated(true);
     }
   }
 }

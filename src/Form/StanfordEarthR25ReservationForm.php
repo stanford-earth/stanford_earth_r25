@@ -20,6 +20,8 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Render\Renderer;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Url;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
 
 /**
  * Drupal Ajax form to reserve a 25Live room.
@@ -76,6 +78,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
   protected $moduleHandler;
 
   /**
+   * Drupal temp store service.
+   *
+   * @var Drupal\Core\TempStore\PrivateTempStoreFactory;
+   */
+  protected $tempStore;
+
+  /**
    * Class constructor.
    */
   public function __construct(AccountInterface $user,
@@ -84,7 +93,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
                               EntityTypeManager $entityTypeManager,
                               Renderer $renderer,
                               Messenger $messenger,
-                              ModuleHandler $moduleHandler) {
+                              ModuleHandler $moduleHandler,
+                              PrivateTempStoreFactory $tempStore) {
     $this->user = $user;
     $this->mailManager = $mailManager;
     $this->r25Service = $r25Service;
@@ -92,6 +102,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $this->renderer = $renderer;
     $this->messenger = $messenger;
     $this->moduleHandler = $moduleHandler;
+    $this->tempStore = $tempStore;
   }
 
   /**
@@ -107,7 +118,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $container->get('entity_type.manager'),
       $container->get('renderer'),
       $container->get('messenger'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('tempstore.private')
     );
   }
 
@@ -173,7 +185,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
                             FormStateInterface $form_state,
                             $room = NULL,
                             $start = NULL,
-                            $nopopup = False) {
+                            $nopopup = false) {
     $rooms = [];
     $adminSettings = [];
     if (!empty($room)) {
@@ -395,10 +407,19 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
-    if (!$nopopup) {
-      $form['actions'] = [
-        '#type' => 'actions',
+    $form['actions'] = [
+      '#type' => 'actions',
+    ];
+    if ($nopopup) {
+      $drupalSettings = $this->tempStore->get('stanfordEarthR25')->get('drupalSettings');
+      $form['actions']['submit'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Reserve'),
       ];
+      $form['#attached']['drupalSettings'] = ['stanfordEarthR25' => $drupalSettings];
+      $form['#attached']['library'][] = 'stanford_earth_r25/stanford_earth_r25_reservation_page';
+    }
+    else {
       $form['actions']['send'] = [
         '#type' => 'submit',
         '#value' => $this->t('Reserve'),
@@ -414,8 +435,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       ];
 
       $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
+      $form['#attached']['library'][] = "stanford_earth_r25/stanford_earth_r25_reservation";
     }
-    $form['#attached']['library'][] = "stanford_earth_r25/stanford_earth_r25_reservation";
     return $form;
 
   }
@@ -644,6 +665,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
+    $nopopup = $entity->get('nopopup_reservation_form');
+    // if nopopup redirect with $form_state['redirect'] = 'home';
+    if ($nopopup) {
+      $url = new Url('entity.stanford_earth_r25_location.calendar',
+        ['r25_location' => $booking_info['room']['id']]);
+      $form_state->setRedirectUrl($url);
+    }
     if (!StanfordEarthR25Util::stanfordR25CanBookRoom(
       $entity,
       $this->user,
@@ -955,7 +983,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
         $r25_service->stanfordR25ApiCall('delete', $event_id);
       }
     }
-
   }
 
 }

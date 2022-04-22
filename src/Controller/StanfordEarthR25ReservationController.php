@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
@@ -47,6 +48,14 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   protected $moduleHandler;
 
   /**
+   * Page cache kill switch.
+   *
+   * @var Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   *   The kill switch service.
+   */
+  protected $killSwitch;
+
+  /**
    * The StanfordEarthR25ReservationController constructor.
    *
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
@@ -57,15 +66,19 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *   The current Drupal user account.
    * @param \Drupal\Core\Extension\ModuleHandler $moduleHandler
    *   Drupal ModuleHandler to call hooks.
+   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   *   Drupal KillSwitch to keep from caching
    */
   public function __construct(FormBuilder $formBuilder,
                               EntityTypeManager $entityTypeManager,
                               AccountInterface $account,
-                              ModuleHandler $moduleHandler) {
+                              ModuleHandler $moduleHandler,
+                              KillSwitch $killSwitch) {
     $this->formBuilder = $formBuilder;
     $this->entityTypeManager = $entityTypeManager;
     $this->account = $account;
     $this->moduleHandler = $moduleHandler;
+    $this->killSwitch = $killSwitch;
   }
 
   /**
@@ -81,7 +94,8 @@ class StanfordEarthR25ReservationController extends ControllerBase {
       $container->get('form_builder'),
       $container->get('entity_type.manager'),
       $container->get('current_user'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('page_cache_kill_switch')
     );
   }
 
@@ -92,26 +106,52 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *   Reservation form ajax modal dialog.
    */
   public function reserve($location_id, $start) {
-    $response = new AjaxResponse();
     // Make sure the current user has permission to book the room.
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($location_id);
-    if (StanfordEarthR25Util::stanfordR25CanBookRoom(
-      $entity,
-      $this->account,
-      $this->moduleHandler)) {
-      // Get the modal form using the form builder.
-      $modal_form =
-        $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
-          $location_id, $start);
-      // Add an AJAX command to open a modal dialog with form as the content.
-      $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
-        $modal_form, ['width' => '800']));
+    $nopopup = $entity->get('nopopup_reservation_form');
+    $response = [];
+    if (empty($nopopup)) {
+      $response = new AjaxResponse();
+      if (StanfordEarthR25Util::stanfordR25CanBookRoom(
+        $entity,
+        $this->account,
+        $this->moduleHandler)) {
+        // Get the modal form using the form builder.
+        $modal_form =
+          $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
+            $location_id, $start);
+        // Add an AJAX command to open a modal dialog with form as the content.
+        $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
+          $modal_form, ['width' => '800']));
+      }
+      else {
+        $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
+          'User does not have permission to book this location.',
+          ['width' => '800', 'closeOnEscape' => TRUE]));
+      }
     }
     else {
-      $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
-        'User does not have permission to book this location.',
-        ['width' => '800', 'closeOnEscape' => TRUE]));
+      $this->killSwitch->trigger();
+      if (StanfordEarthR25Util::stanfordR25CanBookRoom(
+        $entity,
+        $this->account,
+        $this->moduleHandler)) {
+        $response =
+          $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
+            $location_id, $start, true);
+        /*
+        $response = [
+          // Your theme hook name.
+          '#theme' => 'stanford_earth_r25-theme-hook',
+          // Your variables.
+          '#form' => $resForm,
+        ];
+        */
+      }
+      else {
+        $response = ['#markup' => 'You do not have permission to book this room.'];
+      }
     }
     return $response;
   }

@@ -4,6 +4,20 @@
  * @file
  * Implements stanford_earth_r25 hooks for Hartley Conf Center`.
  */
+function stanford_earth_r25_saml_only_authenticated() {
+  $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
+  if ($simplesaml->isAuthenticated()) {
+    $attrs = $simplesaml->getAttributes();
+    return TRUE;
+  }
+  else {
+    $uri = \Drupal::request()->getRequestUri();
+    if (!empty($uri) &&
+      substr($uri,0, 17) === '/r25/reservation/') {
+      $simplesaml->externalAuthenticate();
+    }
+  }
+}
 
 /**
  * Implements hook_stanford_r25_contact_alter().

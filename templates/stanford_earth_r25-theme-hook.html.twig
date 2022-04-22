@@ -49,7 +49,7 @@
 </div>
 {% set displaytype = r25_location.get('displaytype') %}
 {% if displaytype is empty %}
-  {%set displaytype = 0 %}
+  {% set displaytype = 0 %}
 {% endif %}
 <div id="stanford-r25-reservation">
   {% if displaytype > 1 %}
@@ -57,9 +57,15 @@
     {% set start = 'now' %}
     {% if canBook is not empty %}
       {% set  btn_txt = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_reserve_msg') %}
-      {{ link("#{btn_txt}",
-        "internal:/r25/reservation/#{room_id}/#{start}",
-        { 'class':['use-ajax', 'button']} ) }}
+      {%  if r25_location.get('nopopup_reservation_form') == 1 %}
+        {{ link("#{btn_txt}",
+          "internal:/r25/reservation/#{room_id}/#{start}",
+          { 'class':['button']} ) }}
+      {% else %}
+        {{ link("#{btn_txt}",
+          "internal:/r25/reservation/#{room_id}/#{start}",
+          { 'class':['use-ajax', 'button']} ) }}
+      {% endif %}
       <span>&nbsp;Click here or select a timeslot on the calendar to reserve.</span>
     {% else %}
       {% if logged_in %}

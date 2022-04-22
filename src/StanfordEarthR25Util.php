@@ -7,6 +7,7 @@ use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\user\Entity\Role;
 
 /**
  * Encapsulates information and utility methods.
@@ -274,6 +275,12 @@ class StanfordEarthR25Util {
     if (!empty($room_id) && !empty($account)) {
       $canView = $account->hasPermission('view r25 room calendars');
       $roles = $account->getRoles();
+      foreach ($roles as $userRole) {
+        $uR = Role::load($userRole);
+        if (!empty($uR) && $uR->isAdmin()) {
+          return true;
+        }
+      }
       $override_view_roles = $r25_location->get('override_view_roles');
       if (!empty($override_view_roles) && is_array($override_view_roles)) {
         foreach ($override_view_roles as $role => $role_allowed) {
@@ -324,6 +331,12 @@ class StanfordEarthR25Util {
     if (!empty($room_id) && !empty($account)) {
       $canBook = $account->hasPermission('book r25 rooms');
       $roles = $account->getRoles();
+      foreach ($roles as $userRole) {
+        $uR = Role::load($userRole);
+        if (!empty($uR) && $uR->isAdmin()) {
+          return true;
+        }
+      }
       $override_book_roles = $r25_location->get('override_book_roles');
       if (!empty($override_book_roles) && is_array($override_book_roles)) {
         foreach ($override_book_roles as $role => $role_allowed) {

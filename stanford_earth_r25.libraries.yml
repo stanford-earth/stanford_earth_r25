@@ -33,3 +33,11 @@ stanford_earth_r25_reservation:
     - core/jquery
     - core/drupal.dialog.ajax
     - core/drupalSettings
+
+stanford_earth_r25_reservation_page:
+  js:
+    js/stanford_earth_r25_time_interval.js: {}
+    js/stanford_earth_r25_reservation_page.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings

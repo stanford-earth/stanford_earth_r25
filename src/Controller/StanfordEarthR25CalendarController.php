@@ -13,6 +13,7 @@ use Drupal\Core\Form\FormBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
 
 /**
  * Provides a calendar page.
@@ -52,16 +53,26 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   protected $moduleHandler;
 
   /**
+   * Drupal Private TempStore (session)
+   *
+   * @var Drupal\Core\TempStore\PrivateTempStoreFactory
+   *   Temporary storage for reservation page.
+   */
+  protected $tempStore;
+
+  /**
    * StanfordEarthR25FeedController constructor.
    */
   public function __construct(KillSwitch $killSwitch,
                               AccountInterface $user,
                               FormBuilder $formBuilder,
-                              ModuleHandler $moduleHandler) {
+                              ModuleHandler $moduleHandler,
+                              PrivateTempStoreFactory $tempStore) {
     $this->killSwitch = $killSwitch;
     $this->user = $user;
     $this->formBuilder = $formBuilder;
     $this->moduleHandler = $moduleHandler;
+    $this->tempStore = $tempStore;
   }
 
   /**
@@ -72,7 +83,8 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $container->get('page_cache_kill_switch'),
       $container->get('current_user'),
       $container->get('form_builder'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('tempstore.private')
     );
   }
 
@@ -171,7 +183,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         }
         $library[] = 'stanford_earth_r25/stanford_earth_r25_calendar';
       }
-
+      $this->tempStore->get('stanfordEarthR25')->set('drupalSettings', $drupalSettings);
       $resForm = $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm');
       $this->killSwitch->trigger();
       return [
