@@ -416,6 +416,18 @@ class StanfordEarthR25ReservationForm extends FormBase {
         '#type' => 'submit',
         '#value' => $this->t('Reserve'),
       ];
+      $form['actions']['cancel'] = [
+        '#type' => 'link',
+        '#title' => t('Cancel'),
+        '#url' => new Url('entity.stanford_earth_r25_location.calendar',
+          ['r25_location' => $room]),
+        '#attributes' => [
+          'class' => [
+            'button',
+          ],
+          'data-drupal-selector' => 'edit-cancel',
+        ],
+      ];
       $form['#attached']['drupalSettings'] = ['stanfordEarthR25' => $drupalSettings];
       $form['#attached']['library'][] = 'stanford_earth_r25/stanford_earth_r25_reservation_page';
     }
@@ -968,6 +980,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
         ];
         $storage['stanford_earth_r25']['stanford_r25_postprocess'] = $stanford_r25_postprocess;
         $form_state->setStorage($storage);
+      }
+      if ($nopopup) {
+        sleep(10);
       }
     }
     else {

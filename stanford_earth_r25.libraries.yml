@@ -7,7 +7,7 @@ stanford_earth_r25_calendar:
     https://unpkg.com/@popperjs/core@2: { type: external }
     https://unpkg.com/tippy.js@6: { type: external }
     js/fullcalendar/lib/main.js: {}
-    js/stanford_earth_r25_fullcal.js: {}
+    js/stanfordEarthR25Fullcal.js: {}
   dependencies:
     - core/jquery
     - core/drupalSettings
@@ -18,7 +18,7 @@ stanford_earth_r25_spud:
       css/stanford_earth_r25.css: {}
   js:
     https://25livepub.collegenet.com/scripts/spuds.js: { type: external }
-    js/stanford_earth_r25_spud.js: {}
+    js/stanfordEarthR25Spud.js: {}
   dependencies:
     - core/jquery
     - core/drupalSettings
@@ -28,7 +28,8 @@ stanford_earth_r25_reservation:
     theme:
       css/stanford_earth_r25.css: {}
   js:
-    js/stanford_earth_r25_reservation.js: {}
+    js/stanfordEarthR25DateTimeTweaks.js: {}
+    js/stanfordEarthR25Reservation.js: {}
   dependencies:
     - core/jquery
     - core/drupal.dialog.ajax
@@ -36,8 +37,9 @@ stanford_earth_r25_reservation:
 
 stanford_earth_r25_reservation_page:
   js:
-    js/stanford_earth_r25_time_interval.js: {}
-    js/stanford_earth_r25_reservation_page.js: {}
+    js/stanfordEarthR25DateTimeTweaks.js: {}
+    js/stanfordEarthR25ReservationPage.js: {}
   dependencies:
     - core/jquery
     - core/drupalSettings
+
