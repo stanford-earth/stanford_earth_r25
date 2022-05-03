@@ -2,7 +2,6 @@
   'use strict';
   Drupal.behaviors.stanfordEarthR25DateTimeTweaks = {};
   Drupal.behaviors.stanfordEarthR25DateTimeTweaks.tweak = function() {
-    console.log('this is the inserted test file!');
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!

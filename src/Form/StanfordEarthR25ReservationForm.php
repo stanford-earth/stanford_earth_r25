@@ -4,6 +4,7 @@ namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Mail\MailManager;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
@@ -407,6 +408,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
+    $form['nopopup'] = [
+      '#type' => 'hidden',
+      '#value' => $nopopup,
+    ];
+
     $form['actions'] = [
       '#type' => 'actions',
     ];
@@ -648,36 +654,59 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
   }
 
+  private function postMessage (FormStateInterface  $form_state,
+                                $nopopup = false,
+                                $msgType = 'status',
+                                $msg = '') {
+    $msgT = new TranslatableMarkup($msg);
+    if ($nopopup) {
+      $this->messenger->addMessage($msgT, $msgType);
+    }
+    else {
+      $storage = $form_state->getStorage();
+      $r25_messages = [];
+      if (!empty($storage['stanford_earth_r25']['r25_messages'])) {
+        $r25_messages = $storage['stanford_earth_r25']['r25_messages'];
+      }
+      if ($msgType === 'status') {
+        $r25_messages['success'][] = $msgT;
+      }
+      else {
+        $r25_messages['failure'][] = $msgT;
+      }
+      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
+      $form_state->setStorage($storage);
+    }
+  }
+
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     $r25_service = $this->r25Service;
+    $nopopup = $form_state->getValue('nopopup');
     $storage = $form_state->getStorage();
-    $r25_messages = [];
     $booking_info = $storage['stanford_earth_r25']['booking_info'];
     // Make sure the user has access, that the needed information is available,
     // and the room is bookable.
     if (empty($booking_info['dates']) || empty($booking_info['room'])) {
-      $r25_messages['failure'][] = new TranslatableMarkup('Insufficient booking information was provided.');
-      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-      $form_state->setStorage($storage);
+      $this->postMessage($form_state, $nopopup, 'error',
+        'Insufficient booking information was provided.');
       return;
     }
 
     $event_state = intval($booking_info['room']['displaytype']);
     if ($event_state < StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE ||
       $event_state > StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_CONFIRMED) {
-      $r25_messages['failure'][] = new TranslatableMarkup('This room may not be reserved through this website.');
-      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-      $form_state->setStorage($storage);
+      $this->postMessage($form_state, $nopopup, 'error',
+        'This room may not be reserved through this website.');
       return;
     }
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
-    $nopopup = $entity->get('nopopup_reservation_form');
+    //$nopopup = $entity->get('nopopup_reservation_form');
     // if nopopup redirect with $form_state['redirect'] = 'home';
     if ($nopopup) {
       $url = new Url('entity.stanford_earth_r25_location.calendar',
@@ -688,9 +717,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $entity,
       $this->user,
       $this->moduleHandler)) {
-        $r25_messages['failure'][] = new TranslatableMarkup('You do not have permission to book this room.');
-        $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-        $form_state->setStorage($storage);
+        $this->postMessage($form_state, $nopopup, 'error',
+          'You do not have permission to book this room.');
         return;
     }
     $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
@@ -854,10 +882,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       if (intval($result['vals'][$result['index']['R25:STATE'][0]]['value']) == 1) {
         $msg .= ' The room administrator will confirm or deny your request.';
       }
-      $r25_messages['success'][] = $msg;
-      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-      $form_state->setStorage($storage);
-
+      $this->postMessage($form_state, $nopopup, 'status', $msg);
       // If this event is billable, we have to retrieve billing XML for the
       // event, update the billing group code, and PUT the XML back to the
       // 25Live system.
@@ -987,9 +1012,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     else {
       // Display a message if the booking failed.
-      $r25_messages['failure'][] = new TranslatableMarkup('The system was <strong>unable</strong> to book your room. This may be because of a time conflict with another meeting, or because someone else booked it first or because of problems communicating with 25Live. Please try again.');
-      $storage['stanford_earth_r25']['r25_messages'] = $r25_messages;
-      $form_state->setStorage($storage);
+      $this->postMessage($form_state, $nopopup, 'error',
+        'The system was <strong>unable</strong> to book your room. This may be because of a time conflict with another meeting, or because someone else booked it first or because of problems communicating with 25Live. Please try again.');
       $body = [];
       $event_id = 0;
       if (!empty($result['index']['R25:EVENT_ID'][0]) && !empty($result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'])) {

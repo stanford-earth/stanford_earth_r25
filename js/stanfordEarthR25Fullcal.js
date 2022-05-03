@@ -217,8 +217,7 @@ var calendar;
                 start.getDate() + '-' + start.getHours() + '-' +
                 start.getMinutes() + endStr;
               link = link.replace('now', startStr);
-              //$('#stanford-r25-reservation a').click();
-              console.log(stanford_r25_room);
+              //console.log(stanford_r25_room);
               if (stanford_r25_room['nopopup_reservation_form'] == 1) {
                 window.location.href = link;
               } else {
