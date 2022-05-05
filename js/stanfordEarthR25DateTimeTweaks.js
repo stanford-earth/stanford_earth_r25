@@ -22,7 +22,6 @@
     }
     $('[id*=edit-stanford-r25-booking].form-time').each(function() {
       $(this).change(function () {
-        //$('.form-time').change(function() {
         var newTime = ($(this).val());
         var newHour = newTime.substr(0, 3);
         var newMinute = newTime.substr(3, 2);

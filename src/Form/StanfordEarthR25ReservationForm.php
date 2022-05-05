@@ -521,7 +521,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       return;
     }
     $room = $user_input['stanford_r25_booking_roomid'];
-    // Store booking info in form storage after validation.
+    // Store booking inf
+    //o in form storage after validation.
     $booking_info = [];
     $rooms = [];
     if (!empty($room)) {
@@ -536,6 +537,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     else {
       $booking_info['room'] = $rooms[$room];
+      if (empty($user_input['stanford_r25_booking_reason'])) {
+        $booking_info['stanford_r25_booking_reason'] = 'Unknown';
+      }
+      else {
+        $booking_info['stanford_r25_booking_reason'] = $user_input['stanford_r25_booking_reason'];
+      }
     }
 
     // Make sure the current user has permission to book the room.
