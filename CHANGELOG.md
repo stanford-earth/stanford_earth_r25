@@ -1,5 +1,12 @@
 # Stanford Earth R25
 
+8.x-1.2
+-------------------------------------------------------------------------
+_Release Date: 2022-05-05_
+
+- Add functionality to support Hartley conference center.
+- Add dev functionality to support non-Drupal saml authenticated users.
+
 8.x-1.1
 -------------------------------------------------------------------------
 _Release Date: 2021-11-16_
