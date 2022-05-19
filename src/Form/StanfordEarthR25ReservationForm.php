@@ -999,7 +999,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $params['r25_operation'] = $subject;
       $langcode = $this->user->getPreferredLangcode();
       $send = TRUE;
-      $this->mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+      $replyto = \Drupal::config('system.site')->get('mail');
+      $this->mailManager->mail($module, $key, $to, $langcode, $params, $replyto, $send);
 
       if (!empty($room['postprocess_booking']) && !empty($res_usermail)) {
         $stanford_r25_postprocess = [

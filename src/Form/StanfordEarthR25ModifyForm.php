@@ -301,7 +301,8 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $params['r25_operation'] = $subject;
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $send = TRUE;
-      $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+      $replyto = \Drupal::config('system.site')->get('mail');
+      $mailManager->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
     // The operation is done, so go back to the calendar page.
     $url = new Url('entity.stanford_earth_r25_location.calendar',
