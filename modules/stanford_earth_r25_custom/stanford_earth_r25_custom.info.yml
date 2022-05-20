@@ -3,4 +3,4 @@ type: module
 description: 'SE3-only modifications for R25 Reservations'
 core_version_requirement: ^8 || ^9
 package: Stanford
-version: 8.x-1.3
+version: 8.x-1.x-dev
