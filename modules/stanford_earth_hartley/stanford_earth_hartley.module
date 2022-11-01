@@ -247,7 +247,7 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       }
       $body[] = 'If food IS served or consumed, you must get a work order from Custodial Services. This is not negotiable. ';
       $body[] = 'Allow at least 30 minutes for cleanup if you get a work order.';
-      $body[] = 'To update or cancel your booking request, please send an email with the relevant information to mailto:swasmer@stanford.edu';
+      $body[] = 'To update or cancel your booking request, please send an email with the relevant information to mailto:sdss-deans-office-reservations@stanford.edu';
       $module = 'stanford_earth_r25';
       $key = 'r25_operation';
       $to = $mail_list;

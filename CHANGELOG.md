@@ -1,5 +1,11 @@
 # Stanford Earth R25
 
+8.x-1.4
+-------------------------------------------------------------------------
+-Release Date: 2022-10-31_
+
+- Change Hartley email address to sdss-deans-office-reservations@stanford.edu.
+
 8.x-1.3
 -------------------------------------------------------------------------
 _Release Date: 2022-05-19_
