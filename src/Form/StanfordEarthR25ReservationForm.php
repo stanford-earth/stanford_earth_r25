@@ -795,12 +795,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
+    $booking_reason = htmlspecialchars($form_vals['stanford_r25_booking_reason']);
     // Get the XML template for creating an event and replace tokens with data
     // for this reservation.
     $event_state = $event_state - 1;
     $xml_file = '/templates/stanford_r25_reserve.xml';
     $xml = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') . $xml_file);
-    $xml = str_replace('[r25_event_name]', $form_vals['stanford_r25_booking_reason'], $xml);
+    $xml = str_replace('[r25_event_name]', $booking_reason, $xml);
     $parent_id = 'unknown';
     if (!empty($adminSettings['stanford_r25_parent_event_id'])) {
       $parent_id = $adminSettings['stanford_r25_parent_event_id'];
