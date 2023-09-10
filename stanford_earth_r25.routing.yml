@@ -115,3 +115,19 @@ stanford_earth_r25_location.modify:
         type: string
   requirements:
     _permission: 'book r25 rooms'
+
+stanford_earth_r25_booking.export:
+  path: '/r25/booking_export/{r25_location}/{start}/{end}'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ExportController::export'
+    _title: 'Stanford R25 Export Reservations'
+  options:
+    parameters:
+      r25_location:
+        type: entity:stanford_earth_r25_location
+      start:
+        type: string
+      end:
+        type: string
+  requirements:
+    _permission: 'administer stanford r25'

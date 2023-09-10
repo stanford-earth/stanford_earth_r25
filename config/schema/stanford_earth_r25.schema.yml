@@ -152,3 +152,6 @@ stanford_earth_r25_location.*:
             photo_id:
               type: string
               label: 'Photo ID'
+    location_type:
+      type: int
+      label: 'R25 Location Type'

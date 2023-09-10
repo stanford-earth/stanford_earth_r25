@@ -57,7 +57,8 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "override_view_roles",
  *     "override_book_roles",
  *     "nopopup_reservation_form",
- *     "location_info"
+ *     "location_info",
+ *     "locationtype"
  *   },
  *   links = {
  *     "edit-form" =
@@ -271,6 +272,13 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var array
    */
   protected $location_info;
+
+  /**
+   * Location type.
+   *
+   * @var int
+   */
+  protected $locationtype;
 
   /**
    * {@inheritdoc}

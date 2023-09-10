@@ -58,6 +58,27 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#disabled' => !$location->isNew(),
     ];
 
+    // Location type - is this location a Meeting Room, Lab/Seminar Room,
+    // Event Space, Vehicle, or Unknown.
+    $locationtype = $location->get('locationtype');
+    if (empty($locationtype)) {
+      $locationtype = "0";
+    }
+    $form['locationtype'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Location Reporting Type'),
+      '#default_value' => $locationtype,
+      '#options' => [
+        0 => $this->t('Unknown'),
+        1 => $this->t('Meeting Room'),
+        2 => $this->t('Lab/Seminar Room'),
+        3 => $this->t('Event Space'),
+        4 => $this->t('Vehicle'),
+      ],
+      '#description' => $this->t('The reporting type of this location for statistical purposes.'),
+      '#required' => TRUE,
+    ];
+
     // Room display type - whether it should display a calendar and allow
     // reservations, display a calendar without allowing reservations, or
     // display a calendar and allow tentative or confirmed reservations.

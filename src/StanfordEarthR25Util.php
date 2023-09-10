@@ -223,8 +223,8 @@ class StanfordEarthR25Util {
 
         // Get a room photo if available and store in Drupal files.
         $photo_id = NULL;
-        if (!empty($results['index']['R25:LAYOUT_PHOTO_ID'][$default_layout])
-        ) {
+        if (!empty($results['index']['R25:LAYOUT_PHOTO_ID'][$default_layout]) &&
+          !empty($results['vals'][$results['index']['R25:LAYOUT_PHOTO_ID'][$default_layout]]['value'])) {
           $photo_id = $results['vals'][$results['index']['R25:LAYOUT_PHOTO_ID'][$default_layout]]['value'];
           $photo_status = $r25_service->stanfordR25ApiCall('roomphoto', $photo_id);
           if ($photo_status['status']['status'] === TRUE) {
