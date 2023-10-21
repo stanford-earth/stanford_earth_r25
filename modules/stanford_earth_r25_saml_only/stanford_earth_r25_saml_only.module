@@ -72,6 +72,7 @@ function stanford_earth_r25_saml_only_add_form_builder(
 /**
  * Check if user is SAML authenticated and authenticate if not.
  */
+/*
 function stanford_earth_r25_saml_only_authenticated($book = false) {
   $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
   if ($simplesaml->isAuthenticated()) {
@@ -98,6 +99,7 @@ function stanford_earth_r25_saml_only_authenticated($book = false) {
     return FALSE;
   }
 }
+*/
 
 /**
  * Implements hook_stanford_r25_view_calendar_alter().

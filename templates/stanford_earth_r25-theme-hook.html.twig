@@ -56,7 +56,7 @@
     {% set room_id = r25_location.id() %}
     {% set start = 'now' %}
     {% if canBook is not empty %}
-      {% set  btn_txt = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_reserve_msg') %}
+      {% set  btn_txt = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_reserve_msg') %}
       {%  if r25_location.get('nopopup_reservation_form') == 1 %}
         {{ link("#{btn_txt}",
           "internal:/r25/reservation/#{room_id}/#{start}",
@@ -71,8 +71,8 @@
       {% if logged_in %}
         <span>You do not have permission to reserve this room.</span>
       {% else %}
-        {% set btn_txt = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_login_msg') %}
-        {% set login_uri = drupal_config('stanford_earth_r25.adminsettings', 'stanford_r25_login_uri') %}
+        {% set btn_txt = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_login_msg') %}
+        {% set login_uri = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_login_uri') %}
         {{ link("#{btn_txt}",
           "internal:#{login_uri}?destination=/r25/#{room_id}/calendar",
           { 'class':['button']} ) }}
