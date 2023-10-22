@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\File\FileRepositoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
 
@@ -230,9 +231,13 @@ class StanfordEarthR25Util {
           if ($photo_status['status']['status'] === TRUE) {
             $photo = $photo_status['output'];
             $destination = self::stanfordR25FilePath($photo_id);
-            if (!file_save_data($photo,
-              $destination,
-              FileSystemInterface::EXISTS_REPLACE)) {
+
+            /** @var \Drupal\file\FileRepositoryInterface $file_repository */
+            $file_repository = \Drupal::service('file.repository');
+            try {
+              $file_repository->writeData($photo, $destination, FileSystemInterface::EXISTS_REPLACE);
+            }
+            catch (InvalidStreamWrapperException $e) {
               \Drupal::messenger()
                 ->addMessage('Unable to save image for R25 Location ' . $space_id,
                   MessengerInterface::TYPE_ERROR);

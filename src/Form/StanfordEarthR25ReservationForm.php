@@ -732,6 +732,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // We'll build a list of email addresses to send reservation info to.
     $mail_list = '';
 
+    $extension_path_resolver = \Drupal::service('extension.path.resolver');
+    $module_path = $extension_path_resolver->getPath('module', 'stanford_earth_r25');
+
     // Tentative reservations will generate 25Live "to do tasks" for approvers
     // if the room has an approver security group id associated with it.
     $todo_insert = '';
@@ -749,7 +752,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
         if (!empty($adminSettings['stanford_r25_credential_contact_id'])) {
           $contact_id = $adminSettings['stanford_r25_credential_contact_id'];
         }
-        $todo_str = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') .
+        $todo_str = file_get_contents($module_path .
           '/templates/stanford_r25_reserve_todo.xml');
         foreach ($approver_list as $key => $value) {
           $todo_temp = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $todo_str);
@@ -768,7 +771,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // the XML snippet for each attribute with its id, type, and value to the
     // request XML.
     $attr_insert = '';
-    $attr_str = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') .
+    $attr_str = file_get_contents($module_path .
       '/templates/stanford_r25_reserve_attr.xml');
     $room = $booking_info['room'];
     $form_vals = $form_state->getValues();
@@ -800,7 +803,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // for this reservation.
     $event_state = $event_state - 1;
     $xml_file = '/templates/stanford_r25_reserve.xml';
-    $xml = file_get_contents(drupal_get_path('module', 'stanford_earth_r25') . $xml_file);
+    $xml = file_get_contents($module_path . $xml_file);
     $xml = str_replace('[r25_event_name]', $booking_reason, $xml);
     $parent_id = 'unknown';
     if (!empty($adminSettings['stanford_r25_parent_event_id'])) {

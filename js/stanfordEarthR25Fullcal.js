@@ -131,10 +131,10 @@ var calendar;
           dayMaxEventRows: true,
           eventDidMount: function (info) {
             // fc elements appear to be mis-aligned.
-            var fcTop = parseInt(info.el.parentElement.style.top,10) - 12;
-            info.el.parentElement.style.top = fcTop.toString() + 'px';
-            var fcBottom = parseInt(info.el.parentElement.style.bottom, 10) + 12;
-            info.el.parentElement.style.bottom = fcBottom.toString() + 'px';
+            //var fcTop = parseInt(info.el.parentElement.style.top,10) - 12;
+            //info.el.parentElement.style.top = fcTop.toString() + 'px';
+            //var fcBottom = parseInt(info.el.parentElement.style.bottom, 10) + 12;
+            //info.el.parentElement.style.bottom = fcBottom.toString() + 'px';
             if (qtip) {
               var tooltip = new tippy(info.el, {
                 allowHTML: true,

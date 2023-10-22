@@ -1,5 +1,13 @@
 # Stanford Earth R25
 
+8.x-1.7
+-------------------------------------------------------------------------
+-Release Date: 2023-09-20_
+
+- Add custom twig extension to replace twig_tweak module.
+- Remove css and js to properly align calendar entries on earth site.
+- Replace deprecated Drupal and Symfony calls with 10.x compatible calls.
+
 8.x-1.6
 -------------------------------------------------------------------------
 -Release Date: 2023-09-20_

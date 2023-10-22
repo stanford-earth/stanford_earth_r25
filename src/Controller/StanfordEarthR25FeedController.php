@@ -135,7 +135,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
                                                       $this->user,
                                                       $this->moduleHandler)) {
       $this->killSwitch->trigger();
-      return JsonResponse::create([]);
+      return new JsonResponse([]);
+      //return JsonResponse::create([]);
     }
 
     $params = [];
@@ -348,7 +349,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
       }
     }
     $this->killSwitch->trigger();
-    return JsonResponse::create($items);
+    return new JsonResponse($items);
+    //return JsonResponse::create($items);
   }
 
 }

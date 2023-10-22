@@ -1,6 +1,6 @@
 name: 'Stanford Earth R25'
 type: module
 description: 'Service makes calls to R25 API, returns data.'
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
 package: Stanford
-version: 8.x-1.x-dev
+version: 8.x-1.7
