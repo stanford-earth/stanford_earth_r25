@@ -2,7 +2,7 @@
 
 8.x-1.7
 -------------------------------------------------------------------------
--Release Date: 2023-09-20_
+-Release Date: 2023-10-22__
 
 - Add custom twig extension to replace twig_tweak module.
 - Remove css and js to properly align calendar entries on earth site.
