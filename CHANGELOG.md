@@ -1,5 +1,11 @@
 # Stanford Earth R25
 
+8.x-1.8
+-------------------------------------------------------------------------
+-Release Date: 2023-11-07__
+
+- Change references from ModuleHandler to ModuleHandlerInterface.
+
 8.x-1.7
 -------------------------------------------------------------------------
 -Release Date: 2023-10-22__

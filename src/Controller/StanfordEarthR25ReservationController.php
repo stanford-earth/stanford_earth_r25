@@ -9,7 +9,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
@@ -40,10 +40,10 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   protected $account;
 
   /**
-   * Drupal ModuleHandler
+   * Drupal ModuleHandlerInterface
    *
-   * @var Drupal\Core\Extension\ModuleHandler
-   *   Modulehandler to call hooks.
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
 
@@ -64,15 +64,15 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *   The Drupal entity type manager to load room entity.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current Drupal user account.
-   * @param \Drupal\Core\Extension\ModuleHandler $moduleHandler
-   *   Drupal ModuleHandler to call hooks.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   Drupal ModuleHandlerInterface to call hooks.
    * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
    *   Drupal KillSwitch to keep from caching
    */
   public function __construct(FormBuilder $formBuilder,
                               EntityTypeManager $entityTypeManager,
                               AccountInterface $account,
-                              ModuleHandler $moduleHandler,
+                              ModuleHandlerInterface $moduleHandler,
                               KillSwitch $killSwitch) {
     $this->formBuilder = $formBuilder;
     $this->entityTypeManager = $entityTypeManager;

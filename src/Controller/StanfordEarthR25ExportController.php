@@ -9,7 +9,7 @@ use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Drupal\Core\File\FileSystem;
@@ -51,10 +51,10 @@ class StanfordEarthR25ExportController extends ControllerBase {
   protected $r25Service;
 
   /**
-   * Drupal ModuleHandler
+   * Drupal ModuleHandlerInterface
    *
-   * @var Drupal\Core\Extension\ModuleHandler
-   *   Modulehandler to call hooks.
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
 
@@ -73,7 +73,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
                               ConfigFactory $configFactory,
                               AccountInterface $user,
                               StanfordEarthR25Service $r25Service,
-                              ModuleHandler $moduleHandler,
+                              ModuleHandlerInterface $moduleHandler,
                               FileSystem $fileSystem) {
     $this->killSwitch = $killSwitch;
     $this->configFactory = $configFactory;

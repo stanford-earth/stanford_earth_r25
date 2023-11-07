@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Render\Renderer;
 use Drupal\Core\Messenger\Messenger;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Url;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 
@@ -74,7 +74,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
   /**
    * Drupal Module Handler.
    *
-   * @var Drupal\Core\Extension\ModuleHandler
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
@@ -94,7 +94,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
                               EntityTypeManager $entityTypeManager,
                               Renderer $renderer,
                               Messenger $messenger,
-                              ModuleHandler $moduleHandler,
+                              ModuleHandlerInterface $moduleHandler,
                               PrivateTempStoreFactory $tempStore) {
     $this->user = $user;
     $this->mailManager = $mailManager;

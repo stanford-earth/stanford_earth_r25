@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\Core\Form\FormBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 
 /**
@@ -45,10 +45,10 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   protected $formBuilder;
 
   /**
-   * Drupal ModuleHandler
+   * Drupal ModuleHandlerInterface
    *
-   * @var Drupal\Core\Extension\ModuleHandler
-   *   Modulehandler to call hooks.
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
 
@@ -66,7 +66,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   public function __construct(KillSwitch $killSwitch,
                               AccountInterface $user,
                               FormBuilder $formBuilder,
-                              ModuleHandler $moduleHandler,
+                              ModuleHandlerInterface $moduleHandler,
                               PrivateTempStoreFactory $tempStore) {
     $this->killSwitch = $killSwitch;
     $this->user = $user;

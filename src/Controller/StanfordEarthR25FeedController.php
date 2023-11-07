@@ -15,7 +15,7 @@ use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Provide R25 event feed by location to fullcalendar js.
@@ -54,10 +54,10 @@ class StanfordEarthR25FeedController extends ControllerBase {
   protected $r25Service;
 
   /**
-   * Drupal ModuleHandler
+   * Drupal ModuleHandlerInterface
    *
-   * @var Drupal\Core\Extension\ModuleHandler
-   *   Modulehandler to call hooks.
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
 
@@ -68,7 +68,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
                               ConfigFactory $configFactory,
                               AccountInterface $user,
                               StanfordEarthR25Service $r25Service,
-                              ModuleHandler $moduleHandler) {
+                              ModuleHandlerInterface $moduleHandler) {
     $this->killSwitch = $killSwitch;
     $this->configFactory = $configFactory;
     $this->user = $user;

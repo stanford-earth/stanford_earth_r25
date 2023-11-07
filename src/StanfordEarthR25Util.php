@@ -3,7 +3,7 @@
 namespace Drupal\stanford_earth_r25;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\File\FileRepositoryInterface;
@@ -261,7 +261,7 @@ class StanfordEarthR25Util {
    *   Room entity to compare against the current user.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Account to check against override_view_roles for location.
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to call alter hooks.
    *
    * @return bool
@@ -269,7 +269,7 @@ class StanfordEarthR25Util {
    */
   public static function stanfordR25CanViewRoom(EntityInterface  $r25_location = NULL,
                                                 AccountInterface $account = NULL,
-                                                ModuleHandler    $module_handler = NULL) {
+                                                ModuleHandlerInterface $module_handler = NULL) {
     // Check if the user can view the room calendar depending on Drupal
     // permissions and the location's override settings.
     $canView = FALSE;
@@ -317,7 +317,7 @@ class StanfordEarthR25Util {
    *   Room entity to compare against the current user.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Account to check against override_view_roles for location.
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to call alter hooks.
    *
    * @return bool
@@ -325,7 +325,7 @@ class StanfordEarthR25Util {
    */
   public static function stanfordR25CanBookRoom(EntityInterface  $r25_location = NULL,
                                                 AccountInterface $account = NULL,
-                                                ModuleHandler    $module_handler = NULL) {
+                                                ModuleHandlerInterface $module_handler = NULL) {
     // Check if the user can book the room location depending on Drupal
     // permissions and the location's override settings.
     $canBook = FALSE;
@@ -641,14 +641,14 @@ class StanfordEarthR25Util {
    *
    * @param \Drupal\Core\Entity\EntityInterface $r25_location
    *   Room entity to compare against the current user.
-   * @param \Drupal\Core\Extension\ModuleHandler $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to call alter hooks.
    *
    * @return array
    *   Array containing calendar limit info.
    */
   public static function stanfordR25CalendarLimit(EntityInterface $r25_location = NULL,
-                                                  ModuleHandler   $module_handler = NULL) {
+                                                  ModuleHandlerInterface $module_handler = NULL) {
     // The default calendar limit is for one year in the future, but we have
     // a hook, hook_stanford_r25_fullcalendar_limit_alter(&$calendar_limit)
     // where you can change it.
