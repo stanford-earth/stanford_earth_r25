@@ -34,6 +34,8 @@ stanford_earth_r25_reservation:
     - core/jquery
     - core/drupal.dialog.ajax
     - core/drupalSettings
+    - core/once
+    - core/jquery.once.bc
 
 stanford_earth_r25_reservation_page:
   js:

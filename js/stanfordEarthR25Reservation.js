@@ -2,8 +2,10 @@
 (function ($, Drupal, drupalSettings) {
   Drupal.behaviors.stanfordEarthR25Reservation = {
     attach: function (context) {
+      if (!once('stanford-earth-r25-reservation', 'html').length) {
+        return;
+      }
       $(window)
-        .once('stanford-earth-r25-reservation')
         .on('dialog:aftercreate', function() {
           Drupal.behaviors.stanfordEarthR25DateTimeTweaks.tweak();
         });
