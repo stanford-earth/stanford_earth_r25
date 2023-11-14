@@ -1,5 +1,18 @@
 # Stanford Earth R25
 
+8.x-1.10
+-------------------------------------------------------------------------
+-Release Date: 2023-11-14__
+
+- Add su_button and su_link classes to links in twig template.
+_ Fix missing 25Live scheduler id in adminsettings.
+_ Fix incorrect link to events within 25Live application.
+_ Change 'cancel' to 'Cancel' in modify/cancel form.
+_ Change photo width in css to be wider.
+_ Change displayName hook in custom sub-module to hook_user_format_name.
+_ Trim contact information in Hartley field to test for empty.
+_ Removed test submodule for SAML-only users.
+
 8.x-1.9
 -------------------------------------------------------------------------
 -Release Date: 2023-11-08__

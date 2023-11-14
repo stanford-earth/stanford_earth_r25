@@ -7,9 +7,9 @@ use Drupal\Core\Datetime\DrupalDateTime;
  * @file
  * Implements stanford_earth_r25 hooks for Hartley Conf Center`.
  */
+/*
 function stanford_earth_r25_saml_only_authenticated() {
   return TRUE;
-  /*
   $simplesaml = \Drupal::service('simplesamlphp_auth.manager');
   if ($simplesaml->isAuthenticated()) {
     $attrs = $simplesaml->getAttributes();
@@ -22,8 +22,8 @@ function stanford_earth_r25_saml_only_authenticated() {
       $simplesaml->externalAuthenticate();
     }
   }
-  */
 }
+*/
 
 /*
 function se3_hartley_menu() {
@@ -183,7 +183,7 @@ function stanford_earth_hartley_form_validate(&$form, FormStateInterface $form_s
     }
   }
 
-  if (empty($form_state->getValue('stanford_r25_contact_175'))) {
+  if (empty(trim($form_state->getValue('stanford_r25_contact_175')))) {
     $form_state->setErrorByName('stanford_r25_contact_175',
       'Please enter your contact information in the provided field.');
     return;

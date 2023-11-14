@@ -836,11 +836,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $res_username = $this->user->getDisplayName();
       $res_usermail = $this->user->getEmail();
     }
-    $this->moduleHandler->alter(
-      'stanford_r25_contact',
-      $res_username,
-      $res_usermail,
-    );
     $contact_str = '<p>Self service reservation made by ' . $res_username . ' - <a href="mailto:' . $res_usermail . '">click to contact by email.</a></p>';
     $contact_str = htmlspecialchars($contact_str);
     // Send the request to our api function.
@@ -961,14 +956,19 @@ class StanfordEarthR25ReservationForm extends FormBase {
         $subject = 'Room Reservation Request - ACTION REQUIRED';
         $body[0] .= ' requiring your approval.';
         $body[] = 'You may view this request in 25Live and confirm or deny it at this link (requires you first be logged in to 25Live): ';
-        $body[] = 'https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
+        $body[] = 'https://25live.collegenet.com/pro/stanford#!/home/event/' .
+          $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'] .
+          '/details';
         $body[] = '';
       }
       elseif ($state == 2) {
         // This is the email for a confirmed booking.
         $subject = 'Room Reservation';
         $body[0] .= '.';
-        $body[] = 'View the reservation at: https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
+        $body[] = 'View the reservation at: ' .
+          'https://25live.collegenet.com/pro/stanford#!/home/event/' .
+          $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'] .
+          '/details';
       }
 
       $body[] = "Room: " . $booking_info['room']['label'];
@@ -1030,7 +1030,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $event_id = 0;
       if (!empty($result['index']['R25:EVENT_ID'][0]) && !empty($result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'])) {
         $event_id = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
-        $body[] = 'failed reservation at: https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $event_id;
+        $body[] = 'failed reservation at: ' .
+          'https://25live.collegenet.com/pro/stanford#!/home/event/' .
+          $event_id . '/details';
         $r25_service->stanfordR25ApiCall('delete', $event_id);
       }
     }

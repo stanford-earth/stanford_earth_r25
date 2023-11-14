@@ -318,7 +318,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
    *   Button text markup.
    */
   public function getConfirmText() {
-    $opStr = $this->op;
+    $opStr = ucfirst($this->op);
     return $this->t('@opstr reservation',
       ['@opstr' => $opStr]);
   }

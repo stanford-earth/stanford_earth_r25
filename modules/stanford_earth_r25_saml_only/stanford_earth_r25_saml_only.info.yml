@@ -1,9 +1,0 @@
-name: 'Stanford Earth R25 SAML-Only'
-type: module
-description: 'Allow R25 reservations by anonymous Drupal users with SAML auth'
-core_version_requirement: ^9 || ^10
-package: Stanford
-version: 8.x-1.x-dev
-dependencies:
-  - stanford_earth_r25
-  - simplesamlphp_auth

@@ -219,7 +219,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
       if ($this->user->isAuthenticated()) {
         // Find out if event was *not* scheduled by QuickBook account and then
         // get the schedule.
-        $config = $this->configFactory->getEditable('stanford_earth_r25.credentialsettings');
+        $config = $this->configFactory->getEditable('stanford_earth_r25.adminsettings');
         $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
         foreach ($results['index']['R25:SCHEDULER_ID'] as $key => $value) {
           if (intval($results['vals'][$value]['value']) != $quickbook_id) {
@@ -325,32 +325,38 @@ class StanfordEarthR25FeedController extends ControllerBase {
                 $scheduler_email = substr($description, $mailto_pos + 8, $mailto_endpos - ($mailto_pos + 8));
               }
             }
-            if (!empty($scheduler_email) && $scheduler_email === $this->user->getEmail()) {
+            if (!empty($scheduler_email) &&
+              $scheduler_email === $this->user->getEmail()) {
               $can_cancel = TRUE;
             }
           }
 
           if ($can_confirm) {
-            $url = Url::fromUserInput('/r25/modify/confirm/' . $room_id . '/' . $items[$key]['event_id'] . '/' .
+            $url = Url::fromUserInput('/r25/modify/confirm/' .
+              $room_id . '/' . $items[$key]['event_id'] . '/' .
               $items[$key]['start'])->toString();
-            $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to confirm reservation</a>';
+            $items[$key]['tip'] .= '<br /><a href="' . $url .
+              '">Click to confirm reservation</a>';
           }
           if ($can_cancel) {
-            $url = Url::fromUserInput('/r25/modify/cancel/' . $room_id . '/' . $items[$key]['event_id'] . '/' .
+            $url = Url::fromUserInput('/r25/modify/cancel/' .
+              $room_id . '/' . $items[$key]['event_id'] . '/' .
               $items[$key]['start'])->toString();
-            $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to cancel reservation</a>';
+            $items[$key]['tip'] .= '<br /><a href="' . $url .
+              '">Click to cancel reservation</a>';
           }
 
           if ($approver) {
-            $url = 'https://25live.collegenet.com/stanford/#details&obj_type=event&obj_id=' . $items[$key]['event_id'];
-            $items[$key]['tip'] .= '<br /><a href="' . $url . '">Click to manage in 25Live</a>';
+            $url = 'https://25live.collegenet.com/pro/stanford#!/home/event/' .
+              $items[$key]['event_id'] . '/details';
+            $items[$key]['tip'] .= '<br /><a href="' . $url .
+              '">Click to manage in 25Live</a>';
           }
         }
       }
     }
     $this->killSwitch->trigger();
     return new JsonResponse($items);
-    //return JsonResponse::create($items);
   }
 
 }

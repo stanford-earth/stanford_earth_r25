@@ -21,3 +21,4 @@ stanford_r25_booking_instructions:
   value: "<p><span>Reservations may only be made for single occurrences of up to [max_duration]&nbsp;hours. For longer or recurring reservations,&nbsp;please&nbsp;contact your department administrator. All reservations are subject to approval by your department and the Dean's Office.</span></p>\r\n"
   format: null
 stanford_r25_blackout_dates: {  }
+stanford_r25_credential_contact_id: null

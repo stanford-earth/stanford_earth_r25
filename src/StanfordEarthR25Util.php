@@ -474,7 +474,7 @@ class StanfordEarthR25Util {
           // See if requestor email matches or is quickbook.
           // If quickbook, we must check the user's email differently.
           $config = \Drupal::configFactory()
-            ->getEditable('stanford_earth_r25.credentialsettings');
+            ->getEditable('stanford_earth_r25.adminsettings');
           $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
 
           // Get the R25 user id and email address for the event scheduler.
@@ -599,7 +599,7 @@ class StanfordEarthR25Util {
     // If event was not done with quickbook, add scheduler's email to the list.
     // If event *was* done with quickbook, find scheduler's email id in event.
     $config = \Drupal::configFactory()
-      ->getEditable('stanford_earth_r25.credentialsettings');
+      ->getEditable('stanford_earth_r25.adminsettings');
     $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
     $quickbook = FALSE;
     if (!empty($results['index']['R25:ROLE_NAME']) && is_array($results['index']['R25:ROLE_NAME'])) {

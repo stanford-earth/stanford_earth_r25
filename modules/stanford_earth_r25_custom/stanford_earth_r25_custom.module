@@ -6,19 +6,17 @@
  */
 
 /**
- * Implements hook_stanford_r25_contact_alter().
+ * Implements hook_user_format_name_alter().
  */
-function stanford_earth_r25_custom_stanford_r25_contact_alter(&$contactStr) {
-  $users = \Drupal::entityTypeManager()->getStorage('user')
-    ->loadByProperties(['name' => $contactStr]);
-  if (!empty($users)) {
-    foreach ($users as $user) {
-      /** @var \Drupal\user\Entity\User $user */
-      $displayName = $user->get('field_s_person_display_name')->getValue();
+function stanford_earth_r25_custom_user_format_name_alter(&$name, $account) {
+  if (!empty($account)) {
+    /** @var \Drupal\user\Entity\User $user */
+    $user = user_load_by_name($account->getAccountName());
+    if (!empty($user) && $user->hasField('su_display_name')) {
+      $displayName = $user->get('su_display_name')->getValue();
       if (!empty($displayName[0]['value'])) {
-        $contactStr = $displayName[0]['value'];
+        $name = $displayName[0]['value'];
       }
-      break;
     }
   }
 }

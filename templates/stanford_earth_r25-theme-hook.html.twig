@@ -60,11 +60,11 @@
       {%  if r25_location.get('nopopup_reservation_form') == 1 %}
         {{ link("#{btn_txt}",
           "internal:/r25/reservation/#{room_id}/#{start}",
-          { 'class':['button']} ) }}
+          { 'class':['button', 'su-button', 'su-link']} ) }}
       {% else %}
         {{ link("#{btn_txt}",
           "internal:/r25/reservation/#{room_id}/#{start}",
-          { 'class':['use-ajax', 'button']} ) }}
+          { 'class':['use-ajax', 'button', 'su-button', 'su-link']} ) }}
       {% endif %}
       <span>&nbsp;Click here or select a timeslot on the calendar to reserve.</span>
     {% else %}
@@ -75,7 +75,7 @@
         {% set login_uri = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_login_uri') %}
         {{ link("#{btn_txt}",
           "internal:#{login_uri}?destination=/r25/#{room_id}/calendar",
-          { 'class':['button']} ) }}
+          { 'class':['button', 'su-button', 'su-link']} ) }}
         <span>&nbsp;You must login in order to reserve this room.</span>
       {% endif %}
     {% endif %}

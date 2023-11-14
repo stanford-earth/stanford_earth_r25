@@ -189,7 +189,7 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
       $this->messenger()->addError($this->t('Unable to retrieve R25 Contact ID# for credential. Tentative Reservations will not create approval to-dos.'));
       $contact_id = '';
     }
-    $this->configFactory->getEditable('stanford_earth_r25.credentialsettings')
+    $this->configFactory->getEditable('stanford_earth_r25.adminsettings')
       ->set('stanford_r25_credential_contact_id', $contact_id)
       ->save();
   }
