@@ -36,6 +36,21 @@ class StanfordEarthR25LocationForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
+  private function checkRadioVals($inputval="", $min=0, $max=0) {
+    $outputval = strval($min);
+    if (is_numeric($inputval)) {
+      $intval = intval($inputval);
+      if ($intval < $min || $intval > $max) {
+        $intval = $min;
+      }
+      $outputval = strval($intval);
+    }
+    return $outputval;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
@@ -60,10 +75,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
 
     // Location type - is this location a Meeting Room, Lab/Seminar Room,
     // Event Space, Vehicle, or Unknown.
-    $locationtype = $location->get('locationtype');
-    if (empty($locationtype)) {
-      $locationtype = "0";
-    }
+    $locationtype = $this->checkRadioVals($location->get('locationtype'), 0,4);
     $form['locationtype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Location Reporting Type'),
@@ -82,10 +94,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     // Room display type - whether it should display a calendar and allow
     // reservations, display a calendar without allowing reservations, or
     // display a calendar and allow tentative or confirmed reservations.
-    $displaytype = $location->get('displaytype');
-    if (empty($displaytype)) {
-      $displaytype = "1";
-    }
+    $displaytype = $this->checkRadioVals($location->get('displaytype'), 0,3);
     $form['displaytype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Room Display Options'),
@@ -101,10 +110,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     ];
 
     // Whether the initial calendar display is Month, Week, or Day.
-    $defaultView = $location->get('default_view');
-    if (empty($defaultView)) {
-      $defaultView = "2";
-    }
+    $defaultView = $this->checkRadioVals($location->get('default_view'), 1, 3);
     $form['default_view'] = [
       '#type' => 'radios',
       '#title' => $this->t('Default Calendar View'),
@@ -214,10 +220,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     // Whether the calendar page uses 25Live Publisher embeds or fullcalendar.
     // Only fullcalendar allows selection of dates, times, and durations from
     // the calendar.
-    $caltype = $location->get('caltype');
-    if (empty($caltype)) {
-      $caltype = "2";
-    }
+    $caltype = $this->checkRadioVals($location->get('caltype'), 1, 2);
     $form['advanced']['caltype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Calendar Display Options'),

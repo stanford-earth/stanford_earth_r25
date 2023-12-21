@@ -1,4 +1,11 @@
 # Stanford Earth R25
+8.x-1.11
+-------------------------------------------------------------------------
+-Release Date: 2023-12-20__
+
+- Increase calendar update delay after reservation from 5 to 7.5 seconds.
+- Correct default room type display in Location edit form.
+- Ensure R25 Scheduler Account email doesn't display for "quick book" account.
 
 8.x-1.10
 -------------------------------------------------------------------------

@@ -308,7 +308,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
     $url = new Url('entity.stanford_earth_r25_location.calendar',
       ['r25_location' => $this->locationId]);
     $form_state->setRedirectUrl($url);
-    sleep(5);
+    sleep(10);
   }
 
   /**

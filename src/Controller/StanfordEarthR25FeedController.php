@@ -222,7 +222,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
         $config = $this->configFactory->getEditable('stanford_earth_r25.adminsettings');
         $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
         foreach ($results['index']['R25:SCHEDULER_ID'] as $key => $value) {
-          if (intval($results['vals'][$value]['value']) != $quickbook_id) {
+          if (intval($results['vals'][$value]['value']) !== $quickbook_id) {
             $scheduler_name = '';
             if (isset($results['vals'][$results['index']['R25:SCHEDULER_ID'][$key]]['value']) &&
               isset($results['vals'][$results['index']['R25:SCHEDULER_NAME'][$key]]['value'])) {

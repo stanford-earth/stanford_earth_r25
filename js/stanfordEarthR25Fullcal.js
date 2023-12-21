@@ -292,8 +292,7 @@ var calendar;
   $.fn.stanfordEarthR25Refresh = function() {
     var sources = calendar.getEventSources();
     if (sources.length) {
-      setTimeout(refetchEvents, 5000, sources[0]);
-      //sources[0].refetch();
+      setTimeout(refetchEvents, 7500, sources[0]);
     }
   };
 
