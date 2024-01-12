@@ -1,4 +1,14 @@
 # Stanford Earth R25
+8.x-1.12
+-------------------------------------------------------------------------
+-Release Date: 2024-01-11__
+
+- Cosmetic changes per Aaron Cole including...
+- Make the Room Name the page title and display in <h1>
+- Make the Room Name the page title as shown in browser tabs.
+- Add space below the calendar grid.
+- Add an alt tag for the room image.
+
 8.x-1.11
 -------------------------------------------------------------------------
 -Release Date: 2023-12-20__
