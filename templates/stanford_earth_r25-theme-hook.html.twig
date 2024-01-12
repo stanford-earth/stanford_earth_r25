@@ -1,4 +1,3 @@
-<h2>{{ r25_location.label }}</h2>
 <div id="stanford-r25-room-info">
   {% if r25_location is empty %}
   <p>Room information unavailable. Please check with your site administrator.</p>
@@ -9,7 +8,7 @@
     {% else %}
       {% if photo_url is not empty %}
         <div id="stanford-r25-room-photo">
-          <img src="{{ file_url(photo_url) }}">
+          <img src="{{ file_url(photo_url) }}" alt="Room {{ r25_location.get('label') }}">
         </div>
       {%  endif %}
       <div id="stanford-r25-room-detail">
@@ -100,4 +99,5 @@
 {% else %}
   <span>The requested room is not currently available.</span>
 {% endif %}
+<br />
 </div>

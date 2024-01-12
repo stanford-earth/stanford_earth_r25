@@ -89,6 +89,24 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   }
 
   /**
+   * Returns a calendar page title.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   *   A location entity being displayed.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The currently processing request.
+   *
+   * @return array
+   *   Drupal page markup array.
+   */
+  public function title(EntityInterface $r25_location, Request $request) {
+    $this->killSwitch->trigger();
+    return [
+      '#markup' =>  $r25_location->get('label'),
+    ];
+  }
+
+  /**
    * Returns a calendar page render array.
    *
    * @param \Drupal\Core\Entity\EntityInterface $r25_location
@@ -194,6 +212,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         '#photo_url' => $photo_url,
         '#form' => $resForm,
         '#canBook' => $bookable,
+        '#title' => $r25_location->get('label'),
         '#attached' => [
           'library' => $library,
           'drupalSettings' => [

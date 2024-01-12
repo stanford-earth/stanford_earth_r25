@@ -75,6 +75,7 @@ entity.stanford_earth_r25_location.feed:
 entity.stanford_earth_r25_location.calendar:
   path: '/r25/{r25_location}/calendar'
   defaults:
+    _title_callback: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25CalendarController::title'
     _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25CalendarController::page'
     _title: 'Stanford R25 Calendar Page'
   options:
