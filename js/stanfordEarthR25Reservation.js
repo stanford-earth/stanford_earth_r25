@@ -2,7 +2,7 @@
 (function ($, Drupal, drupalSettings) {
   Drupal.behaviors.stanfordEarthR25Reservation = {
     attach: function (context) {
-      if (!once('stanford-earth-r25-reservation', 'html').length) {
+      if (!once('stanford-r25-reservation', 'html').length) {
         return;
       }
       $(window)

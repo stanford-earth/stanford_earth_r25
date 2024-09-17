@@ -49,6 +49,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "multi_day",
  *     "postprocess_booking",
  *     "override_booking_instructions",
+ *     "extra_config_1",
  *     "event_attributes",
  *     "event_attributes_fields",
  *     "contact_attribute",
@@ -203,12 +204,20 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    */
   protected $postprocess_booking;
 
+
   /**
    * Override booking instructions.
    *
    * @var string
    */
   protected $override_booking_instructions;
+
+  /**
+   * Extra config field for sub-modules.
+   *
+   * @var string
+   */
+  protected $extra_config_1;
 
   /**
    * Event attributes.

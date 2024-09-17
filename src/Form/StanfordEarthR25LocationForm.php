@@ -349,6 +349,15 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#base_type' => 'textarea',
     ];
 
+    // Extra config field to be used by submodules such as Hartley.
+    $form['advanced']['extra_config_1'] = [
+      '#title' => $this->t('Extra Configuration Field'),
+      '#type' => 'textfield',
+      '#size' => 30,
+      '#default_value' => $location->get('extra_config_1'),
+      '#description' => $this->t('Some text to be used by a custom sub-module, for example PTA Exclusions for Hartley'),
+    ];
+
     // Checkbox if you want to the reservation form for the location
     // to appear on a new page instead of a pop-up form.
     $form['advanced']['nopopup_reservation_form'] = [

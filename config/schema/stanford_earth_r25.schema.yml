@@ -62,6 +62,9 @@ stanford_earth_r25_location.*:
     override_booking_instructions:
       type: string
       label: 'Override Booking Instructions'
+    extra_config_1:
+      type: string
+      label: 'Extra Config Field 1'
     event_attributes:
       type: string
       label: 'Event Attributes'

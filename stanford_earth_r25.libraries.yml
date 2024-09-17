@@ -38,6 +38,9 @@ stanford_earth_r25_reservation:
     - core/jquery.once.bc
 
 stanford_earth_r25_reservation_page:
+  css:
+    theme:
+      css/stanford_earth_r25.css: {}
   js:
     js/stanfordEarthR25DateTimeTweaks.js: {}
     js/stanfordEarthR25ReservationPage.js: {}
