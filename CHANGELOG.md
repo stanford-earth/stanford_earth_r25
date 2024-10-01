@@ -1,4 +1,20 @@
 # Stanford Earth R25
+8.x-1.13
+-------------------------------------------------------------------------
+-Release Date: 2024-10-01__
+
+- Require PTA and sponsoring department on all bookings in Hartley sub-module
+- Add multi-room legend labels and colors to room configs
+- Add “hide reservation titles for unauthorized” to room configs
+- Add “override organization id” to room configs
+- Add “override event type" to room configs
+- Add multiroom legend display to css, twig
+- Update js to allow select over existing events on multi-room calendars
+- Add multiple room feeds and colors to calendar feed controller
+- Hide event titles for configured rooms when user unauthorized in feed cntrllr
+- Add room selection to reservation from for multi-room calendars
+- Replace org and event codes in reservation request when specified for room
+
 8.x-1.12
 -------------------------------------------------------------------------
 -Release Date: 2024-01-11__
