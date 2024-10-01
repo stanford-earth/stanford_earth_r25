@@ -93,6 +93,10 @@ var calendar;
           maxDuration = dValue * 60;
         }
       }
+      var allowOverlap = false;
+      if (selectable && stanford_r25_room.space_id.indexOf("+") > -1) {
+        allowOverlap = true;
+      }
       var setCalendar = true;
       if (typeof(calendar) === 'object') {
         if (calendar instanceof FullCalendar.Calendar) {
@@ -236,7 +240,7 @@ var calendar;
           selectConstraint: selectConstraint,
           // don't let users select time slots that cross existing reservations
           selectMinDistance: 1,
-          selectOverlap: false,
+          selectOverlap: allowOverlap,
           // set default timezone
           timezone: drupalSettings.stanfordEarthR25.stanfordR25Timezone,
           error: function () {

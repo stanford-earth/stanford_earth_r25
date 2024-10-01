@@ -62,9 +62,9 @@ stanford_earth_r25_location.*:
     override_booking_instructions:
       type: string
       label: 'Override Booking Instructions'
-    extra_config_1:
+    legend_labels:
       type: string
-      label: 'Extra Config Field 1'
+      label: 'Multi-Room Legend Labels'
     event_attributes:
       type: string
       label: 'Event Attributes'
@@ -127,6 +127,15 @@ stanford_earth_r25_location.*:
     nopopup_reservation_form:
       type: boolean
       label: 'No Pop-up Reservation Form'
+    hide_titles_for_non_managers:
+      type: boolean
+      label: 'Hide Event Labels Unless Authorized'
+    override_organization_id:
+      type: string
+      label: 'Organization ID for This Location'
+    override_event_code:
+      type: string
+      label: 'Event Type for This Location'
     location_info:
       type: sequence
       label: 'R25 Location Info'

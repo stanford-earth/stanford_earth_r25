@@ -47,9 +47,6 @@ function stanford_earth_hartley_form_alter(&$form, \Drupal\Core\Form\FormStateIn
       ];
 
       if (!empty(array_intersect(Drupal::currentUser()->getRoles(), ['custm_hartley_administrator']))) {
-      //if (!empty($form['#attached']['drupalSettings']['stanfordEarthR25']['stanfordR25Room']['extra_config_1']) &&
-      //  str_contains($form['#attached']['drupalSettings']['stanfordEarthR25']['stanfordR25Room']['extra_config_1'],
-      //    Drupal::currentUser()->getEmail()) !== false) {
         $form['stanford_r25_booking_attr171']['#type'] = 'hidden';
         $form['stanford_r25_booking_attr172']['#type'] = 'hidden';
         $form['stanford_r25_booking_attr173']['#type'] = 'hidden';

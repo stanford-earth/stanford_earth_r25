@@ -349,13 +349,13 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#base_type' => 'textarea',
     ];
 
-    // Extra config field to be used by submodules such as Hartley.
-    $form['advanced']['extra_config_1'] = [
-      '#title' => $this->t('Extra Configuration Field'),
+    // Room labels for multi-room legend in form label1+label2+label3.
+    $form['advanced']['legend_labels'] = [
+      '#title' => $this->t('Multi-Room Legend Labels'),
       '#type' => 'textfield',
-      '#size' => 30,
-      '#default_value' => $location->get('extra_config_1'),
-      '#description' => $this->t('Some text to be used by a custom sub-module, for example PTA Exclusions for Hartley'),
+      '#size' => 255,
+      '#default_value' => $location->get('legend_labels'),
+      '#description' => $this->t('For use on multi-room calendars in the form label1+label2+label3'),
     ];
 
     // Checkbox if you want to the reservation form for the location
@@ -366,6 +366,32 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t("Check this box if reservation form for this location should be on a new page instead of a pop-up."),
       '#default_value' => $location->get('nopopup_reservation_form'),
     ];
+
+    // Checkbox if you want to the reservation form for the location
+    // to appear on a new page instead of a pop-up form.
+    $form['advanced']['hide_titles_for_non_managers'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Hide Event Titles for Unauthorized Users'),
+      '#description' => $this->t("Check this box if event titles should be hidden on calendars."),
+      '#default_value' => $location->get('hide_titles_for_non_managers'),
+    ];
+
+    $form['advanced']['override_organization_id'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Override Organization ID'),
+      '#description' => $this->t("Enter a 25Live Organization ID for this location if different from the system default."),
+      '#default_value' => $location->get('override_organization_id'),
+      '#required' => false,
+    ];
+
+    $form['advanced']['override_event_code'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Override Event Type Code'),
+      '#description' => $this->t("Enter a 25Live Event Code for this location if different from the system default."),
+      '#default_value' => $location->get('override_event_code'),
+      '#required' => false,
+    ];
+
 
     // Get the user roles.
     $roles = user_roles();
@@ -430,6 +456,15 @@ class StanfordEarthR25LocationForm extends EntityForm {
     if (!is_numeric($max_hours) || intval($max_hours) != $max_hours || $max_hours < 0) {
       $form_state->setErrorByName('max_hours', 'Maximum Reservation (Hours) must be zero or a positive integer.');
     }
+    $override_org_id = $form_state->getValue('override_organization_id');
+    if (!empty($override_org_id) && !is_numeric($override_org_id)) {
+      $form_state->setErrorByName('override_organization_id', 'Override Organization ID must be numeric.');
+    }
+    $override_event_code = $form_state->getValue('override_event_code');
+    if (!empty($override_event_code) && !is_numeric($override_event_code)) {
+      $form_state->setErrorByName('override_event_code', 'Override Event Code must be numeric.');
+    }
+
     $secgroup_id = 0;
     $secgroup_name = $form_state->getValue('approver_secgroup_name');
     if (!empty($secgroup_name)) {

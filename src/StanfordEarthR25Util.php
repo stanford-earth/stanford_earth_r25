@@ -175,9 +175,15 @@ class StanfordEarthR25Util {
         if (!empty($results['index']['R25:LAYOUT_CAPACITY'][$default_layout])) {
           $room_info['capacity'] = $results['vals'][$results['index']['R25:LAYOUT_CAPACITY'][$default_layout]]['value'];
         }
+        if (empty($room_info['capacity'])) {
+          if (!empty($results['vals'][$results['index']['R25:MAX_CAPACITY'][0]]['value'])) {
+            $room_info['capacity'] = $results['vals'][$results['index']['R25:MAX_CAPACITY'][0]]['value'];
+          }
+        }
         // Get any comments and instructions about the room.
         $room_info['comments'] = NULL;
-        if (!empty($results['index']['R25:COMMENTS'][0])) {
+        if (!empty($results['index']['R25:COMMENTS'][0]) &&
+          !empty($results['vals'][$results['index']['R25:COMMENTS'][0]]['value'])) {
           $room_info['comments'] = $results['vals'][$results['index']['R25:COMMENTS'][0]]['value'];
         }
         $room_info['layout_name'] = NULL;
@@ -449,7 +455,7 @@ class StanfordEarthR25Util {
       }
 
       if ((empty($result['index']['R25:SPACE_ID'])) || (!is_array($result['index']['R25:SPACE_ID'])) ||
-        ($result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] != $rooms[$room_id]['space_id'])
+        (!str_contains($rooms[$room_id]['space_id'],$result['vals'][$result['index']['R25:SPACE_ID'][0]]['value']))
       ) {
         \Drupal::messenger()
           ->addMessage('Room mismatch for confirm or cancel event.',

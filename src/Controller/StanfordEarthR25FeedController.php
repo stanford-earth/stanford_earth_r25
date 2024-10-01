@@ -126,6 +126,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
     // Format the request to the 25Live API from either POST or GET arrays.
     $room_id = $r25_location->get('id');
     $space_id = $r25_location->get('space_id');
+    $space_ids = explode('+', $space_id);
     if (empty($room_id) || empty($space_id)) {
       throw new NotFoundHttpException();
     }
@@ -199,19 +200,32 @@ class StanfordEarthR25FeedController extends ControllerBase {
         $headcount = $this->stanfordR25FeedGetValue($results, 'R25:EXPECTED_COUNT', $key);
         $state = $this->stanfordR25FeedGetValue($results, 'R25:STATE', $key);
         $state_text = $this->stanfordR25FeedGetValue($results, 'R25:STATE_NAME', $key);
-        $items[] = [
-          'id' => $id,
-          'event_id' => $event_id,
-          'index' => $value,
-          'title' => $title,
-          'start' => $start,
-          'end' => $end,
-          'headcount' => $headcount,
-          'state' => $state,
-          'state_name' => $state_text,
-          'scheduled_by' => '',
-          'tip' => '',
-        ];
+        $space_idx = $this->stanfordR25FeedGetValue($results, 'R25:SPACE_ID', $key);
+        $related_space = $this->stanfordR25FeedGetValue($results, 'R25:RELATED_SPACE_ID', $key);
+        $scheduler_id = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_ID', $key);
+        $scheduler_namex = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_NAME', $key);
+        $scheduler_email = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_EMAIL', $key);
+        $descriptionText = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_DESCRIPTION', $key);
+        if (empty($related_space)) {
+          $items[] = [
+            'id' => $id,
+            'event_id' => $event_id,
+            'index' => $value,
+            'title' => $title,
+            'start' => $start,
+            'end' => $end,
+            'headcount' => $headcount,
+            'state' => $state,
+            'state_name' => $state_text,
+            'scheduled_by' => '',
+            'tip' => '',
+            'space_id' => $space_idx,
+            'scheduler_id' => $scheduler_id,
+            'scheduler_name' => $scheduler_namex,
+            'scheduler_email' => $scheduler_email,
+            'description_text' => $descriptionText,
+          ];
+        }
       }
 
       // For logged in users, we want to display event status, headcount,
@@ -221,31 +235,24 @@ class StanfordEarthR25FeedController extends ControllerBase {
         // get the schedule.
         $config = $this->configFactory->getEditable('stanford_earth_r25.adminsettings');
         $quickbook_id = intval($config->get('stanford_r25_credential_contact_id'));
-        foreach ($results['index']['R25:SCHEDULER_ID'] as $key => $value) {
-          if (intval($results['vals'][$value]['value']) !== $quickbook_id) {
-            $scheduler_name = '';
-            if (isset($results['vals'][$results['index']['R25:SCHEDULER_ID'][$key]]['value']) &&
-              isset($results['vals'][$results['index']['R25:SCHEDULER_NAME'][$key]]['value'])) {
-              $scheduler_name = $results['vals'][$results['index']['R25:SCHEDULER_NAME'][$key]]['value'];
-              if (!empty($scheduler_name) && strpos($scheduler_name, ',') !== FALSE) {
-                $name_array = explode(',', $scheduler_name);
-                foreach ($name_array as $nkey => $name) {
-                  $scheduler_name = '';
-                  $subname = ucfirst(trim($name));
-                  if ($nkey == 0) {
-                    $last = $subname;
-                  }
-                  else {
-                    $scheduler_name .= $subname . ' ';
-                  }
+        foreach ($items as $key => $item) {
+          if (!empty($item['scheduler_id']) && intval($item['scheduler_id']) !== $quickbook_id) {
+            $scheduler_name = $item['scheduler_name'];
+            if (!empty($scheduler_name) && str_contains($scheduler_name, ',')) {
+              $name_array = explode(',', $scheduler_name);
+              foreach ($name_array as $nkey => $name) {
+                $scheduler_name = '';
+                $subname = ucfirst(trim($name));
+                if ($nkey == 0) {
+                  $last = $subname;
                 }
-                $scheduler_name .= $last;
+                else {
+                  $scheduler_name .= $subname . ' ';
+                }
               }
+              $scheduler_name .= $last;
             }
-            $email = '';
-            if (isset($results['vals'][$results['index']['R25:SCHEDULER_EMAIL'][$key]]['value'])) {
-              $email = $results['vals'][$results['index']['R25:SCHEDULER_EMAIL'][$key]]['value'];
-            }
+            $email = $item['scheduler_email'];
             if (empty($scheduler_name)) {
               if (empty($email)) {
                 $scheduler_name = 'Unknown user. Please check 25Live audit trail.';
@@ -255,48 +262,58 @@ class StanfordEarthR25FeedController extends ControllerBase {
               }
             }
             $text = 'Reservation scheduled in 25Live by ' . $scheduler_name . '.';
-            if (!empty($email)) {
+            if (!empty($email) && intval($item['scheduler_id']) !== $quickbook_id) {
               $text .= '&nbsp;<a href="mailto:' . $email . '">Click to contact scheduler by email</a>.';
             }
-            $index = count($items);
-            while ($index) {
-              $index -= 1;
-              if (intval($value) > intval($items[$index]['index'])) {
-                $items[$index]['scheduled_by'] = $text;
-                break;
-              }
-            }
+            $items[$key]['scheduled_by'] = $text;
           }
         }
 
         // For those items that were scheduled by quickbook, the event
         // description contains the scheduler. Also, certain rooms may want to
         // show the description as the FullCalendar event title.
-        foreach ($results['index']['R25:EVENT_DESCRIPTION'] as $key => $value) {
-          $text = '';
-          if (!empty($results['vals'][$results['index']['R25:EVENT_DESCRIPTION'][$key]]['value'])) {
-            $text = $results['vals'][$results['index']['R25:EVENT_DESCRIPTION'][$key]]['value'];
-          }
+        foreach ($items as $key => $item) {
+          $text = $item['description_text'];
           if (!empty($text)) {
-            $index = count($items);
-            while ($index) {
-              $index -= 1;
-              if (intval($value) > intval($items[$index]['index'])) {
-                // Display event description as title if room is so marked.
-                if (!empty($r25_location->get('description_as_title')) &&
-                  intval($r25_location->get('description_as_title')) == 1) {
-                  $items[$index]['title'] = MailFormatHelper::htmlToText($text);
-                }
-                $items[$index]['description'] = $text;
-                break;
+            // Display event description as title if room is so marked.
+            if (!empty($r25_location->get('description_as_title')) &&
+              intval($r25_location->get('description_as_title')) == 1) {
+              $items[$key]['title'] = MailFormatHelper::htmlToText($text);
+            }
+            $items[$key]['description'] = $text;
+          }
+        }
+
+        $colors = [];
+        $tentativeColors = [];
+        $legend_labels = $r25_location->get('legend_labels');
+        if (!empty($legend_labels)) {
+          $spaces = explode('+', $r25_location->get('space_id'));
+          $labels = explode('+', $legend_labels);
+          foreach ($spaces as $key => $space) {
+            if (!empty($labels[$key])) {
+              $label_ex = explode('|', $labels[$key]);
+              if (!empty($label_ex[1])) {
+                $colors[$space] = $label_ex[1];
+              }
+              if (!empty($label_ex[2])) {
+                $tentativeColors[$space] = $label_ex[2];
               }
             }
           }
         }
         foreach ($items as $key => $item) {
           $can_confirm = FALSE;
+          if (!empty($colors[$item['space_id']])) {
+            $items[$key]['backgroundColor'] = $colors[$item['space_id']];
+          }
           if (intval($item['state']) == 1) {
-            $items[$key]['backgroundColor'] = 'goldenrod';
+            if (empty($tentativeColors[$item['space_id']])) {
+              $items[$key]['backgroundColor'] = 'goldenrod';
+            }
+            else {
+              $items[$key]['backgroundColor'] = $tentativeColors[$item['space_id']];
+            }
             $items[$key]['textColor'] = 'black';
             $items[$key]['title'] .= ' (' . $item['state_name'] . ')';
             if ($approver) {
@@ -312,6 +329,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
           }
           $items[$key]['tip'] = $toolTipStr;
           $can_cancel = FALSE;
+
           if ($approver) {
             $can_cancel = TRUE;
           }
@@ -351,6 +369,13 @@ class StanfordEarthR25FeedController extends ControllerBase {
               $items[$key]['event_id'] . '/details';
             $items[$key]['tip'] .= '<br /><a href="' . $url .
               '">Click to manage in 25Live</a>';
+          }
+
+          if ($r25_location->get('hide_titles_for_non_managers') && !$approver) {
+            $items[$key]['title'] = 'Reserved';
+            $items[$key]['description'] = 'Reserved';
+            $items[$key]['description_text'] = 'Reserved';
+            $items[$key]['tip'] = '';
           }
         }
       }

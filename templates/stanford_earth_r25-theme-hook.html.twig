@@ -91,6 +91,24 @@
   <div id="control-spud"></div>
   <div id="calendar-spud">This feature is not yet implemented.</div>
 {% elseif caltype == 2 %}
+  {% set legend_labels = r25_location.get('legend_labels') %}
+  {% set labels = legend_labels|split('+') %}
+  {% if legend_labels is not empty %}
+    <div id="stanford-r25-legend">
+      <br />
+      <p>Confirmed:</p>
+      {% for label in labels %}
+        {% set line = label|split('|') %}
+        <span style="background-color: {{ line[1] }}; color: white">{{ line[0] }}</span>
+      {% endfor %}
+      <br />
+      <p>Tentative:</p>
+      {% for label in labels %}
+        {% set line = label|split('|') %}
+        <span style="background-color: {{ line[2] }}; color: black">{{ line[0] }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
   <div id="calendar"></div>
   {% set permalink = r25_location.get('permalink') %}
   {% if permalink == 1 %}

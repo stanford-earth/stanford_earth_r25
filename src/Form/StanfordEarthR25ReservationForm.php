@@ -210,9 +210,17 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#value' => $room,
     ];
 
+    // Display the room label
+    if (!empty($rooms[$room]['label'])) {
+      $form['stanford_r25_booking_label'] = [
+        '#type' => 'markup',
+        '#markup' => '<h4>' . $rooms[$room]['label'] . '</h4>',
+      ];
+    }
+
     // If the room only accepts tentative bookings, then put up a message
     // to that effect.
-    if (!empty($rooms[$room]['status']) && intval($rooms[$room]['status']) == StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
+    if (!empty($rooms[$room]['displaytype']) && intval($rooms[$room]['displaytype']) == StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
       $form['stanford_r25_booking_tentative'] = [
         '#type' => 'markup',
         '#markup' => "<p>This room only accepts tentative reservations which must be approved by the room's administrator.</p>",
@@ -324,6 +332,47 @@ class StanfordEarthR25ReservationForm extends FormBase {
         '#title' => 'End Date/Time',
       ];
     }
+
+    // Check if we have multiple locations to choose from
+    if (!empty($rooms[$room]['space_id'])) {
+      if (str_contains($rooms[$room]['space_id'], "+")) {
+        // make options
+        $space_ids = explode("+", $rooms[$room]['space_id']);
+        $labels = [];
+        if (!empty($rooms[$room]['legend_labels'])) {
+          $room_labels = explode("+", $rooms[$room]['legend_labels']);
+          foreach ($room_labels as $room_label) {
+            $rlabel = explode("|", $room_label);
+            $labels[] = $rlabel[0];
+          }
+        }
+        $room_options = [];
+        foreach ($space_ids as $key => $space_id) {
+          if (!empty($labels[$key])) {
+            $room_options[$space_id] = $labels[$key];
+          }
+          else {
+            $room_options[$space_id] = $space_id;
+          }
+        }
+        $form['stanford_r25_booking_spaceid'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Room Selection'),
+          // '#default_value' => array_key_first($room_options),
+          '#options' => $room_options,
+          // '#description' => $this->t('Choose one of the possible rooms shown.'),
+          '#required' => TRUE,
+        ];
+      }
+      else {
+        // set selected as single space id
+        $form['stanford_r25_booking_spaceid'] = [
+          '#type' => 'hidden',
+          '#value' => $rooms[$room]['space_id'],
+        ];
+      }
+    }
+
     // Max headcount for a room comes from parameter passed to the function.
     $form['stanford_r25_booking_headcount'] = [
       '#type' => 'select',
@@ -649,9 +698,24 @@ class StanfordEarthR25ReservationForm extends FormBase {
         'end' => $date->add(new \DateInterval('PT' . $duration . 'M'))->format(DATE_W3C),
       ];
     }
+    $booking_info['dates'] = $date_strs;
+
+    // Add the selected room's space_id to the booking_info.
+    if (!empty($user_input['stanford_r25_booking_spaceid'])) {
+      $booking_info['space_id'] = $user_input['stanford_r25_booking_spaceid'];
+    }
+    else {
+      $space_id = $rooms[$room]['space_id'];
+      if (str_contains($space_id, "+")) {
+        $spaces = explode("+", $space_id);
+        $booking_info['space_id'] = $spaces[0];
+      }
+      else {
+        $booking_info['space_id'] = $space_id;
+      }
+    }
 
     // Store booking info in form storage.
-    $booking_info['dates'] = $date_strs;
     $storage = [
       'stanford_earth_r25' => [
         'booking_info' => $booking_info,
@@ -814,17 +878,23 @@ class StanfordEarthR25ReservationForm extends FormBase {
     if (!empty($adminSettings['stanford_r25_event_type'])) {
       $event_type = $adminSettings['stanford_r25_event_type'];
     }
+    if (!empty($room['override_event_code'])) {
+      $event_type = $room['override_event_code'];
+    }
     $xml = str_replace('[r25_event_type]', $event_type, $xml);
     $xml = str_replace('[r25_event_state]', $event_state, $xml);
     $org_id = 'unknown';
     if (!empty($adminSettings['stanford_r25_org_id'])) {
       $org_id = $adminSettings['stanford_r25_org_id'];
     }
+    if (!empty($room['override_organization_id'])) {
+      $org_id = $room['override_organization_id'];
+    }
     $xml = str_replace('[r25_organization_id]', $org_id, $xml);
     $xml = str_replace('[r25_expected_headcount]', $form_state->getCompleteForm()['stanford_r25_booking_headcount']['#options'][$form_vals['stanford_r25_booking_headcount']], $xml);
     $xml = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $xml);
     $xml = str_replace('[r25_end_date_time]', $booking_info['dates']['end'], $xml);
-    $xml = str_replace('[r25_space_id]', $booking_info['room']['space_id'], $xml);
+    $xml = str_replace('[r25_space_id]', $booking_info['space_id'], $xml);
     $xml = str_replace('[r25_todo]', $todo_insert, $xml);
     $xml = str_replace('[r25_attr]', $attr_insert, $xml);
 
@@ -853,7 +923,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       if (empty($result['index']['R25:MSG_ID'][0])) {
         // Check if the result has the location and time we requested.
         if (!empty($result['index']['R25:SPACE_ID'][0]) &&
-          $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] == $booking_info['room']['space_id'] &&
+          $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value'] == $booking_info['space_id'] &&
         !empty($result['index']['R25:EVENT_START_DT'][0]) &&
         $result['vals'][$result['index']['R25:EVENT_START_DT'][0]]['value'] == $booking_info['dates']['start'] &&
         !empty($result['index']['R25:EVENT_END_DT'][0]) &&
@@ -904,7 +974,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           $billing_xml = $r25_result['raw-xml'];
           $est_ptr = strpos($billing_xml, 'status="est"');
           $billing_xml = substr($billing_xml, 0, $est_ptr) . 'status="mod"' . substr($billing_xml, $est_ptr + 12);
-          $space_code = strpos($billing_xml, $booking_info['room']['space_id']);
+          $space_code = strpos($billing_xml, $booking_info['space_id']);
           $bill_tmp = substr($billing_xml, 0, $space_code);
           $est_ptr = strrpos($bill_tmp, 'status="est"');
           $billing_xml = substr($billing_xml, 0, $est_ptr) . 'status="mod"' . substr($billing_xml, $est_ptr + 12);

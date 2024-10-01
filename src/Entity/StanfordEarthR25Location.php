@@ -49,7 +49,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "multi_day",
  *     "postprocess_booking",
  *     "override_booking_instructions",
- *     "extra_config_1",
+ *     "legend_labels",
  *     "event_attributes",
  *     "event_attributes_fields",
  *     "contact_attribute",
@@ -59,7 +59,10 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "override_book_roles",
  *     "nopopup_reservation_form",
  *     "location_info",
- *     "locationtype"
+ *     "locationtype",
+ *     "hide_titles_for_non_managers",
+ *     "override_organization_id",
+ *     "override_event_code",
  *   },
  *   links = {
  *     "edit-form" =
@@ -213,11 +216,11 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $override_booking_instructions;
 
   /**
-   * Extra config field for sub-modules.
+   * Room labels for multi-room legend.
    *
    * @var string
    */
-  protected $extra_config_1;
+  protected $legend_labels;
 
   /**
    * Event attributes.
@@ -288,6 +291,28 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var int
    */
   protected $locationtype;
+
+  /**
+   * Hide event titles for non-authorized users.
+   *
+   * @var bool
+   */
+  protected $hide_titles_for_non_managers;
+
+  /**
+   * Override Organization ID.
+   *
+   * @var string
+   */
+  protected $override_organization_id;
+
+  /**
+   * Override Event Code.
+   *
+   * @var string
+   */
+  protected $override_event_code;
+
 
   /**
    * {@inheritdoc}

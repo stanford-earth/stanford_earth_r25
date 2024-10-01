@@ -72,6 +72,15 @@ label.js-form-required.form-required::after {
   color: red;
 }
 
+#stanford-r25-legend p{
+    display: inline-flex;
+    width: 90px;
+}
+#stanford-r25-legend p span{
+    width: 300px;
+    display: inline-flex;
+}
+
 .tippy-box[data-theme~='stanford-earth-r25'] {
   background-color: lightgoldenrodyellow;
   color: black;
