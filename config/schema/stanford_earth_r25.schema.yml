@@ -136,6 +136,45 @@ stanford_earth_r25_location.*:
     override_event_code:
       type: string
       label: 'Event Type for This Location'
+    allowed_dates:
+      type: sequence
+      label: 'Date ranges allowed for booking'
+      sequence:
+        - type: mapping
+          label: 'Date range dates'
+          mapping:
+            start:
+              type: string
+              label: 'Start'
+            end:
+              type: string
+              label: 'End'
+    allowed_timeslots:
+      type: sequence
+      label: 'Timeslots allowed for booking'
+      sequence:
+        - type: mapping
+          label: 'Timeslot'
+          mapping:
+            days:
+              type: sequence
+              label: 'Allowed Days'
+              sequence:
+                - type: mapping
+                  label: 'Days'
+                  mapping:
+                    day:
+                      type: string
+                      label: 'Day'
+            start:
+              type: string
+              label: 'Start Time'
+            end:
+              type: string
+              label: 'End Time'
+            price:
+              type: string
+              label: 'Price'
     location_info:
       type: sequence
       label: 'R25 Location Info'

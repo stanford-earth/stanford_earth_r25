@@ -63,6 +63,8 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "hide_titles_for_non_managers",
  *     "override_organization_id",
  *     "override_event_code",
+ *     "allowed_timeslots",
+ *     "allowed_dates",
  *   },
  *   links = {
  *     "edit-form" =
@@ -313,6 +315,19 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    */
   protected $override_event_code;
 
+  /**
+   * Allowed booking dates.
+   *
+   * @var array
+   */
+  protected $allowed_dates;
+
+  /**
+   * Allowed timeslots.
+   *
+   * @var array
+   */
+  protected $allowed_timeslots;
 
   /**
    * {@inheritdoc}
@@ -327,6 +342,16 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
     $contact_attribute_field =
       StanfordEarthR25Util::stanfordR25UpdateEventAttributeFields($this->get('contact_attribute'));
     $this->set('contact_attribute_field', $contact_attribute_field);
+    $allowed_dates = $this->get('allowed_dates');
+    if (!empty($allowed_dates)) {
+      $this->set('allowed_dates',
+        StanfordEarthR25Util::stanfordR25ParseBlackoutDates($allowed_dates));
+    }
+    $allowed_timeslots = $this->get('allowed_timeslots');
+    $result = StanfordEarthR25Util::stanfordR25ParseTimeslots($allowed_timeslots);
+    if (is_array($result) && !empty($result)) {
+      $this->set('allowed_timeslots', $result);
+    }
     $return = parent::save();
     return $return;
   }

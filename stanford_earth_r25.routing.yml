@@ -72,6 +72,20 @@ entity.stanford_earth_r25_location.feed:
   requirements:
     _permission: 'view r25 room calendars'
 
+entity.stanford_earth_r25_location.avail:
+  # JSON feed to return to the JavaScript FullCalendar, parameterized by room id
+  path: '/r25/{r25_location}/r25_avail'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25AvailController::list'
+    _title: 'Stanford R25 Availability List'
+  options:
+    parameters:
+      r25_location:
+        type: entity:stanford_earth_r25_location
+    no_cache: TRUE
+  requirements:
+    _permission: 'view r25 room calendars'
+
 entity.stanford_earth_r25_location.calendar:
   path: '/r25/{r25_location}/calendar'
   defaults:

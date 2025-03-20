@@ -138,6 +138,10 @@ class StanfordEarthR25Service {
       $url = 'https://' . $credential . '@' . substr($url, (strpos($url, '://') + 3));
       // Figure out which 25Live API command corresponds to what we want to do.
       switch ($command) {
+        case 'avail':
+          $xml_command = 'space_avail.xml';
+          break;
+
         case 'reserve':
           $xml_command = 'events.xml';
           break;
@@ -204,7 +208,7 @@ class StanfordEarthR25Service {
       // GET, POST, or DELETE.
       $method = 'GET';
       $options = [];
-      if ($command == 'reserve') {
+      if ($command == 'reserve' || $command == 'avail') {
         // $post_data contains the XML for a reservation request
         $method = 'POST';
         $options['body'] = $post_data;

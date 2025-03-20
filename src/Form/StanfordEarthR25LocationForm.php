@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\user\Entity\Role;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
@@ -220,7 +221,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     // Whether the calendar page uses 25Live Publisher embeds or fullcalendar.
     // Only fullcalendar allows selection of dates, times, and durations from
     // the calendar.
-    $caltype = $this->checkRadioVals($location->get('caltype'), 1, 2);
+    $caltype = $this->checkRadioVals($location->get('caltype'), 1, 3);
     $form['advanced']['caltype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Calendar Display Options'),
@@ -228,6 +229,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#options' => [
         1 => $this->t('25Live Publisher'),
         2 => $this->t('FullCalendar'),
+        3 => $this->t('FullCalendar List'),
       ],
       '#description' => $this->t('Whether to use the 25Live Publisher read-only calendar display or the interactive FullCalendar display.'),
       '#required' => TRUE,
@@ -320,6 +322,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#format' => $override_instr['format'],
       '#base_type' => 'textarea',
     ];
+
     // Checkbox if you want to store booking information in
     // $form_state['storage'] for post-processing in your own module.
     $form['advanced']['postprocess_booking'] = [
@@ -392,9 +395,75 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#required' => false,
     ];
 
+    // A list of allowed date ranges for booking
+    $allowed_dates = $location->get('allowed_dates');
+    if (empty($allowed_dates)) {
+      $allowed_dates = '';
+    }
+    elseif (is_array($allowed_dates)) {
+      $allowed_dates_str = '';
+      foreach ($allowed_dates as $value) {
+        if (is_array($value)) {
+          $allowed_dates_str .= $value['start'] . " - " . $value['end'] . "\r\n";
+        }
+      }
+      $allowed_dates = $allowed_dates_str;
+    }
+    $form['advanced']['allowed_dates'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Allowed Dates'),
+      '#description' => $this->t('A list of date ranges in the form "YYYY-MM-DD - YYYY-MM-DD" when this module may make reservations. Does not use 25Live blackout periods because rooms may need to be reservable by other processes such as registrar room assignment.'),
+      '#default_value' => $allowed_dates,
+    ];
+
+    // A list of allowed timeslots for booking
+    $allowed_timeslots = $location->get('allowed_timeslots');
+    if (empty($allowed_timeslots)) {
+      $allowed_timeslots = '';
+    }
+    elseif (is_array($allowed_timeslots)) {
+      $allowed_timeslots_str = '';
+      foreach ($allowed_timeslots as $value) {
+        $timeslot_str = '';
+        if (is_array($value)) {
+          if (!empty($value['days']) && is_array($value['days'])) {
+            foreach ($value['days'] as $day) {
+              if (!empty($day)) {
+                if (!empty($timeslot_str)) {
+                  $timeslot_str .= ',';
+                }
+                $timeslot_str .= $day;
+              }
+            }
+            if (!empty($timeslot_str)) {
+              $timeslot_str .= '|';
+            }
+            if (!empty($value['start'])) {
+              $timeslot_str .= $value['start'] . '|';
+            }
+            if (!empty($value['end'])) {
+              $timeslot_str .= $value['end'];
+            }
+            if (!empty($value['price'])) {
+              $timeslot_str .= '|' . $value['price'];
+            }
+            $timeslot_str .= "\r\n";
+          }
+        }
+        $allowed_timeslots_str .= $timeslot_str;
+      }
+      $allowed_timeslots = $allowed_timeslots_str;
+    }
+    $form['advanced']['allowed_timeslots'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Allowed Timslots'),
+      '#description' => $this->t('A list of allowed timeslots blah blah blah.'),
+      '#default_value' => $allowed_timeslots,
+    ];
 
     // Get the user roles.
-    $roles = user_roles();
+    //$roles = user_roles();
+    $roles = Role::loadMultiple();
     $roleOptions = [];
     foreach ($roles as $rid => $role) {
       $roleOptions[$rid] = Html::escape($role->label());
@@ -478,6 +547,30 @@ class StanfordEarthR25LocationForm extends EntityForm {
         $form_state->setErrorByName('approver_secgroup_name', 'Unable to retrieve security group email list from 25Live.');
       }
     }
+
+    // Validate allowed date ranges.
+    $allowed = $form_state->getValue('allowed_dates');
+    if (!empty($allowed)) {
+      $allowed = StanfordEarthR25Util::stanfordR25ParseBlackoutDates($allowed);
+      if (empty($allowed)) {
+        $form_state->setErrorByName('allowed_dates',
+          $this->t('Allowed date ranges must be in the form "YYYY-MM-DD - YYYY-MM-DD".'));
+      }
+    }
+    // Validate allowed timeslots.
+    $allowed = $form_state->getValue('allowed_timeslots');
+    if (!empty($allowed)) {
+      $result = StanfordEarthR25Util::stanfordR25ParseTimeslots($allowed);
+      if (!is_array($result) || empty($result))
+      {
+        $msg = 'Invalid format for allowed timeslots.';
+        if (is_string($result) and !empty($result)) {
+          $msg = $msg . ' ' .$result;
+        }
+        $form_state->setErrorByName('allowed_timeslots', $this->t($msg));
+      }
+    }
+
   }
 
   /**

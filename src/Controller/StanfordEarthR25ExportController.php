@@ -67,7 +67,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   protected $fileSystem;
 
   /**
-   * StanfordEarthR25FeedController constructor.
+   * StanfordEarthR25ExportController constructor.
    */
   public function __construct(KillSwitch $killSwitch,
                               ConfigFactory $configFactory,

@@ -61,7 +61,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   protected $tempStore;
 
   /**
-   * StanfordEarthR25FeedController constructor.
+   * StanfordEarthR25CalendarController constructor.
    */
   public function __construct(KillSwitch $killSwitch,
                               AccountInterface $user,

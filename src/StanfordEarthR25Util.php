@@ -9,6 +9,8 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\File\FileRepositoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
+use Drupal\Core\File\FileExists;
+use DateTime;
 
 /**
  * Encapsulates information and utility methods.
@@ -44,6 +46,74 @@ class StanfordEarthR25Util {
       }
     }
     return $blackouts;
+  }
+
+  /**
+   * Parse a timeslot string with days, start and end times, and
+   * optional rental price and return an array.
+   *
+   * @param string $inStr
+   *   Input string from text area.
+   */
+  public static function stanfordR25ParseTimeslots($inStr = '') {
+    $timeslots = [];
+    $timeslot_list = trim($inStr);
+    if (!empty($timeslot_list)) {
+      $slots = explode("\n", $timeslot_list);
+      foreach ($slots as $timeslot_text) {
+        $timeslot_text = trim($timeslot_text);
+        $ts_parts = explode("|", $timeslot_text);
+        if (count($ts_parts) > 2) {
+          $ts_days_array = [];
+          $price = '';
+          $ts_days = explode(",", $ts_parts[0]);
+          foreach ($ts_days as $ts_day) {
+            $ts_day = ucfirst(strtolower(trim($ts_day)));
+            if (in_array($ts_day, [
+              'Sun',
+              'Mon',
+              'Tue',
+              'Wed',
+              'Thu',
+              'Fri',
+              'Sat'
+            ])) {
+              $ts_days_array[] = $ts_day;
+            }
+            else {
+              return "Days of week must be comma-separated list from " .
+                "Sun, Mon, Tue, Wed, Thu, Fri, Sat.";
+            }
+          }
+          $start_hour = trim($ts_parts[1]);
+          if (preg_match('((0[0-9]|1[0-9]|2[0-3])\:+[0-5][0-9])', $start_hour) !== 1) {
+            return "Start Hour must be in 24-hour format HH:MM.";
+          }
+          $end_hour = trim($ts_parts[2]);
+          if (preg_match('((0[0-9]|1[0-9]|2[0-3])\:+[0-5][0-9])', $end_hour) !== 1) {
+            return "End Hour must be in 24-hour format HH:MM.";
+          }
+          $startDT = new DateTime($start_hour);
+          $endDT = new DateTime($end_hour);
+          if ($startDT > $endDT) {
+            return "Start Hour must be later than End Hour.";
+          }
+          if (count($ts_parts) > 3) {
+            $price = trim($ts_parts[3]);
+            if (!is_numeric($price)) {
+              return "Price must be a number";
+            }
+          }
+          $timeslots[] = [
+            'days' => $ts_days_array,
+            'start' => $start_hour,
+            'end' => $end_hour,
+            'price' => $price,
+          ];
+        }
+      }
+    }
+    return $timeslots;
   }
 
   /**
@@ -241,7 +311,7 @@ class StanfordEarthR25Util {
             /** @var \Drupal\file\FileRepositoryInterface $file_repository */
             $file_repository = \Drupal::service('file.repository');
             try {
-              $file_repository->writeData($photo, $destination, FileSystemInterface::EXISTS_REPLACE);
+              $file_repository->writeData($photo, $destination, FileExists::Replace);
             }
             catch (InvalidStreamWrapperException $e) {
               \Drupal::messenger()
