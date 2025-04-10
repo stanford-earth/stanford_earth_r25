@@ -4,15 +4,48 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 
 function stanford_earth_hartley_is_se3_user() {
-  // For now, treat all users as SDSS
-  return TRUE;
+  if (!empty(array_intersect(
+    Drupal::currentUser()->getRoles(), ['custm_sdss_user','administrator']))) {
+    return true;
+  }
+  return false;
 }
 
-function stanford_earth_hartley_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function stanford_earth_hartley_is_hartley_room($form) {
+  $is_hartley = false;
+  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
+    $roomid = $form['stanford_r25_booking_roomid']['#value'];
+    if (is_string($roomid)) {
+      $roomCode = substr($roomid, 0, 2);
+      if ($roomCode === 'mh') {
+        $is_hartley = true;
+      }
+    }
+  }
+  return $is_hartley;
+}
+
+function stanford_earth_hartley_is_farm_room($form) {
+  $is_farm = false;
+  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
+    $roomid = $form['stanford_r25_booking_roomid']['#value'];
+    if (is_string($roomid)) {
+      $roomCode = substr($roomid, 0, 2);
+      if ($roomCode === 'of') {
+        $is_farm = true;
+      }
+    }
+  }
+  return $is_farm;
+}
+
+function stanford_earth_hartley_form_alter(&$form,
+  \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   if ($form_id === 'stanford_earth_r25_reservation') {
-
-    if (!empty($form['stanford_r25_booking_roomid']['#value']) && substr($form['stanford_r25_booking_roomid']['#value'], 0, 3) === 'mh0') {
-
+    // does the room use hartley rules?
+    $hRules = (stanford_earth_hartley_is_hartley_room($form) ||
+      stanford_earth_hartley_is_farm_room($form));
+    if ($hRules) {
       if (empty($form['#validate'])) {
         $form['#validate'] = [];
       }
@@ -25,7 +58,7 @@ function stanford_earth_hartley_form_alter(&$form, \Drupal\Core\Form\FormStateIn
 
       $form['stanford_r25_booking_reason']['#title'] = 'Event name';
 
-      $form['stanford_r25_booking_attr176']['#title'] = 'Is the event host using Hartley for the first time?';
+      $form['stanford_r25_booking_attr176']['#title'] = 'Is the event host using this space for the first time?';
       $form['stanford_r25_booking_attr176']['#description'] = 'If so, we will be in touch with additional instructions after your reservation is confirmed.';
 
       $form['stanford_r25_booking_attr169']['#title'] = 'Will food and/or beverages be served at this event?';
@@ -36,17 +69,18 @@ function stanford_earth_hartley_form_alter(&$form, \Drupal\Core\Form\FormStateIn
       $form['stanford_r25_booking_attr170']['#states'] = [
         'required' => [
           ':input[name="stanford_r25_booking_attr169"]' => [
-            'checked' => TRUE
+            'checked' => true
           ],
         ],
         'visible' => [
           ':input[name="stanford_r25_booking_attr169"]' => [
-            'checked' => TRUE
+            'checked' => true
           ],
         ]
       ];
 
-      if (!empty(array_intersect(Drupal::currentUser()->getRoles(), ['custm_hartley_administrator']))) {
+      if ($roomCode === 'mh' && !empty(array_intersect(Drupal::currentUser()
+          ->getRoles(), ['custm_hartley_administrator']))) {
         $form['stanford_r25_booking_attr171']['#type'] = 'hidden';
         $form['stanford_r25_booking_attr172']['#type'] = 'hidden';
         $form['stanford_r25_booking_attr173']['#type'] = 'hidden';
@@ -196,7 +230,11 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       }
       $body[] = 'If food IS served or consumed, you must get a work order from Custodial Services. This is not negotiable. ';
       $body[] = 'Allow at least 30 minutes for cleanup if you get a work order.';
-      $body[] = 'To update or cancel your booking request, please send an email with the relevant information to mailto:sdss-deans-office-reservations@stanford.edu';
+      $emailAddr = 'mailto:sdss-deans-office-reservations@stanford.edu';
+      if (stanford_earth_hartley_is_farm_room($form)) {
+        $emailAddr = 'mailto:jessgo@stanford.edu';
+      }
+      $body[] = 'To update or cancel your booking request, please send an email with the relevant information to ' . $emailAddr;
       $module = 'stanford_earth_r25';
       $key = 'r25_operation';
       $to = $mail_list;
@@ -235,10 +273,13 @@ function stanford_earth_hartley_stanford_r25_fullcalendar_limit_alter(&$calendar
 }
 
 function stanford_earth_hartley_stanford_r25_isbillable_alter(&$is_billable) {
+  $is_billable = false;
+  /*
   if ($is_billable) {
     $se3_user = stanford_earth_hartley_is_se3_user();
     if ($se3_user) {
       $is_billable = false;
     }
   }
+  */
 }

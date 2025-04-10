@@ -395,6 +395,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#required' => false,
     ];
 
+    $form['advanced']['override_event_name'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Display Name for Override Event Type'),
+      '#description' => $this->t("Enter the availability calendar display name for this Event Type."),
+      '#default_value' => $location->get('override_event_name'),
+      '#required' => false,
+    ];
+
     // A list of allowed date ranges for booking
     $allowed_dates = $location->get('allowed_dates');
     if (empty($allowed_dates)) {

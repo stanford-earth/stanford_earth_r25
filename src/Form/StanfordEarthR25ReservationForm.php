@@ -287,8 +287,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#required' => TRUE,
       '#title' => 'Start Date/Time',
     ];
+    if (intval($rooms[$room]['caltype']) === 3) {
+      $form['stanford_r25_booking_date']['#disabled'] = true;
+    }
 
-    if (empty($rooms[$room]['multi_day'])) {
+    if (empty($rooms[$room]['multi_day']) && intval($rooms[$room]['caltype']) !== 3) {
       // For non-multi-day rooms. default booking duration is limited
       // to 2 hours in 30 minute increments, but the room config can have
       // a different value.
@@ -331,6 +334,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
         '#required' => TRUE,
         '#title' => 'End Date/Time',
       ];
+      if (intval($rooms[$room]['caltype']) === 3) {
+        $form['stanford_r25_booking_enddate']['#disabled'] = true;
+      }
     }
 
     // Check if we have multiple locations to choose from

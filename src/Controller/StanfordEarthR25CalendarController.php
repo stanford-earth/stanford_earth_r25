@@ -178,6 +178,8 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         $multi_day = 1;
       }
       $drupalSettings['stanfordR25MultiDay'] = $multi_day;
+      $cal_type = intval($r25_location->get('caltype'));
+      $drupalSettings['stanfordR25CalType'] = $cal_type;
 
       // Get the future limit of reservations.
       $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($r25_location, $this->moduleHandler);
@@ -188,7 +190,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $library = [
         'core/drupal.dialog.ajax',
       ];
-      if (intval($r25_location->get('caltype')) == 1) {
+      if ($cal_type == 1) {
         $drupalSettings['stanfordR25Spud'] = $r25_location->get('spud_name');
         $library[] = 'stanford_earth_r25/stanford_earth_r25_spud';
       }
@@ -196,7 +198,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
         // If the calendar is FullCalendar, output links to the required
         // javascript files and css.
         $drupalSettings['stanfordR25Timezone'] = date_default_timezone_get();
-        if ($this->user->isAuthenticated()) {
+        if ($this->user->isAuthenticated() && $cal_type == 2) {
           $drupalSettings['stanfordR25Qtip'] = 'qtip';
         }
         $library[] = 'stanford_earth_r25/stanford_earth_r25_calendar';

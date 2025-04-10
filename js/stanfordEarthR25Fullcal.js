@@ -26,6 +26,14 @@ var calendar;
       // cookie would be a single-use thing, so delete it
       deleteCookie("stanford-r25-date");
 
+      // settings for regular calendar or list view
+      var calButtons = 'dayGridMonth,timeGridWeek,timeGridDay';
+      var viewPrefix = 'timeGrid';
+      if (drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
+        viewPrefix = "list";
+        calButtons = ""; //'listMonth,listWeek,listDay';
+      }
+
       // if we are coming back from  a reservation, check cookies for the calendar view
       var defaultView = readCookie('stanford-r25-view');
       if (defaultView === null) {
@@ -34,20 +42,24 @@ var calendar;
           defaultView = drupalSettings.stanfordEarthR25.stanfordR25ParamView;
         }
         else {
-          // otherwise, use the Default view set by Drupal for this room
-          switch (drupalSettings.stanfordEarthR25.stanfordR25DefaultView) {
-            case '1':
-              defaultView = 'timeGridDay';
-              break;
-            case '2':
-              defaultView = 'timeGridWeek';
-              break;
-            case '3':
-              defaultView = 'dayGridMonth';
-              break;
-            default:
-              // finally, default to month view if no other choice
-              defaultView = 'dayGridMonth';
+          if (drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
+            defaultView = 'listMonth';
+          } else {
+            // otherwise, use the Default view set by Drupal for this room
+            switch (drupalSettings.stanfordEarthR25.stanfordR25DefaultView) {
+              case '1':
+                defaultView = 'timeGridDay';
+                break;
+              case '2':
+                defaultView = 'timeGridWeek';
+                break;
+              case '3':
+                defaultView = 'dayGridMonth';
+                break;
+              default:
+                // finally, default to month view if no other choice
+                defaultView = 'dayGridMonth';
+            }
           }
         }
       }
@@ -131,8 +143,24 @@ var calendar;
             else {
               $("#calendar .fc-next-button").show();
             }
+            var today = new Date();
+            if (viewDate.start <= today &&
+              drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
+              $("#calendar .fc-prev-button").hide();
+              return false;
+            }
+            else {
+              $("#calendar .fc-prev-button").show();
+            }
           },
           dayMaxEventRows: true,
+          eventClick: function (eventClickInfo) {
+            if (drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
+              reserveTime(eventClickInfo.event.start,
+                eventClickInfo.event.end, multiDay, maxDuration,
+                stanford_r25_room);
+            }
+          },
           eventDidMount: function (info) {
             // fc elements appear to be mis-aligned.
             //var fcTop = parseInt(info.el.parentElement.style.top,10) - 12;
@@ -152,6 +180,12 @@ var calendar;
               });
              }
           },
+          eventMouseEnter: function (mouseEnterInfo) {
+            $('body').css('cursor', 'pointer');
+          },
+          eventMouseLeave: function (mouseEnterInfo) {
+            $('body').css('cursor', 'default');
+          },
           eventSources: [
             {
               url: 'r25_feed',
@@ -164,17 +198,38 @@ var calendar;
           headerToolbar: {
             left: 'today prev,next',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            //right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: calButtons
           },
           // set the default date and view, either from our cookies (see above) or for current date and month
           initialDate: defaultDate,
           initialView: defaultView,
           loading: function (bool) {
+            var empty = document.getElementsByClassName('fc-list-empty');
+            var loading = document.getElementById('stanford-r25-loading');
             if (bool) {
+              if (empty.length > 0) {
+                empty[0].innerHTML = 'Loading...';
+              }
+              if (loading !== null) {
+                loading.style.display = 'inherit';
+              }
               $('body').css('cursor', 'progress');
             }
             else {
+              if (empty.length > 0) {
+                empty[0].innerHTML = 'No availability found for this time period.';
+              }
+              if (loading !== null) {
+                loading.style.display = 'none';
+              }
               $('body').css('cursor', 'default');
+            }
+          },
+          noEventsDidMount: function (obj) {
+            var msg = (obj.el.getElementsByClassName('fc-list-empty-cushion'));
+            if (msg.length > 0) {
+              msg[0].style.display = 'none';
             }
           },
           // when the user clicks and drags to select a date and time, populate the date, time, and duration fields
@@ -183,57 +238,7 @@ var calendar;
           select: function (selectInfo) {
             var start = selectInfo.start;
             var end = selectInfo.end;
-            var endStr = '';
-            var okaytosubmit = true;
-            // account for multi-day rooms that have an end date/time instead of a duration
-            if (multiDay) {
-              var endMonth = parseInt(end.getMonth()) + 1;
-              endStr = '-end-' + end.getFullYear() + '-' + endMonth.toString() +
-                '-' + end.getDate() + '-' + end.getHours() + '-' +
-                end.getMinutes();
-            }
-            else {
-              var duration = (end - start) / 60000;
-              if (maxDuration > 0 && duration > maxDuration) {
-                var maxStr = '';
-                if (maxDuration > 120) {
-                  maxStr = (maxDuration / 60) + ' hours';
-                }
-                else {
-                  maxStr = maxDuration + ' minutes';
-                }
-                okaytosubmit = false;
-                window.alert('Maximum booking duration is ' + maxStr + '. For longer please contact a department administrator.');
-              }
-              else {
-                var durationIndex = (duration / 30) - 1;
-                endStr = '-duration-' + durationIndex.toString();
-              }
-            }
-            if (okaytosubmit) {
-              // as mentioned above, when the user submits a reservation requests, save the date and calendar view to cookies
-              var view = calendar.view;
-              document.cookie = 'stanford-r25-view=' + view.type;
-              document.cookie = 'stanford-r25-date=' + start.toString();
-              var link = $('#stanford-r25-reservation a').attr('href');
-              var month = parseInt(start.getMonth()) + 1;
-              var startStr = start.getFullYear() + '-' + month.toString() + '-' +
-                start.getDate() + '-' + start.getHours() + '-' +
-                start.getMinutes() + endStr;
-              link = link.replace('now', startStr);
-              //console.log(stanford_r25_room);
-              if (stanford_r25_room['nopopup_reservation_form'] == 1) {
-                window.location.href = link;
-              } else {
-                var ajaxSettings = {
-                  url: link,
-                  dialogType: 'modal',
-                  dialog: {width: 800},
-                };
-                var myAjaxObject = Drupal.ajax(ajaxSettings);
-                myAjaxObject.execute();
-              }
-            }
+            reserveTime(start, end, multiDay, maxDuration, stanford_r25_room);
           },
           // set whether the calendar is selectable, as defined up above
           selectable: selectable,
@@ -266,6 +271,64 @@ var calendar;
       });
     }
   };
+
+  function reserveTime(start, end, multiDay, maxDuration, stanford_r25_room) {
+    //var start = selectInfo.start;
+    //var end = selectInfo.end;
+    var endStr = '';
+    var okaytosubmit = true;
+    // account for multi-day rooms that have an end date/time instead of a duration
+    if (multiDay || stanford_r25_room.caltype === "3") {
+      var endMonth = parseInt(end.getMonth()) + 1;
+      endStr = '-end-' + end.getFullYear() + '-' + endMonth.toString() +
+        '-' + end.getDate() + '-' + end.getHours() + '-' +
+        end.getMinutes();
+    }
+    else {
+      var duration = (end - start) / 60000;
+      if (maxDuration > 0 && duration > maxDuration) {
+        var maxStr = '';
+        if (maxDuration > 120) {
+          maxStr = (maxDuration / 60) + ' hours';
+        }
+        else {
+          maxStr = maxDuration + ' minutes';
+        }
+        okaytosubmit = false;
+        window.alert('Maximum booking duration is ' + maxStr + '. For longer please contact a department administrator.');
+      }
+      else {
+        var durationIndex = (duration / 30) - 1;
+        endStr = '-duration-' + durationIndex.toString();
+      }
+    }
+    if (okaytosubmit) {
+      // as mentioned above, when the user submits a reservation requests, save the date and calendar view to cookies
+      var view = calendar.view;
+      document.cookie = 'stanford-r25-view=' + view.type;
+      document.cookie = 'stanford-r25-date=' + start.toString();
+      var link = $('#stanford-r25-reservation a').attr('href');
+      if (link === undefined || link === null ) {
+        link = "/r25/reservation/" + stanford_r25_room.id + "/now";
+      }
+      var month = parseInt(start.getMonth()) + 1;
+      var startStr = start.getFullYear() + '-' + month.toString() + '-' +
+        start.getDate() + '-' + start.getHours() + '-' +
+        start.getMinutes() + endStr;
+      link = link.replace('now', startStr);
+      if (stanford_r25_room['nopopup_reservation_form'] == 1) {
+        window.location.href = link;
+      } else {
+        var ajaxSettings = {
+          url: link,
+          dialogType: 'modal',
+          dialog: {width: 800},
+        };
+        var myAjaxObject = Drupal.ajax(ajaxSettings);
+        myAjaxObject.execute();
+      }
+    }
+  }
 
   // read a javascript cookie
   function readCookie(name)

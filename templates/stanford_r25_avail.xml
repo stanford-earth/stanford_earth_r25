@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<r25:space_availability xmlns:r25="http://www.collegenet.com/r25" xmlns:xl="http://www.w3.org/1999/xlink">
+    <r25:requirements>
+        <r25:space>
+            <r25:space_id>[r25_space_id]</r25:space_id>
+        </r25:space>
+        <r25:hide_conflicts>T</r25:hide_conflicts>
+        <r25:enable_override>F</r25:enable_override>
+        <r25:allow_sharing>F</r25:allow_sharing>
+    </r25:requirements>
+    [r25_timeslots]
+</r25:space_availability>

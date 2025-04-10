@@ -10,7 +10,8 @@ use Drupal\File\FileRepositoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
 use Drupal\Core\File\FileExists;
-use DateTime;
+use DateTimeZone;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * Encapsulates information and utility methods.
@@ -93,8 +94,8 @@ class StanfordEarthR25Util {
           if (preg_match('((0[0-9]|1[0-9]|2[0-3])\:+[0-5][0-9])', $end_hour) !== 1) {
             return "End Hour must be in 24-hour format HH:MM.";
           }
-          $startDT = new DateTime($start_hour);
-          $endDT = new DateTime($end_hour);
+          $startDT = new DrupalDateTime($start_hour);
+          $endDT = new DrupalDateTime($end_hour);
           if ($startDT > $endDT) {
             return "Start Hour must be later than End Hour.";
           }
@@ -636,7 +637,7 @@ class StanfordEarthR25Util {
     else {
       // Set an error message if we couldn't contact 25Live.
       \Drupal::messenger()
-        ->addMessage('Unable to retrieve data from 25Live. Please try again later.', TYPE_ERROR);
+        ->addMessage('Unable to retrieve data from 25Live. Please try again later.', MessengerInterface::TYPE_ERROR);
       $output = FALSE;
     }
     return $output;
@@ -792,6 +793,131 @@ class StanfordEarthR25Util {
       }
     }
     return $field_info;
+  }
+  /**
+   * Return a Date/Time string for use in R25 API for the given date and time.
+   *
+   * @param DrupalDateTime $date
+   *   The date being examined for free timeslots
+   * @param string $time
+   *   The time in HH:MM format for the beginning or end of the timeslot.
+   *
+   * @return string
+   *   The date/time string in 'ATOM' format: Y-m-d\\TH:i:sP
+   */
+  public static function stanfordR25AvailGetDateStr(DrupalDateTime $date,
+    string $time) {
+    $dateString = '';
+    if (!empty($time) && is_string($time)) {
+      $hm = explode(':', $time);
+      if (count($hm) > 0) {
+        $hour = intval($hm[0]);
+        $min = 0;
+        if (count($hm) > 1) {
+          $min = intval($hm[1]);
+        }
+        if ($hour >= 0 && $hour <= 23 && $min >= 0 && $min < 59) {
+          $date->setTime($hour, $min);
+          $dateString = $date->format("Y-m-d\\TH:i:sP");
+        }
+      }
+    }
+    return $dateString;
+  }
+
+  /**
+   * Return an array of possible location timeslots for the given date range.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   *   An the location entity being queried.
+   * @param string $start
+   *   The start date for the request.
+   * @param string $end
+   * *   The end date for the request.
+   *
+   * @return array
+   *   The array of timeslots.
+   */
+  public static function stanfordR25PossibleTimeslots(
+    EntityInterface $r25_location, $start, $end) {
+
+    // this is the xml string we will be building
+    $timeslotsArray = [];
+    // Get the system or Drupal-default timezone.
+    $timezone = new DateTimeZone(date_default_timezone_get());
+    $tz_config = \Drupal::configFactory()->getEditable('system.date')
+      ->get('timezone');
+    if (!empty($tz_config['default'])) {
+      try {
+        $timezone = new DateTimeZone($tz_config['default']);
+      } catch (\Exception $e) {
+      }
+    }
+    // Get the requested daterange from FullCalenar.
+    $startDate = new DrupalDateTime($start,$timezone);
+    $endDate = new DrupalDateTime($end,$timezone);
+    // Get the allowed date ranges for this location.
+    $daterange_array = $r25_location->get('allowed_dates');;
+    $dateranges = [];
+    foreach ($daterange_array as $daterange ) {
+      $dateranges[] = [
+        'start' => new DrupalDateTime($daterange['start'],$timezone),
+        'end' => new DrupalDateTime($daterange['end'],$timezone),
+      ];
+    }
+    // loop through all the requested days and find the ones allowed
+    for ($date = $startDate; $date <= $endDate; $date->modify('+1 day')){
+      $date_allowed = false;
+      foreach ($dateranges as $daterange) {
+        // is the date within one of the date ranges?
+        if ($date >= $daterange['start'] && $date <= $daterange['end']) {
+          $date_allowed = true;
+          break;
+        }
+      }
+      // if date is allowed, check if there are any timeslots for this day
+      if ($date_allowed) {
+        $dow = $date->format('D');
+        $timeslots = $r25_location->get('allowed_timeslots');
+        foreach ($timeslots as $timeslot) {
+          $dow_allowed = false;
+          if (!empty($timeslot['days']) && is_array($timeslot['days'])) {
+            foreach ($timeslot['days'] as $day) {
+              if ($day === $dow) {
+                // This timeslot should be checked for this day.
+                $dow_allowed = true;
+                break;
+              }
+            }
+          }
+          if ($dow_allowed) {
+            $startString = '';
+            $endString = '';
+            if (!empty($timeslot['start']) && is_string($timeslot['start'])) {
+              $startString = self::stanfordR25AvailGetDateStr($date,
+                $timeslot['start']);
+            }
+            if (!empty($timeslot['end']) && is_string($timeslot['end'])) {
+              $endString = self::stanfordR25AvailGetDateStr($date,
+                $timeslot['end']);
+            }
+            // if the start time is in the past, don't add it.
+            if (new DrupalDateTime($startString,$timezone) <
+              new DrupalDateTime('now',$timezone)) {
+              $startString = '';
+            }
+            if (!empty($startString) && !empty($endString)) {
+              $timeslotsArray[] = [
+                'start' => new DrupalDateTime($startString,$timezone),
+                'end' => new DrupalDateTime($endString,$timezone),
+                'free' => true,
+              ];
+            }
+          }
+        }
+      }
+    }
+    return $timeslotsArray;
   }
 
 }

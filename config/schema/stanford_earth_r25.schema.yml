@@ -135,7 +135,10 @@ stanford_earth_r25_location.*:
       label: 'Organization ID for This Location'
     override_event_code:
       type: string
-      label: 'Event Type for This Location'
+      label: 'Event Code for This Location'
+    override_event_name:
+      type: string
+      label: 'Display Name for This Event Code'
     allowed_dates:
       type: sequence
       label: 'Date ranges allowed for booking'
