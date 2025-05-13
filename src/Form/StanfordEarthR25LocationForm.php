@@ -303,6 +303,27 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $location->get('auto_billing_code'),
       '#description' => $this->t("The rate group id to use to auto-bill for the use of this room. Leave blank for none."),
     ];
+
+    // Override default room description for this room.
+    $override_desc = $location->get('override_room_description');
+    if (empty($override_desc)) {
+      $override_desc = [];
+    }
+    if (empty($override_desc['value'])) {
+      $override_desc['value'] = '';
+    }
+    if (empty($override_desc['format'])) {
+      $override_desc['format'] = filter_default_format();
+    }
+    $form['advanced']['override_room_description'] = [
+      '#type' => 'text_format',
+      '#title' => $this->t('Override Room Description'),
+      '#description' => $this->t('Enter a room description to appear at the top of the calendar page. If left blank, then description from 25Live is used.'),
+      '#default_value' => $override_desc['value'],
+      '#format' => $override_desc['format'],
+      '#base_type' => 'textarea',
+    ];
+
     // Override default booking instructions for this room.
     $override_instr = $location->get('override_booking_instructions');
     if (empty($override_instr)) {

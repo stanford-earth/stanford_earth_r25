@@ -258,6 +258,10 @@ class StanfordEarthR25FeedController extends ControllerBase {
           $scheduler_namex = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_NAME', $key);
           $scheduler_email = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_EMAIL', $key);
           $descriptionText = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_DESCRIPTION', $key);
+          $space_name = $this->stanfordR25FeedGetValue($results, 'R25:SPACE_NAME', $key);
+          if (strpos($space_id, '+') !== FALSE) {
+            $title .= ': ' . $space_name;
+          }
           if (empty($related_space)) {
             $items[] = [
               'id' => $id,
@@ -276,6 +280,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
               'scheduler_name' => $scheduler_namex,
               'scheduler_email' => $scheduler_email,
               'description_text' => $descriptionText,
+              'space_name' => $space_name,
             ];
           }
         }
@@ -373,6 +378,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
               }
             }
             $toolTipStr = 'Status: ' . $item['state_name'] . '<br />' . 'Headcount: ' . $item['headcount'];
+            $toolTipStr .= '<br />' . $item['space_name'];
             if (!empty($item['description'])) {
               $toolTipStr .= '<br />' . $item['description'];
             }

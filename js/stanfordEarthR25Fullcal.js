@@ -275,6 +275,16 @@ var calendar;
   function reserveTime(start, end, multiDay, maxDuration, stanford_r25_room) {
     //var start = selectInfo.start;
     //var end = selectInfo.end;
+    var exclude = '';
+    var events = calendar.getEvents();
+    for (var i = 0; i < events.length; i++) {
+      if (events[i].start < end && events[i].end > start) {
+        if (exclude.length > 0) {
+          exclude += '-';
+        }
+        exclude += events[i].extendedProps.space_id;
+      }
+    }
     var endStr = '';
     var okaytosubmit = true;
     // account for multi-day rooms that have an end date/time instead of a duration
@@ -302,6 +312,20 @@ var calendar;
         endStr = '-duration-' + durationIndex.toString();
       }
     }
+    if (okaytosubmit && exclude.length > 0) {
+      var spaces = arguments[4].space_id.split("+");
+      var excludes = exclude.split("-");
+      var exclude_count = 0;
+      for (var i = 0; i < spaces.length; i++) {
+        if (excludes.indexOf(spaces[i]) > -1) {
+          exclude_count += 1;
+        }
+      }
+      if (exclude_count == spaces.length) {
+        window.alert('No spaces are available for the selected timeslot. Please choose another.');
+        okaytosubmit = false;
+      }
+    }
     if (okaytosubmit) {
       // as mentioned above, when the user submits a reservation requests, save the date and calendar view to cookies
       var view = calendar.view;
@@ -316,6 +340,9 @@ var calendar;
         start.getDate() + '-' + start.getHours() + '-' +
         start.getMinutes() + endStr;
       link = link.replace('now', startStr);
+      if (exclude.length > 0) {
+        link += '/' + exclude;
+      }
       if (stanford_r25_room['nopopup_reservation_form'] == 1) {
         window.location.href = link;
       } else {

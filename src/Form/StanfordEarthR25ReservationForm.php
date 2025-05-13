@@ -186,6 +186,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
                             FormStateInterface $form_state,
                             $room = NULL,
                             $start = NULL,
+                            $exclude = NULL,
                             $nopopup = false) {
     $rooms = [];
     $adminSettings = [];
@@ -354,12 +355,18 @@ class StanfordEarthR25ReservationForm extends FormBase {
         }
         $room_options = [];
         foreach ($space_ids as $key => $space_id) {
-          if (!empty($labels[$key])) {
-            $room_options[$space_id] = $labels[$key];
+          if (empty ($exclude) || strpos($exclude, $space_id) === FALSE) {
+            if (!empty($labels[$key])) {
+              $room_options[$space_id] = $labels[$key];
+            }
+            else {
+              $room_options[$space_id] = $space_id;
+            }
           }
-          else {
-            $room_options[$space_id] = $space_id;
-          }
+        }
+        $room_default = NULL;
+        if (count($room_options) === 1) {
+          $room_default = array_key_first($room_options);
         }
         $form['stanford_r25_booking_spaceid'] = [
           '#type' => 'select',
@@ -368,6 +375,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           '#options' => $room_options,
           // '#description' => $this->t('Choose one of the possible rooms shown.'),
           '#required' => TRUE,
+          '#default_value' => $room_default,
         ];
       }
       else {
@@ -617,6 +625,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // and duration fields and returning start and end times in W3C format to
     // pass to the 25Live web services api.
     $booking_date = $user_input['stanford_r25_booking_date'];
+    if (empty($booking_date)) {
+      $booking_val = $form_state->getValue('stanford_r25_booking_date');
+      $booking_date = [
+        'date' => $booking_val->format('Y-m-d'),
+        'time' => $booking_val->format('H:i'),
+      ];
+    }
     $booking_str = $booking_date['date'] . '-' . $booking_date['time'];
     $booking_str = str_replace(':', '-', $booking_str);
     $date = DrupalDateTime::createFromArray($this->parseDateStr($booking_str));

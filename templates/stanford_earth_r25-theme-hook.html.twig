@@ -1,48 +1,54 @@
 <div id="stanford-r25-room-info">
   {% if r25_location is empty %}
-  <p>Room information unavailable. Please check with your site administrator.</p>
+    <p>Room information unavailable. Please check with your site administrator.</p>
   {% else %}
     {% if r25_location.get('displaytype') == 0 %}
       <p>This room is not available for reservation.<br />
         If you believe this is in error, please check with your department maanger.</p>
     {% else %}
-      {% if photo_url is not empty %}
-        <div id="stanford-r25-room-photo">
-          <img src="{{ file_url(photo_url) }}" alt="Room {{ r25_location.get('label') }}">
+      {% if override_room_description is not empty %}
+        <div id="stanford-r25-room-detail">
+          {{ override_room_description | raw }}
         </div>
-      {%  endif %}
-      <div id="stanford-r25-room-detail">
-        {% set comments = r25_location.get('location_info')['comments'] %}
-        {% if comments is not empty %}
-          <div id="stanford-r25-room-comments">
-            {{ comments | raw }}
+      {% else %}
+        {% if photo_url is not empty %}
+          <div id="stanford-r25-room-photo">
+            <img src="{{ file_url(photo_url) }}" alt="Room {{ r25_location.get('label') }}">
           </div>
         {%  endif %}
-        {% set layout_name = r25_location.get('location_info')['layout_name'] %}
-        {% if layout_name is not empty %}
-          <div id="stanford-r25-room-layout">
-            <b>Layout: </b>{{ layout_name }}
-          </div>
-        {% endif %}
-        {% set capacity = r25_location.get('location_info')['capacity'] %}
-        {% if capacity is not empty %}
+        <div id="stanford-r25-room-detail">
+          {% set comments = r25_location.get('location_info')['comments'] %}
+          {% if comments is not empty %}
+            <div id="stanford-r25-room-comments">
+              {{ comments | raw }}
+            </div>
+          {%  endif %}
+          {% set layout_name = r25_location.get('location_info')['layout_name'] %}
+          {% if layout_name is not empty %}
+            <div id="stanford-r25-room-layout">
+              <b>Layout: </b>{{ layout_name }}
+            </div>
+          {% endif %}
+          {% set capacity = r25_location.get('location_info')['capacity'] %}
+          {% if capacity is not empty %}
             <div id="stanford-r25-room-capacity">
               <b>Capacity: </b>{{ capacity }}
             </div>
-        {% endif %}
-        {% set layout_features = r25_location.get('location_info')['layout_features'] %}
-        {% if layout_features is not empty %}
-          <div id="stanford-r25-room-features">
-            <b>Features: </b>{{ layout_features }}
-          </div>
-        {% endif %}
-        {% set layout_instruction = r25_location.get('location_info')['layout_instruction'] %}
-        {% if layout_instruction is not empty %}
-          <div id="stanford-r25-room-instruction">
-            <b>Instructions: </b>{{ layout_instruction | raw }}
-          </div>
-        {% endif %}
-      </div>
+          {% endif %}
+          {% set layout_features = r25_location.get('location_info')['layout_features'] %}
+          {% if layout_features is not empty %}
+            <div id="stanford-r25-room-features">
+              <b>Features: </b>{{ layout_features }}
+            </div>
+          {% endif %}
+          {% set layout_instruction = r25_location.get('location_info')['layout_instruction'] %}
+          {% if layout_instruction is not empty %}
+            <div id="stanford-r25-room-instruction">
+              <b>Instructions: </b>{{ layout_instruction | raw }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
     {% endif %}
   {% endif %}
 </div>
@@ -91,36 +97,42 @@
 
 <div id="#stanford-r25-self-serve-msg"></div>
 <div id="stanford-r25-calendar">
-{% if caltype == 1 %}
-  <div id="control-spud"></div>
-  <div id="calendar-spud">This feature is not yet implemented.</div>
-{% elseif caltype == 2 or caltype == 3 %}
-  {% set legend_labels = r25_location.get('legend_labels') %}
-  {% set labels = legend_labels|split('+') %}
-  {% if legend_labels is not empty %}
-    <div id="stanford-r25-legend">
-      <br />
-      <p>Confirmed:</p>
-      {% for label in labels %}
-        {% set line = label|split('|') %}
-        <span style="background-color: {{ line[1] }}; color: white">{{ line[0] }}</span>
-      {% endfor %}
-      <br />
-      <p>Tentative:</p>
-      {% for label in labels %}
-        {% set line = label|split('|') %}
-        <span style="background-color: {{ line[2] }}; color: black">{{ line[0] }}</span>
-      {% endfor %}
-    </div>
+  {% if caltype == 1 %}
+    <div id="control-spud"></div>
+    <div id="calendar-spud">This feature is not yet implemented.</div>
+  {% elseif caltype == 2 or caltype == 3 %}
+    {% set legend_labels = r25_location.get('legend_labels') %}
+    {% set labels = legend_labels|split('+') %}
+    {% set legend_label = 'Legend:' %}
+    {% if displaytype == 2 %}
+      {% set legend_label = 'Confirmed:' %}
+    {% endif %}
+    {% if legend_labels is not empty %}
+      <div id="stanford-r25-legend">
+        <br />
+        <p>{{  legend_label }}</p>
+        {% for label in labels %}
+          {% set line = label|split('|') %}
+          <span style="background-color: {{ line[1] }}; color: white">{{ line[0] }}</span>
+        {% endfor %}
+        {% if displaytype == 2 %}
+          <br />
+          <p>Tentative:</p>
+          {% for label in labels %}
+            {% set line = label|split('|') %}
+            <span style="background-color: {{ line[2] }}; color: black">{{ line[0] }}</span>
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endif %}
+    <div id="stanford-r25-loading">Loading...</div>
+    <div id="calendar"></div>
+      {% set permalink = r25_location.get('permalink') %}
+      {% if permalink == 1 %}
+        <div id="stanford-r25-permalink"></div>
+      {% endif %}
+ {% else %}
+    <span>The requested room is not currently available.</span>
   {% endif %}
-  <div id="stanford-r25-loading">Loading...</div>
-  <div id="calendar"></div>
-  {% set permalink = r25_location.get('permalink') %}
-  {% if permalink == 1 %}
-    <div id="stanford-r25-permalink"></div>
-  {% endif %}
-{% else %}
-  <span>The requested room is not currently available.</span>
-{% endif %}
-<br />
+  <br />
 </div>

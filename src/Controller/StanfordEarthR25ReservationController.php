@@ -105,7 +105,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   Reservation form ajax modal dialog.
    */
-  public function reserve($location_id, $start) {
+  public function reserve($location_id, $start, $exclude) {
     // Make sure the current user has permission to book the room.
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($location_id);
@@ -119,7 +119,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
         // Get the modal form using the form builder.
         $modal_form =
           $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
-            $location_id, $start);
+            $location_id, $start, $exclude);
         // Add an AJAX command to open a modal dialog with form as the content.
         $response->addCommand(new OpenModalDialogCommand('Room Reservation Form',
           $modal_form, ['width' => '800']));
@@ -138,7 +138,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
         $this->moduleHandler)) {
         $response =
           $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
-            $location_id, $start, true);
+            $location_id, $start, $exclude, true);
       }
       else {
         $response = ['#markup' => 'You do not have permission to book this room.'];

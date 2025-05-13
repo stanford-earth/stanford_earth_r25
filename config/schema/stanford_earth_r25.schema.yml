@@ -209,3 +209,6 @@ stanford_earth_r25_location.*:
     location_type:
       type: int
       label: 'R25 Location Type'
+    override_room_description:
+      type: string
+      label: 'Override Room Description'

@@ -70,6 +70,7 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
         'photo_url' => '',
         'form' => NULL,
         'canBook' => FALSE,
+        'override_room_description' => NULL,
       ],
     ],
   ];

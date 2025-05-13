@@ -66,6 +66,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "override_event_name",
  *     "allowed_timeslots",
  *     "allowed_dates",
+ *     "override_room_description",
  *   },
  *   links = {
  *     "edit-form" =
@@ -336,6 +337,13 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var array
    */
   protected $allowed_timeslots;
+
+  /**
+   * Override room description.
+   *
+   * @var string
+   */
+  protected $override_room_description;
 
   /**
    * {@inheritdoc}
