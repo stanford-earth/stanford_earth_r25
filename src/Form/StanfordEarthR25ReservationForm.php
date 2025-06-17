@@ -388,6 +388,19 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
 
     // Max headcount for a room comes from parameter passed to the function.
+    $max_headcount = 5;
+    if (!empty($rooms[$room]['location_info']['capacity'])) {
+      $max_headcount = $rooms[$room]['location_info']['capacity'];
+    }
+    $form['stanford_r25_booking_headcount'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Headcount (required)'),
+      '#min' => 1,
+      '#max' => $max_headcount,
+      '#required' => TRUE,
+    ];
+    /*
+    // Max headcount for a room comes from parameter passed to the function.
     $form['stanford_r25_booking_headcount'] = [
       '#type' => 'select',
       '#title' => $this->t('Headcount (required)'),
@@ -402,6 +415,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     for ($i = 1; $i < $max_headcount + 1; $i++) {
       $form['stanford_r25_booking_headcount']['#options'][] = strval($i);
     }
+    */
     // Every booking needs some reason text.
     $form['stanford_r25_booking_reason'] = [
       '#type' => 'textfield',
@@ -736,6 +750,14 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
+    // Save the input headcount
+    if (!empty($user_input['stanford_r25_booking_headcount'])) {
+      $booking_info['headcount'] = $user_input['stanford_r25_booking_headcount'];
+    }
+    else {
+      $booking_info['headcount'] = '';
+    }
+
     // Store booking info in form storage.
     $storage = [
       'stanford_earth_r25' => [
@@ -912,7 +934,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $org_id = $room['override_organization_id'];
     }
     $xml = str_replace('[r25_organization_id]', $org_id, $xml);
-    $xml = str_replace('[r25_expected_headcount]', $form_state->getCompleteForm()['stanford_r25_booking_headcount']['#options'][$form_vals['stanford_r25_booking_headcount']], $xml);
+    $xml = str_replace('[r25_expected_headcount]', $booking_info['headcount'], $xml);
+    //$xml = str_replace('[r25_expected_headcount]', $form_state->getCompleteForm()['stanford_r25_booking_headcount']['#options'][$form_vals['stanford_r25_booking_headcount']], $xml);
     $xml = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $xml);
     $xml = str_replace('[r25_end_date_time]', $booking_info['dates']['end'], $xml);
     $xml = str_replace('[r25_space_id]', $booking_info['space_id'], $xml);

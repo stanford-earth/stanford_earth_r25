@@ -155,7 +155,8 @@ class StanfordEarthR25CalendarController extends ControllerBase {
     if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
                                                       $this->user,
                                                       $this->moduleHandler)) {
-      $status = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_DISABLED;
+      throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+      //$status = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_DISABLED;
     }
 
     // Make sure we have an enabled room, otherwise display error msg (below).
@@ -203,7 +204,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       else {
         // If the calendar is FullCalendar, output links to the required
         // javascript files and css.
-        $drupalSettings['stanfordR25Timezone'] = date_default_timezone_get();
+        $drupalSettings['stanfordR25Timezone'] = StanfordEarthR25Util::stanfordR25DefaultTimezone();
         if ($this->user->isAuthenticated() && $cal_type == 2) {
           $drupalSettings['stanfordR25Qtip'] = 'qtip';
         }

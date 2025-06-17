@@ -2,6 +2,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 function stanford_earth_hartley_is_se3_user() {
   if (!empty(array_intersect(
@@ -39,13 +40,39 @@ function stanford_earth_hartley_is_farm_room($form) {
   return $is_farm;
 }
 
+function stanford_earth_hartley_is_room_admin($form) {
+  $isAdmin = false;
+  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
+    $location = Drupal::entityTypeManager()
+      ->getStorage('stanford_earth_r25_location')
+      ->load($form['stanford_r25_booking_roomid']['#value']);
+    if (!empty($location->get('room_administrator_roles')) &&
+      !empty(array_intersect(Drupal::currentUser()->getRoles(),
+        $location->get('room_administrator_roles')))) {
+      $isAdmin = TRUE;
+    }
+  }
+  return $isAdmin;
+}
+
+function stanford_earth_hartley_use_hartley_rules($form) {
+  $hRules = false;
+  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
+    $location = Drupal::entityTypeManager()
+      ->getStorage('stanford_earth_r25_location')
+      ->load($form['stanford_r25_booking_roomid']['#value']);
+    if (!empty($location->get('hartley_date_rule'))) {
+      $hRules = true;
+    }
+  }
+  return $hRules;
+}
+
 function stanford_earth_hartley_form_alter(&$form,
   \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   if ($form_id === 'stanford_earth_r25_reservation') {
     // does the room use hartley rules?
-    $hRules = (stanford_earth_hartley_is_hartley_room($form) ||
-      stanford_earth_hartley_is_farm_room($form));
-    if ($hRules) {
+   if (stanford_earth_hartley_use_hartley_rules($form)) {
       if (empty($form['#validate'])) {
         $form['#validate'] = [];
       }
@@ -79,8 +106,7 @@ function stanford_earth_hartley_form_alter(&$form,
         ]
       ];
 
-      if ($roomCode === 'mh' && !empty(array_intersect(Drupal::currentUser()
-          ->getRoles(), ['custm_hartley_administrator']))) {
+      if (stanford_earth_hartley_is_room_admin($form)) {
         $form['stanford_r25_booking_attr171']['#type'] = 'hidden';
         $form['stanford_r25_booking_attr172']['#type'] = 'hidden';
         $form['stanford_r25_booking_attr173']['#type'] = 'hidden';
@@ -135,9 +161,8 @@ function stanford_earth_hartley_form_alter(&$form,
 }
 
 function stanford_earth_hartley_form_validate(&$form, FormStateInterface $form_state) {
-  if (!(Drupal::currentUser()->hasPermission('administer stanford r25') ||
-    !empty(array_intersect(Drupal::currentUser()->getRoles(), ['custm_hartley_administrator'])))) {
-
+  $hRules = stanford_earth_hartley_use_hartley_rules($form);
+  if ($hRules && !stanford_earth_hartley_is_room_admin($form)) {
     // Make sure there is a PTA number and sponsoring department.
     if (empty($form_state->getValue('stanford_r25_booking_attr172'))) {
       $form_state->setErrorByName('stanford_r25_booking_attr172',
@@ -157,7 +182,7 @@ function stanford_earth_hartley_form_validate(&$form, FormStateInterface $form_s
     }
     if (empty($form_state->getValue('stanford_r25_booking_attr173'))) {
       $form_state->setErrorByName('stanford_r25_booking_attr173',
-        'Please provide a signature authority name for billing for this reservation.');
+        'Please provide a sponsoring department or signature authority name for billing for this reservation.');
       return;
     }
 
@@ -180,23 +205,26 @@ function stanford_earth_hartley_form_validate(&$form, FormStateInterface $form_s
     }
   }
 
-  if (empty(trim($form_state->getValue('stanford_r25_contact_175')))) {
-    $form_state->setErrorByName('stanford_r25_contact_175',
-      'Please enter your contact information in the provided field.');
-    return;
-  }
-  if (!empty($form_state->getValue('stanford_r25_booking_attr169')) &&
-    intval($form_state->getValue('stanford_r25_booking_attr169')) == 1) {
-    if (empty($form_state->getValue('stanford_r25_booking_attr170')) ||
-      intval($form_state->getValue('stanford_r25_booking_attr170') == 0)) {
-      $form_state->setErrorByName('stanford_r25_booking_attr170',
-        'If you are serving food or beverages, you must agree to provide a work order for cleanup.');
+  if ($hRules) {
+    if (empty(trim($form_state->getValue('stanford_r25_contact_175')))) {
+      $form_state->setErrorByName('stanford_r25_contact_175',
+        'Please enter your contact information in the provided field.');
       return;
+    }
+    if (!empty($form_state->getValue('stanford_r25_booking_attr169')) &&
+      intval($form_state->getValue('stanford_r25_booking_attr169')) == 1) {
+      if (empty($form_state->getValue('stanford_r25_booking_attr170')) ||
+        intval($form_state->getValue('stanford_r25_booking_attr170') == 0)) {
+        $form_state->setErrorByName('stanford_r25_booking_attr170',
+          'If you are serving food or beverages, you must agree to provide a work order for cleanup.');
+        return;
+      }
     }
   }
 }
 
 function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_state) {
+  $hRules = stanford_earth_hartley_use_hartley_rules($form);
   $storage = $form_state->getStorage();
   if (!empty($storage['stanford_earth_r25']['stanford_r25_postprocess'])) {
     $storage = $storage['stanford_earth_r25']['stanford_r25_postprocess'];
@@ -207,7 +235,7 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
 
       $subject = $room['label'] . ': Your booking request is now pending approval';
       $body = [];
-      $body[] = 'The Hartley booking manager will review and approve your request as soon as possible, and will contact you only if there is a problem.';
+      $body[] = 'The booking manager will review and approve your request as soon as possible, and will contact you only if there is a problem.';
       $body[] = 'The details of your booking request follow.';
       $body[] = 'Event name: ' . $storage['event_name'];
       $space_str = 'Event space: ' . $room['label'];
@@ -252,9 +280,10 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
 }
 
 function stanford_earth_hartley_stanford_r25_fullcalendar_limit_alter(&$calendar_limit) {
-  if (!empty($calendar_limit['room']['id']) && substr($calendar_limit['room']['id'], 0, 3) == 'mh0') {
+  if (!empty($calendar_limit['room']['id']) && !empty($calendar_limit['room']['hartley_date_rule'])) {
     if (Drupal::currentUser()->hasPermission('administer stanford r25') ||
-      !empty(array_intersect(Drupal::currentUser()->getRoles(), ['custm_hartley_administrator']))) {
+      !empty(array_intersect(Drupal::currentUser()->getRoles(),
+        $calendar_limit['room']['room_administrator_roles']))) {
       $calendar_limit['year'] = strval(date('Y') + 3);
     }
     else {

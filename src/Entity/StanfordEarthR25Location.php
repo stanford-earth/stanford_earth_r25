@@ -64,9 +64,19 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "override_organization_id",
  *     "override_event_code",
  *     "override_event_name",
+ *     "allowed_timeslots_fields",
  *     "allowed_timeslots",
+ *     "allowed_dates_fields",
  *     "allowed_dates",
  *     "override_room_description",
+ *     "room_administrator_roles",
+ *     "room_administrator_emails",
+ *     "hartley_date_rule",
+ *     "future_days",
+ *     "abbreviations",
+ *     "slot_min_time",
+ *     "slot_max_time",
+ *     "hide_weekends",
  *   },
  *   links = {
  *     "edit-form" =
@@ -325,18 +335,33 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $override_event_name;
 
   /**
-   * Allowed booking dates.
+   * Allowed dates input string.
    *
-   * @var array
+   * @var string
    */
   protected $allowed_dates;
 
   /**
-   * Allowed timeslots.
+   * Allowed booking dates array.
    *
    * @var array
    */
+  protected $allowed_dates_fields;
+
+  /**
+   * Allowed timeslots input string.
+   *
+   * @var string
+   */
   protected $allowed_timeslots;
+
+  /**
+   * Allowed timeslots array.
+   *
+   * @var array
+   */
+
+  protected $allowed_timeslots_fields;
 
   /**
    * Override room description.
@@ -344,6 +369,63 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var string
    */
   protected $override_room_description;
+
+  /**
+   * Room Administrator Roles.
+   *
+   * @var array
+   */
+  protected $room_administrator_roles;
+
+  /**
+   * Contact email addresses for room administrators..
+   *
+   * @var string
+   */
+  protected $room_administrator_emails;
+
+  /**
+   * Use the Hartley Rule for allowable booking dates.
+   *
+   * @var bool
+   */
+  protected $hartley_date_rule;
+
+  /**
+   * How far into the future can we book.
+   *
+   * @var int
+   */
+  protected $future_days;
+
+  /**
+   * Location abbreviations for reservations on multi-room calendars.
+   *
+   * @var string
+   */
+  protected $abbreviations;
+
+  /**
+   * Minimum timeslot to show on Fullcalendar.
+   *
+   * @var string
+   */
+  protected $slot_min_time;
+
+  /**
+   * Maximum timeslot to show on Fullcalendar.
+   *
+   * @var string
+   */
+  protected $slot_max_time;
+
+  /**
+   * Hide weekends in Fullcalendar
+   *
+   * @var bool
+   */
+  protected $hide_weekends;
+
 
   /**
    * {@inheritdoc}
@@ -358,12 +440,12 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
     $contact_attribute_field =
       StanfordEarthR25Util::stanfordR25UpdateEventAttributeFields($this->get('contact_attribute'));
     $this->set('contact_attribute_field', $contact_attribute_field);
-    $allowed_dates = $this->get('allowed_dates');
-    $this->set('allowed_dates',
-      StanfordEarthR25Util::stanfordR25ParseBlackoutDates($allowed_dates));
-    $allowed_timeslots = $this->get('allowed_timeslots');
-    $this->set('allowed_timeslots',
-      StanfordEarthR25Util::stanfordR25ParseTimeslots($allowed_timeslots));
+    $allowed_dates_fields =
+      StanfordEarthR25Util::stanfordR25ParseBlackoutDates($this->get('allowed_dates'));
+    $this->set('allowed_dates_fields', $allowed_dates_fields);
+    $allowed_timeslots_fields =
+      StanfordEarthR25Util::stanfordR25ParseTimeslots($this->get('allowed_timeslots'));
+    $this->set('allowed_timeslots_fields', $allowed_timeslots_fields);
     $return = parent::save();
 
     return $return;

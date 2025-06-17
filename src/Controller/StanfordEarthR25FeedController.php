@@ -132,6 +132,21 @@ class StanfordEarthR25FeedController extends ControllerBase {
       throw new NotFoundHttpException();
     }
 
+    // Build an abbreviation list for multi-room calendars.
+    $abbreviations = [];
+    if (strpos($space_id, '+') !== FALSE) {
+      $locations = explode('+', $space_id);
+      $abbs = explode('+', $r25_location->get('abbreviations'));
+      foreach ($locations as $key => $location) {
+        if (!empty($abbs[$key])) {
+          $abbreviations[$location] = $abbs[$key];
+        }
+        else {
+          $abbreviations[$location] = '';
+        }
+      }
+    }
+
     // Double-check if the user can view the calendar based on overrides.
     if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
                                                       $this->user,
@@ -259,8 +274,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
           $scheduler_email = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_EMAIL', $key);
           $descriptionText = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_DESCRIPTION', $key);
           $space_name = $this->stanfordR25FeedGetValue($results, 'R25:SPACE_NAME', $key);
-          if (strpos($space_id, '+') !== FALSE) {
-            $title .= ': ' . $space_name;
+          if (!empty($abbreviations[$space_idx])) {
+            $title = $abbreviations[$space_idx] . ": " . $title;
           }
           if (empty($related_space)) {
             $items[] = [

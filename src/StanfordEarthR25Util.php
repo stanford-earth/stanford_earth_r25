@@ -356,32 +356,45 @@ class StanfordEarthR25Util {
     }
     if (!empty($room_id) && !empty($account)) {
       $canView = $account->hasPermission('view r25 room calendars');
-      $roles = $account->getRoles();
-      foreach ($roles as $userRole) {
-        $uR = Role::load($userRole);
-        if (!empty($uR) && $uR->isAdmin()) {
-          return true;
-        }
-      }
-      $override_view_roles = $r25_location->get('override_view_roles');
-      if (!empty($override_view_roles) && is_array($override_view_roles)) {
-        foreach ($override_view_roles as $role => $role_allowed) {
-          if (!empty($role) && $role === $role_allowed) {
-            $canView = FALSE;
-            if (in_array($role, $roles)) {
-              $canView = TRUE;
+      // If Drupal says we can view, see if the location has further restrictions.
+      if ($canView) {
+        $roles = $account->getRoles();
+        // Even if roles are further restricted, don't restrict site or r25 admins.
+        $isAdmin = $account->hasPermission('administer stanford r25');
+        if (!$isAdmin) {
+          $roles = $account->getRoles();
+          foreach ($roles as $userRole) {
+            $uR = Role::load($userRole);
+            if (!empty($uR) && $uR->isAdmin()) {
+              $isAdmin = TRUE;
               break;
             }
           }
         }
-      }
+        // If not an admin user, now check for role restrictions.
+        // Only checked roles cam view, if any are checked.
+        if (!$isAdmin) {
+          $override_view_roles = $r25_location->get('override_view_roles');
+          if (!empty($override_view_roles) && is_array($override_view_roles)) {
+            foreach ($override_view_roles as $role => $role_allowed) {
+              if (!empty($role) && $role === $role_allowed) {
+                $canView = FALSE;
+                if (in_array($role, $roles)) {
+                  $canView = TRUE;
+                  break;
+                }
+              }
+            }
+          }
 
-      // See if any modules want to override this.
-      if (!empty($module_handler)) {
-        $module_handler->alter(
-          'stanford_r25_view_calendar',
-          $canView,
-          $r25_location);
+          // See if any modules want to override this.
+          if (!empty($module_handler)) {
+            $module_handler->alter(
+              'stanford_r25_view_calendar',
+              $canView,
+              $r25_location);
+          }
+        }
       }
     }
     return $canView;
@@ -412,31 +425,43 @@ class StanfordEarthR25Util {
     }
     if (!empty($room_id) && !empty($account)) {
       $canBook = $account->hasPermission('book r25 rooms');
-      $roles = $account->getRoles();
-      foreach ($roles as $userRole) {
-        $uR = Role::load($userRole);
-        if (!empty($uR) && $uR->isAdmin()) {
-          return true;
-        }
-      }
-      $override_book_roles = $r25_location->get('override_book_roles');
-      if (!empty($override_book_roles) && is_array($override_book_roles)) {
-        foreach ($override_book_roles as $role => $role_allowed) {
-          if (!empty($role) && $role === $role_allowed) {
-            $canBook = FALSE;
-            if (in_array($role, $roles)) {
-              $canBook = TRUE;
-              break;
+      // If Drupal says we can book, see if the location has further restrictions.
+      if ($canBook) {
+        $roles = $account->getRoles();
+        // Even if roles are further restricted, don't restrict site or r25 admins.
+        $isAdmin = $account->hasPermission('administer stanford r25');
+        if (!$isAdmin) {
+          foreach ($roles as $userRole) {
+            $uR = Role::load($userRole);
+            if (!empty($uR) && $uR->isAdmin()) {
+              $isAdmin = TRUE;
             }
           }
         }
-      }
-      // See if any modules want to override this.
-      if (!empty($module_handler)) {
-        $module_handler->alter(
-          'stanford_r25_book_calendar',
-          $canBook,
-          $r25_location);
+
+        // If not an admin user, now check for role restrictions.
+        // Only checked roles cam book, if any are checked.
+        if (!$isAdmin) {
+          $override_book_roles = $r25_location->get('override_book_roles');
+          if (!empty($override_book_roles) && is_array($override_book_roles)) {
+            foreach ($override_book_roles as $role => $role_allowed) {
+              if (!empty($role) && $role === $role_allowed) {
+                $canBook = FALSE;
+                if (in_array($role, $roles)) {
+                  $canBook = TRUE;
+                  break;
+                }
+              }
+            }
+          }
+          // See if any modules want to override this.
+          if (!empty($module_handler)) {
+            $module_handler->alter(
+              'stanford_r25_book_calendar',
+              $canBook,
+              $r25_location);
+          }
+        }
       }
     }
     return $canBook;
@@ -729,6 +754,10 @@ class StanfordEarthR25Util {
     // The default calendar limit is for one year in the future, but we have
     // a hook, hook_stanford_r25_fullcalendar_limit_alter(&$calendar_limit)
     // where you can change it.
+    $timezone = self::stanfordR25DefaultTimezone();
+    // Get the requested daterange from FullCalenar.
+    $date = new DrupalDateTime('now', $timezone);
+    $date->modify('+1 year');
     $calendar_limit = [
       'room' => $r25_location->toArray(),
       'month' => date('n'),
@@ -826,6 +855,24 @@ class StanfordEarthR25Util {
   }
 
   /**
+   * Return the default timezone.
+   *
+   * @return DateTimeZone
+   */
+  public static function stanfordR25DefaultTimezone() {
+    $timezone = new DateTimeZone(date_default_timezone_get());
+    $tz_config = \Drupal::configFactory()->getEditable('system.date')
+      ->get('timezone');
+    if (!empty($tz_config['default'])) {
+      try {
+        $timezone = new DateTimeZone($tz_config['default']);
+      } catch (\Exception $e) {
+      }
+    }
+    return $timezone;
+  }
+
+  /**
    * Return an array of possible location timeslots for the given date range.
    *
    * @param \Drupal\Core\Entity\EntityInterface $r25_location
@@ -844,20 +891,12 @@ class StanfordEarthR25Util {
     // this is the xml string we will be building
     $timeslotsArray = [];
     // Get the system or Drupal-default timezone.
-    $timezone = new DateTimeZone(date_default_timezone_get());
-    $tz_config = \Drupal::configFactory()->getEditable('system.date')
-      ->get('timezone');
-    if (!empty($tz_config['default'])) {
-      try {
-        $timezone = new DateTimeZone($tz_config['default']);
-      } catch (\Exception $e) {
-      }
-    }
+    $timezone = self::stanfordR25DefaultTimezone();
     // Get the requested daterange from FullCalenar.
     $startDate = new DrupalDateTime($start,$timezone);
     $endDate = new DrupalDateTime($end,$timezone);
     // Get the allowed date ranges for this location.
-    $daterange_array = $r25_location->get('allowed_dates');;
+    $daterange_array = $r25_location->get('allowed_dates_fields');;
     $dateranges = [];
     foreach ($daterange_array as $daterange ) {
       $dateranges[] = [
@@ -867,18 +906,24 @@ class StanfordEarthR25Util {
     }
     // loop through all the requested days and find the ones allowed
     for ($date = $startDate; $date <= $endDate; $date->modify('+1 day')){
-      $date_allowed = false;
-      foreach ($dateranges as $daterange) {
-        // is the date within one of the date ranges?
-        if ($date >= $daterange['start'] && $date <= $daterange['end']) {
-          $date_allowed = true;
-          break;
+      // If no dateranges are specified, any date is allowed.
+      if (empty($dateranges)) {
+        $date_allowed = TRUE;
+      }
+      else {
+        $date_allowed = FALSE;
+        foreach ($dateranges as $daterange) {
+          // is the date within one of the date ranges?
+          if ($date >= $daterange['start'] && $date <= $daterange['end']) {
+            $date_allowed = TRUE;
+            break;
+          }
         }
       }
       // if date is allowed, check if there are any timeslots for this day
       if ($date_allowed) {
         $dow = $date->format('D');
-        $timeslots = $r25_location->get('allowed_timeslots');
+        $timeslots = $r25_location->get('allowed_timeslots_fields');
         foreach ($timeslots as $timeslot) {
           $dow_allowed = false;
           if (!empty($timeslot['days']) && is_array($timeslot['days'])) {

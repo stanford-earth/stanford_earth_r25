@@ -109,6 +109,19 @@ var calendar;
       if (selectable && stanford_r25_room.space_id.indexOf("+") > -1) {
         allowOverlap = true;
       }
+      var minTimeSlot = stanford_r25_room.slot_min_time;
+      if (minTimeSlot == null) {
+        minTimeSlot = '00:00:00';
+      }
+      var maxTimeSlot = stanford_r25_room.slot_max_time;
+      if (maxTimeSlot == null) {
+        maxTimeSlot = '24:00:00';
+      }
+      var weekends = true;
+      var hide_weekends = stanford_r25_room.hide_weekends;
+      if (hide_weekends == 1) {
+        weekends = false;
+      }
       var setCalendar = true;
       if (typeof(calendar) === 'object') {
         if (calendar instanceof FullCalendar.Calendar) {
@@ -246,8 +259,11 @@ var calendar;
           // don't let users select time slots that cross existing reservations
           selectMinDistance: 1,
           selectOverlap: allowOverlap,
+          slotMinTime: minTimeSlot,
+          slotMaxTime: maxTimeSlot,
           // set default timezone
           timezone: drupalSettings.stanfordEarthR25.stanfordR25Timezone,
+          weekends: weekends,
           error: function () {
             $('#stanford-r25-self-serve-msg').html('Unable to retrieve room schedule from 25Live.');
           },

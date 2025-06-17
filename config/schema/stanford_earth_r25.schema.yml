@@ -140,8 +140,11 @@ stanford_earth_r25_location.*:
       type: string
       label: 'Display Name for This Event Code'
     allowed_dates:
+      type: string
+      label: 'Date ranges allowed for booking - input'
+    allowed_dates_fields:
       type: sequence
-      label: 'Date ranges allowed for booking'
+      label: 'Date ranges allowed for booking - array'
       sequence:
         - type: mapping
           label: 'Date range dates'
@@ -153,8 +156,11 @@ stanford_earth_r25_location.*:
               type: string
               label: 'End'
     allowed_timeslots:
+      type: string
+      label: 'Timeslots allowed for booking - input'
+    allowed_timeslots_fields:
       type: sequence
-      label: 'Timeslots allowed for booking'
+      label: 'Timeslots allowed for booking - array'
       sequence:
         - type: mapping
           label: 'Timeslot'
@@ -212,3 +218,30 @@ stanford_earth_r25_location.*:
     override_room_description:
       type: string
       label: 'Override Room Description'
+    room_administrator_roles:
+      type: sequence
+      label: 'Room Administrator Roles'
+      sequence:
+        type: string
+        label: 'Drupal Role'
+    room_administrator_emails:
+      type: string
+      label: 'Room Administrator Emails'
+    hartley_date_rule:
+      type: boolean
+      label: 'Use Hartley October Rule'
+    future_days:
+      type: integer
+      label: 'Future Days Limit'
+    abbreviations:
+      type: string
+      label: 'Calendar Abbreviations'
+    slot_min_time:
+      type: string
+      label: 'Earliest Fullcalendar Timeslot'
+    slot_max_time:
+      type: string
+      label: 'Latest Fullcalendar Timeslot'
+    hide_weekends:
+      type: boolean
+      label: 'Fullcalendar Weekend Setting'
