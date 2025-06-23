@@ -12,8 +12,6 @@ by reservation info and the approver's 25Live id.
   <r25:due_dt>[r25_start_date_time]</r25:due_dt>
   <r25:object_type>1</r25:object_type>
   <r25:read>T</r25:read>
-  <r25:cur_assigned_to_id>[r25_approver_id]</r25:cur_assigned_to_id> 
-  <r25:cur_assigned_by_id>[r25_credential_id]</r25:cur_assigned_by_id> 
-  <r25:comment_id></r25:comment_id>
-  <r25:comment>[r25_todo_comment]</r25:comment>
+  <r25:cur_assigned_to_id>[r25_approver_id]</r25:cur_assigned_to_id>
+  <r25:cur_assigned_by_id>[r25_credential_id]</r25:cur_assigned_by_id>
 </r25:todo>

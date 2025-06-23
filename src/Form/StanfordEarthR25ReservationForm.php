@@ -897,7 +897,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           $todo_temp = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $todo_str);
           $todo_temp = str_replace('[r25_approver_id]', $key, $todo_temp);
           $todo_temp = str_replace('[r25_credential_id]', $contact_id, $todo_temp);
-          $todo_temp = str_replace('[r25_todo_comment]', '', $todo_temp);
+          //$todo_temp = str_replace('[r25_todo_comment]', '', $todo_temp);
           $todo_insert .= $todo_temp;
           if (!empty($mail_list)) {
             $mail_list .= ', ';

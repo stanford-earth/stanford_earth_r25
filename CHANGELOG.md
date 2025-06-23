@@ -1,4 +1,12 @@
 # Stanford Earth R25
+8.x-1.15
+-------------------------------------------------------------------------
+-Release Date: 2025-06-23__
+
+- Implement availability calendars for Farm.
+- Implement updates for Press Building.
+- Improvements to multi-room calendars.
+
 8.x-1.14
 -------------------------------------------------------------------------
 -Release Date: 2024-10-02__
