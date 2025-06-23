@@ -90,7 +90,7 @@ stanford_earth_r25_location.reservation:
   defaults:
     _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ReservationController::reserve'
     _title: 'Stanford R25 Reservation Page'
-    exclude: 'none'
+    exclude: ''
   options:
     parameters:
       location_id:

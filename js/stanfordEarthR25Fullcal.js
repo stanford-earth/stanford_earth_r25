@@ -307,6 +307,11 @@ var calendar;
               exclude += '-' + parent;
             }
           }
+          for (const [key, value] of Object.entries(stanford_r25_room.multi_room_parents)) {
+            if (value[0] === exclude_space_id) {
+              exclude += '-' + key;
+            }
+          }
         }
       }
     }

@@ -374,12 +374,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
             if (str_contains($exclude, $space_id)) {
               $okay = false;
             }
-            else {
-              if (!empty($rooms[$room]['multi_room_parents']) &&
-                is_array($rooms[$room]['multi_room_parents'])) {
-                $xyz = 1;
-              }
-            }
           }
           if ($okay) {
             $room_option_label = $space_id;

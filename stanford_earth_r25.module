@@ -76,7 +76,3 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
   ];
 
 }
-
-function stanford_earth_r25_stanford_r25_book_calendar_alter($canView, $r25_location) {
-  $xyz = 1;
-}
