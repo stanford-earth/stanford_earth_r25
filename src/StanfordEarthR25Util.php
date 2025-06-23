@@ -232,6 +232,17 @@ class StanfordEarthR25Util {
       $r25_result = $r25_service->stanfordR25ApiCall('roominfo', $space_id);
       if ($r25_result['status']['status'] === TRUE) {
         $results = $r25_result['output'];
+        // See if the room has a parent
+        $room_info['parents'] = [];
+        if (!empty($results['index']['R25:RELATIONSHIP_NAME']) && is_array($results['index']['R25:RELATIONSHIP_NAME'])) {
+          foreach ($results['index']['R25:RELATIONSHIP_NAME'] as $rkey => $rval) {
+            if (!empty($results['vals'][$rval]['value']) && $results['vals'][$rval]['value'] === 'Subdivision Of') {
+              if (!empty($results['index']['R25:RELATED_SPACE_ID'][$rkey])) {
+                $room_info['parents'][] = $results['vals'][$results['index']['R25:RELATED_SPACE_ID'][$rkey]]['value'];
+              }
+            }
+          }
+        }
         // Identify default room layout, if defined, else use the 1st one.
         if (!empty($results['index']['R25:DEFAULT_LAYOUT']) && is_array($results['index']['R25:DEFAULT_LAYOUT'])) {
           foreach ($results['index']['R25:DEFAULT_LAYOUT'] as $dlkey => $dlval) {
@@ -757,12 +768,18 @@ class StanfordEarthR25Util {
     $timezone = self::stanfordR25DefaultTimezone();
     // Get the requested daterange from FullCalenar.
     $date = new DrupalDateTime('now', $timezone);
-    $date->modify('+1 year');
+    if (!empty($r25_location->get('future_days'))) {
+      $date->modify('+' . $r25_location->get('future_days') . ' days');
+    }
+    else {
+      $date->modify('+1 year');
+    }
     $calendar_limit = [
       'room' => $r25_location->toArray(),
-      'month' => date('n'),
-      'day' => date('d'),
-      'year' => strval(intval(date('Y')) + 1),
+      'month' => $date->format('n'),
+      'day' => $date->format('d'),
+      'year' => $date->format('Y'),
+      //'year' => strval(intval(date('Y')) + 1),
     ];
     $module_handler->alter('stanford_r25_fullcalendar_limit', $calendar_limit);
     return $calendar_limit;

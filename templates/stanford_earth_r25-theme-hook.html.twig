@@ -23,17 +23,20 @@
               {{ comments | raw }}
             </div>
           {%  endif %}
-          {% set layout_name = r25_location.get('location_info')['layout_name'] %}
-          {% if layout_name is not empty %}
-            <div id="stanford-r25-room-layout">
-              <b>Layout: </b>{{ layout_name }}
-            </div>
-          {% endif %}
-          {% set capacity = r25_location.get('location_info')['capacity'] %}
-          {% if capacity is not empty %}
-            <div id="stanford-r25-room-capacity">
-              <b>Capacity: </b>{{ capacity }}
-            </div>
+          {% set space_id = r25_location.get('space_id') %}
+          {% if '+' not in space_id %}
+            {% set layout_name = r25_location.get('location_info')['layout_name'] %}
+            {% if layout_name is not empty %}
+              <div id="stanford-r25-room-layout">
+                <b>Layout: </b>{{ layout_name }}
+              </div>
+            {% endif %}
+            {% set capacity = r25_location.get('location_info')['capacity'] %}
+            {% if capacity is not empty %}
+              <div id="stanford-r25-room-capacity">
+                <b>Capacity: </b>{{ capacity }}
+              </div>
+            {% endif %}
           {% endif %}
           {% set layout_features = r25_location.get('location_info')['layout_features'] %}
           {% if layout_features is not empty %}

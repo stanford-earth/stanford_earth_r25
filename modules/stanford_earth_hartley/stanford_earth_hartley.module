@@ -4,7 +4,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
-function stanford_earth_hartley_is_se3_user() {
+function stanford_earth_hartley_is_sdss_user() {
   if (!empty(array_intersect(
     Drupal::currentUser()->getRoles(), ['custm_sdss_user','administrator']))) {
     return true;
@@ -12,32 +12,13 @@ function stanford_earth_hartley_is_se3_user() {
   return false;
 }
 
-function stanford_earth_hartley_is_hartley_room($form) {
-  $is_hartley = false;
-  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
-    $roomid = $form['stanford_r25_booking_roomid']['#value'];
-    if (is_string($roomid)) {
-      $roomCode = substr($roomid, 0, 2);
-      if ($roomCode === 'mh') {
-        $is_hartley = true;
-      }
+function stanford_earth_hartley_is_room_category($form, $category='') {
+  if (!empty($category) && !empty($form['stanford_r25_booking_rules_category']['#value'])) {
+    if ($category === $form['stanford_r25_booking_rules_category']['#value']) {
+      return true;
     }
   }
-  return $is_hartley;
-}
-
-function stanford_earth_hartley_is_farm_room($form) {
-  $is_farm = false;
-  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
-    $roomid = $form['stanford_r25_booking_roomid']['#value'];
-    if (is_string($roomid)) {
-      $roomCode = substr($roomid, 0, 2);
-      if ($roomCode === 'of') {
-        $is_farm = true;
-      }
-    }
-  }
-  return $is_farm;
+  return false;
 }
 
 function stanford_earth_hartley_is_room_admin($form) {
@@ -55,24 +36,14 @@ function stanford_earth_hartley_is_room_admin($form) {
   return $isAdmin;
 }
 
-function stanford_earth_hartley_use_hartley_rules($form) {
-  $hRules = false;
-  if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
-    $location = Drupal::entityTypeManager()
-      ->getStorage('stanford_earth_r25_location')
-      ->load($form['stanford_r25_booking_roomid']['#value']);
-    if (!empty($location->get('hartley_date_rule'))) {
-      $hRules = true;
-    }
-  }
-  return $hRules;
-}
-
 function stanford_earth_hartley_form_alter(&$form,
   \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   if ($form_id === 'stanford_earth_r25_reservation') {
-    // does the room use hartley rules?
-   if (stanford_earth_hartley_use_hartley_rules($form)) {
+    $room_admin = stanford_earth_hartley_is_room_admin($form);
+    $hartley_room = stanford_earth_hartley_is_room_category($form, 'hartley');
+    $press_building_room = stanford_earth_hartley_is_room_category($form, 'press_building');
+    $farm_room = stanford_earth_hartley_is_room_category($form, 'farm');
+    if ($hartley_room || $press_building_room || $farm_room) {
       if (empty($form['#validate'])) {
         $form['#validate'] = [];
       }
@@ -81,170 +52,215 @@ function stanford_earth_hartley_form_alter(&$form,
         $form['#submit'] = [];
       }
       $form['#submit'][] = 'stanford_earth_hartley_form_submit';
-      $se3_user = stanford_earth_hartley_is_se3_user();
-
-      $form['stanford_r25_booking_reason']['#title'] = 'Event name';
-
-      $form['stanford_r25_booking_attr176']['#title'] = 'Is the event host using this space for the first time?';
-      $form['stanford_r25_booking_attr176']['#description'] = 'If so, we will be in touch with additional instructions after your reservation is confirmed.';
-
-      $form['stanford_r25_booking_attr169']['#title'] = 'Will food and/or beverages be served at this event?';
-      $form['stanford_r25_booking_attr169']['#description'] = 'If so, you must acknowledge that a work order for cleanup ' .
-        'is required and must be received by the Stanford Doerr School of Sustainability no less than 48 ' .
-        'hours before the event.';
-      $form['stanford_r25_booking_attr170']['#title'] = 'I agree to provide a work order for after-event cleanup.';
-      $form['stanford_r25_booking_attr170']['#states'] = [
-        'required' => [
-          ':input[name="stanford_r25_booking_attr169"]' => [
-            'checked' => true
-          ],
-        ],
-        'visible' => [
-          ':input[name="stanford_r25_booking_attr169"]' => [
-            'checked' => true
-          ],
-        ]
-      ];
-
-      if (stanford_earth_hartley_is_room_admin($form)) {
-        $form['stanford_r25_booking_attr171']['#type'] = 'hidden';
-        $form['stanford_r25_booking_attr172']['#type'] = 'hidden';
-        $form['stanford_r25_booking_attr173']['#type'] = 'hidden';
+      if ($hartley_room || $press_building_room) {
+        $form['stanford_r25_booking_reason']['#title'] = 'Event name';
       }
-      else {
-        $form['stanford_r25_booking_attr171']['#type'] = 'markup';
-        $form['stanford_r25_booking_attr171']['#markup'] = '<br/><strong>Please provide a PTA number and Sponsoring Department.</strong><br/>';
-        $form['stanford_r25_booking_attr172']['#title'] = 'University PTA number';
-        $form['stanford_r25_booking_attr172']['#description'] = 'PTA is required in format 1234567-1-ABCDE.';
-        $form['stanford_r25_booking_attr172']['#required'] = true;
-        /*
-        $form['stanford_r25_booking_attr172']['#states'] = [
+      if (!empty($form['stanford_r25_booking_attr176']['#title'])) {
+        $form['stanford_r25_booking_attr176']['#title'] = 'Is the event host using this space for the first time?';
+        $form['stanford_r25_booking_attr176']['#description'] = 'If so, we will be in touch with additional instructions after your reservation is confirmed.';
+      }
+      if (!empty($form['stanford_r25_booking_attr169']['#title']) &&
+        !empty($form['stanford_r25_booking_attr170']['#title'])) {
+        $form['stanford_r25_booking_attr169']['#title'] = 'Will food and/or beverages be served at this event?';
+        $form['stanford_r25_booking_attr169']['#description'] = 'If so, you must acknowledge that a work order for cleanup ' .
+          'is required and must be received by the Stanford Doerr School of Sustainability no less than 48 ' .
+          'hours before the event.';
+        $form['stanford_r25_booking_attr170']['#title'] = 'I agree to provide a work order for after-event cleanup.';
+        $form['stanford_r25_booking_attr170']['#states'] = [
           'required' => [
-            ':input[name="stanford_r25_booking_attr171"]' => [
+            ':input[name="stanford_r25_booking_attr169"]' => [
               'checked' => TRUE
             ],
           ],
           'visible' => [
-            ':input[name="stanford_r25_booking_attr171"]' => [
+            ':input[name="stanford_r25_booking_attr169"]' => [
               'checked' => TRUE
             ],
-          ],
+          ]
         ];
-        */
-        $form['stanford_r25_booking_attr173']['#title'] = 'Sponsoring Department';
-        $form['stanford_r25_booking_attr173']['#description'] = 'Which school department sponsors this PTA?';
-        $form['stanford_r25_booking_attr173']['#required'] = true;
-        /*
-        $form['stanford_r25_booking_attr173']['#states'] = [
-          'required' => [
-            ':input[name="stanford_r25_booking_attr171"]' => [
-              'checked' => TRUE
-            ],
-          ],
-          'visible' => [
-            ':input[name="stanford_r25_booking_attr171"]' => [
-              'checked' => TRUE
-            ],
-          ],
-        ];
-        */
       }
-
-      $form['stanford_r25_booking_attr177']['#title'] = 'Description/Comments';
-      $form['stanford_r25_booking_attr177']['#description'] = 'Any information, questions or remarks about this reservation.';
-
-      $form['stanford_r25_contact_175']['#title'] = 'Booking Contact Info';
-      $form['stanford_r25_contact_175']['#required'] = TRUE;
-
+      if (!empty($form['stanford_r25_booking_attr171']['#title'])) {
+        if ($room_admin) {
+          $form['stanford_r25_booking_attr171']['#type'] = 'hidden';
+        }
+        else {
+          $form['stanford_r25_booking_attr171']['#type'] = 'markup';
+          $form['stanford_r25_booking_attr171']['#markup'] = '<br/><strong>Please provide a PTA number and Sponsoring Department.</strong><br/>';
+        }
+      }
+      if (!empty($form['stanford_r25_booking_attr172']['#title'])) {
+        if ($room_admin) {
+          $form['stanford_r25_booking_attr172']['#type'] = 'hidden';
+        }
+        else {
+          $form['stanford_r25_booking_attr172']['#title'] = 'University PTA number';
+          $form['stanford_r25_booking_attr172']['#description'] = 'PTA is required in format 1234567-1-ABCDE.';
+          $form['stanford_r25_booking_attr172']['#required'] = TRUE;
+        }
+      }
+      if (!empty($form['stanford_r25_booking_attr173']['#title'])) {
+        if ($room_admin) {
+          $form['stanford_r25_booking_attr173']['#type'] = 'hidden';
+        }
+        else {
+          $form['stanford_r25_booking_attr173']['#title'] = 'Sponsoring Department';
+          $form['stanford_r25_booking_attr173']['#description'] = 'Which school department sponsors this PTA?';
+          $form['stanford_r25_booking_attr173']['#required'] = TRUE;
+        }
+      }
+      if (!empty($form['stanford_r25_booking_attr177']['#title'])) {
+        $form['stanford_r25_booking_attr177']['#title'] = 'Description/Comments';
+        $form['stanford_r25_booking_attr177']['#description'] = 'Any information, questions or remarks about this reservation.';
+        if ($press_building_room) {
+          $form['stanford_r25_booking_attr177']['#visible'] = false;
+          $form['stanford_r25_booking_attr177']['#states'] = [
+            'required' => [
+              ':input[name="stanford_r25_booking_spaceid"]' => [
+                'value' => '2605',
+              ],
+            ],
+            'visible' => [
+              ':input[name="stanford_r25_booking_spaceid"]' => [
+                'value' => '2605',
+              ],
+            ]
+          ];
+        }
+        else {
+          $form['stanford_r25_booking_attr177']['#visible'] = true;
+          $form['stanford_r25_booking_attr177']['#required'] = true;
+        }
+      }
+      if (!empty($form['stanford_r25_contact_175']['#title'])) {
+        $form['stanford_r25_contact_175']['#title'] = 'Event Contact Info';
+        $form['stanford_r25_contact_175']['#visible'] = FALSE;
+        if ($press_building_room) {
+          $form['stanford_r25_contact_175']['#states'] = [
+            'required' => [
+              ':input[name="stanford_r25_booking_spaceid"]' => [
+                'value' => '2605',
+              ],
+            ],
+            'visible' => [
+              ':input[name="stanford_r25_booking_spaceid"]' => [
+                'value' => '2605',
+              ],
+            ]
+          ];
+        }
+        else {
+          $form['stanford_r25_contact_175']['#visible'] = true;
+          $form['stanford_r25_contact_175']['#required'] = true;
+        }
+      }
     }
   }
 }
 
 function stanford_earth_hartley_form_validate(&$form, FormStateInterface $form_state) {
-  $hRules = stanford_earth_hartley_use_hartley_rules($form);
-  if ($hRules && !stanford_earth_hartley_is_room_admin($form)) {
+  $room_admin = stanford_earth_hartley_is_room_admin($form);
+  $hartley_room = stanford_earth_hartley_is_room_category($form, 'hartley');
+  $farm_room = stanford_earth_hartley_is_room_category($form, 'farm');
+  $press_building_room = stanford_earth_hartley_is_room_category($form, 'press_building');
+  if (($hartley_room || $farm_room || $press_building_room) && !$room_admin) {
     // Make sure there is a PTA number and sponsoring department.
-    if (empty($form_state->getValue('stanford_r25_booking_attr172'))) {
-      $form_state->setErrorByName('stanford_r25_booking_attr172',
-        'Please provide a PTA number for billing for this reservation.');
-      return;
-    }
-    else {
-      // Check if the PTA number is in the correct format.
-      $pta_str = $form_state->getValue('stanford_r25_booking_attr172');
-      $results = [];
-      $pattern = "/^[\d]{7,7}-[\d][\d\.]{0,7}-[A-Z]{5,5}$/";
-      if (preg_match($pattern,$pta_str,$results) != 1) {
+    if (!empty($form['stanford_r25_booking_attr172']['#title'])) {
+      if (empty($form_state->getValue('stanford_r25_booking_attr172'))) {
         $form_state->setErrorByName('stanford_r25_booking_attr172',
-        'Please provide a PTA number in its proper format.');
+          'Please provide a PTA number for billing for this reservation.');
+        return;
+      }
+      else {
+        // Check if the PTA number is in the correct format.
+        $pta_str = $form_state->getValue('stanford_r25_booking_attr172');
+        $results = [];
+        $pattern = "/^[\d]{7,7}-[\d][\d\.]{0,7}-[A-Z]{5,5}$/";
+        if (preg_match($pattern, $pta_str, $results) != 1) {
+          $form_state->setErrorByName('stanford_r25_booking_attr172',
+            'Please provide a PTA number in its proper format.');
+          return;
+        }
+      }
+    }
+    if (!empty($form['stanford_r25_booking_attr173']['#title'])) {
+      if (empty($form_state->getValue('stanford_r25_booking_attr173'))) {
+        $form_state->setErrorByName('stanford_r25_booking_attr173',
+          'Please provide a sponsoring department or signature authority name for billing for this reservation.');
         return;
       }
     }
-    if (empty($form_state->getValue('stanford_r25_booking_attr173'))) {
-      $form_state->setErrorByName('stanford_r25_booking_attr173',
-        'Please provide a sponsoring department or signature authority name for billing for this reservation.');
-      return;
+    if (!empty($form['stanford_r25_booking_attr175']['#title'])) {
+      if (empty(trim($form_state->getValue('stanford_r25_contact_175')))) {
+        $form_state->setErrorByName('stanford_r25_contact_175',
+          'Please enter your contact information in the provided field.');
+        return;
+      }
     }
-
-    // Make sure the requested dates are in the accepted range.
-    $month = intval(date('n'));
-    $year = intval(date('Y'));
-    $start_year = intval($form_state->getValue('stanford_r25_booking_date')->format('Y'));
-    $end_year = intval($form_state->getValue('stanford_r25_booking_enddate')->format('Y'));
-    if ($month < 10 && ($start_year != $year || $end_year != $year)) {
-      $form_state->setErrorByName('stanford_r25_booking_date',
-        'You may only reserve this space for dates during the current year.');
-      return;
+    if (!empty($form['stanford_r25_booking_attr169']['#title'])) {
+      if (!empty($form_state->getValue('stanford_r25_booking_attr169')) &&
+        intval($form_state->getValue('stanford_r25_booking_attr169')) == 1) {
+        if (empty($form_state->getValue('stanford_r25_booking_attr170')) ||
+          intval($form_state->getValue('stanford_r25_booking_attr170') == 0)) {
+          $form_state->setErrorByName('stanford_r25_booking_attr170',
+            'If you are serving food or beverages, you must agree to provide a work order for cleanup.');
+          return;
+        }
+      }
     }
-    else {
-      if ($start_year > $year + 1 || $end_year > $year + 1) {
+    // For Hartley, make sure the requested dates are in the accepted range.
+    if ($hartley_room) {
+      $month = intval(date('n'));
+      $year = intval(date('Y'));
+      $start_year = intval($form_state->getValue('stanford_r25_booking_date')
+        ->format('Y'));
+      $end_year = intval($form_state->getValue('stanford_r25_booking_enddate')
+        ->format('Y'));
+      if ($month < 10 && ($start_year != $year || $end_year != $year)) {
         $form_state->setErrorByName('stanford_r25_booking_date',
-          'You may only reserve this space for dates during the remainder of this year and next year.');
+          'You may only reserve this space for dates during the current year.');
         return;
       }
-    }
-  }
-
-  if ($hRules) {
-    if (empty(trim($form_state->getValue('stanford_r25_contact_175')))) {
-      $form_state->setErrorByName('stanford_r25_contact_175',
-        'Please enter your contact information in the provided field.');
-      return;
-    }
-    if (!empty($form_state->getValue('stanford_r25_booking_attr169')) &&
-      intval($form_state->getValue('stanford_r25_booking_attr169')) == 1) {
-      if (empty($form_state->getValue('stanford_r25_booking_attr170')) ||
-        intval($form_state->getValue('stanford_r25_booking_attr170') == 0)) {
-        $form_state->setErrorByName('stanford_r25_booking_attr170',
-          'If you are serving food or beverages, you must agree to provide a work order for cleanup.');
-        return;
+      else {
+        if ($start_year > $year + 1 || $end_year > $year + 1) {
+          $form_state->setErrorByName('stanford_r25_booking_date',
+            'You may only reserve this space for dates during the remainder of this year and next year.');
+          return;
+        }
       }
     }
   }
 }
 
 function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_state) {
-  $hRules = stanford_earth_hartley_use_hartley_rules($form);
   $storage = $form_state->getStorage();
   if (!empty($storage['stanford_earth_r25']['stanford_r25_postprocess'])) {
     $storage = $storage['stanford_earth_r25']['stanford_r25_postprocess'];
     if (!empty($storage['mailto'])) {
+      $hartley_room = stanford_earth_hartley_is_room_category($form, 'hartley');
+      $press_building_room = stanford_earth_hartley_is_room_category($form, 'press_building');
+      $farm_room = stanford_earth_hartley_is_room_category($form, 'farm');
       $room = $storage['room'];
       $dates = $storage['dates'];
       $mail_list = $storage['mailto'];
-
       $subject = $room['label'] . ': Your booking request is now pending approval';
       $body = [];
       $body[] = 'The booking manager will review and approve your request as soon as possible, and will contact you only if there is a problem.';
       $body[] = 'The details of your booking request follow.';
       $body[] = 'Event name: ' . $storage['event_name'];
-      $space_str = 'Event space: ' . $room['label'];
-      if ($room['id'] == 'mh01') {
-        $space_str .= ' (Does *not* include Mitchell Patio)';
+      $space_str = $room['label'];
+      $space_id = '';
+      if (str_contains($room['space_id'],'+')) {
+        $space_id = $form_state->getValue('stanford_r25_booking_spaceid');
+        $space_str = $form['stanford_r25_booking_spaceid']['#options'][$space_id];
       }
-      else {
-        if ($room['id'] == 'mh02') {
-          $space_str .= ' (Does *not* include Hartley Conference Room and Kitchen';
+      if ($hartley_room) {
+        if ($space_id == '1675') {
+          $space_str .= ' (Does *not* include Mitchell Patio)';
+        }
+        else {
+          if ($space_id == '1860') {
+            $space_str .= ' (Does *not* include Hartley Conference Room and Kitchen';
+          }
         }
       }
       $body[] = 'Event space: ' . $space_str;
@@ -258,11 +274,14 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       }
       $body[] = 'If food IS served or consumed, you must get a work order from Custodial Services. This is not negotiable. ';
       $body[] = 'Allow at least 30 minutes for cleanup if you get a work order.';
-      $emailAddr = 'mailto:sdss-deans-office-reservations@stanford.edu';
-      if (stanford_earth_hartley_is_farm_room($form)) {
-        $emailAddr = 'mailto:jessgo@stanford.edu';
+      $emailAddr = '';
+      if (($hartley_room || $farm_room || $press_building_room) &&
+        !empty($room['room_administrator_emails'])) {
+        $emailAddr = 'mailto:'.$room['room_administrator_emails'];
       }
-      $body[] = 'To update or cancel your booking request, please send an email with the relevant information to ' . $emailAddr;
+      if (!empty($emailAddr)) {
+        $body[] = 'To update or cancel your booking request, please send an email with the relevant information to ' . $emailAddr;
+      }
       $module = 'stanford_earth_r25';
       $key = 'r25_operation';
       $to = $mail_list;
@@ -280,22 +299,42 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
 }
 
 function stanford_earth_hartley_stanford_r25_fullcalendar_limit_alter(&$calendar_limit) {
-  if (!empty($calendar_limit['room']['id']) && !empty($calendar_limit['room']['hartley_date_rule'])) {
-    if (Drupal::currentUser()->hasPermission('administer stanford r25') ||
-      !empty(array_intersect(Drupal::currentUser()->getRoles(),
-        $calendar_limit['room']['room_administrator_roles']))) {
-      $calendar_limit['year'] = strval(date('Y') + 3);
-    }
-    else {
-      $month = date('n');
-      $year = date('Y');
-      if ($month < 10) {
-        $calendar_limit = array_merge($calendar_limit,
-          ['month' => "12", 'day' => '31', 'year' => $year]);
+  if (!empty($calendar_limit['room']['rules_category'])) {
+    if ($calendar_limit['room']['rules_category'] === 'hartley') {
+      if (!empty(array_intersect(Drupal::currentUser()->getRoles(), ['custm_hartley_admin']))) {
+        $calendar_limit['year'] = strval(date('Y') + 3);
       }
       else {
+        $month = date('n');
+        $year = date('Y');
+        if ($month < 10) {
+          $calendar_limit = array_merge($calendar_limit,
+            ['month' => "12", 'day' => '31', 'year' => $year]);
+        }
+        else {
+          $calendar_limit = array_merge($calendar_limit,
+            ['month' => "12", 'day' => '31', 'year' => strval($year + 1)]);
+        }
+      }
+    }
+    else if ($calendar_limit['room']['rules_category'] === 'press_building') {
+      if (!empty(array_intersect(Drupal::currentUser()
+        ->getRoles(), ['custm_press_building_user']))) {
         $calendar_limit = array_merge($calendar_limit,
-          ['month' => "12", 'day' => '31', 'year' => strval($year + 1)]);
+          [
+            'month' => date('n'),
+            'day' => date(format('d')),
+            'year' => strval(date('Y') + 1)
+          ]);
+      }
+      else if (!empty(array_intersect(Drupal::currentUser()
+        ->getRoles(), ['custm_press_building_admin']))) {
+        $calendar_limit = array_merge($calendar_limit,
+          [
+            'month' => date('n'),
+            'day' => date(format('d')),
+            'year' => strval(date('Y') + 3)
+          ]);
       }
     }
   }
@@ -305,8 +344,8 @@ function stanford_earth_hartley_stanford_r25_isbillable_alter(&$is_billable) {
   $is_billable = false;
   /*
   if ($is_billable) {
-    $se3_user = stanford_earth_hartley_is_se3_user();
-    if ($se3_user) {
+    $sdss_user = stanford_earth_hartley_is_sdss_user();
+    if ($sdss_user) {
       $is_billable = false;
     }
   }

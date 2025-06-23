@@ -71,12 +71,15 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "override_room_description",
  *     "room_administrator_roles",
  *     "room_administrator_emails",
- *     "hartley_date_rule",
+ *     "rules_category",
  *     "future_days",
  *     "abbreviations",
  *     "slot_min_time",
  *     "slot_max_time",
  *     "hide_weekends",
+ *     "multi_room_capacities",
+ *     "multi_room_parents",
+ *     "use_admin_email_instead",
  *   },
  *   links = {
  *     "edit-form" =
@@ -385,11 +388,11 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $room_administrator_emails;
 
   /**
-   * Use the Hartley Rule for allowable booking dates.
+   * Categorize this room for special processing.
    *
-   * @var bool
+   * @var string
    */
-  protected $hartley_date_rule;
+  protected $rules_category;
 
   /**
    * How far into the future can we book.
@@ -426,6 +429,26 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    */
   protected $hide_weekends;
 
+  /**
+   * Capacities for multiple-room calendars from R25.
+   *
+   * @var array
+   */
+  protected $multi_room_capacities;
+
+  /**
+   * Parent rooms of locations in multi-room calendars..
+   *
+   * @var array
+   */
+  protected $multi_room_parents;
+
+  /**
+   * Use admin email address instead of secgroup email
+   *
+   * @var bool
+   */
+  protected $use_admin_email_instead;
 
   /**
    * {@inheritdoc}
@@ -446,6 +469,26 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
     $allowed_timeslots_fields =
       StanfordEarthR25Util::stanfordR25ParseTimeslots($this->get('allowed_timeslots'));
     $this->set('allowed_timeslots_fields', $allowed_timeslots_fields);
+    // If setting up a multi-room calendar, get capacities and parents for each room.
+    $capacities = [];
+    $parents = [];
+    $space_id = $this->get('space_id');
+    if (strpos($space_id,"+") !== FALSE) {
+      $locations = explode("+", $space_id);
+      foreach ($locations as $location) {
+        $location_data = StanfordEarthR25Util::stanfordR25GetRoomInfo($location);
+        $capacity = 5;
+        if (!empty($location_data['capacity'])) {
+          $capacity = $location_data['capacity'];
+        }
+        $capacities[$location] = $capacity;
+        if (!empty($location_data['parents'])) {
+          $parents[$location] = $location_data['parents'];
+        }
+      }
+      $this->set('multi_room_capacities', $capacities);
+      $this->set('multi_room_parents', $parents);
+    }
     $return = parent::save();
 
     return $return;

@@ -219,6 +219,16 @@ class StanfordEarthR25ReservationForm extends FormBase {
       ];
     }
 
+    // Add a hidden room rules category field if the location has one.
+    $category = '';
+    if (!empty($rooms[$room]['rules_category'])) {
+      $category = $rooms[$room]['rules_category'];
+    }
+    $form['stanford_r25_booking_rules_category'] = [
+      '#type' => 'hidden',
+      '#value' => $category,
+    ];
+
     // If the room only accepts tentative bookings, then put up a message
     // to that effect.
     if (!empty($rooms[$room]['displaytype']) && intval($rooms[$room]['displaytype']) == StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
@@ -340,10 +350,14 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
+    $max_headcount = 5; // Initializing this for later.
+    $headcount_title = '';
+    $multi_room = false;
     // Check if we have multiple locations to choose from
     if (!empty($rooms[$room]['space_id'])) {
       if (str_contains($rooms[$room]['space_id'], "+")) {
         // make options
+        $multi_room = true;
         $space_ids = explode("+", $rooms[$room]['space_id']);
         $labels = [];
         if (!empty($rooms[$room]['legend_labels'])) {
@@ -355,13 +369,31 @@ class StanfordEarthR25ReservationForm extends FormBase {
         }
         $room_options = [];
         foreach ($space_ids as $key => $space_id) {
-          if (empty ($exclude) || strpos($exclude, $space_id) === FALSE) {
-            if (!empty($labels[$key])) {
-              $room_options[$space_id] = $labels[$key];
+          $okay = true;
+          if (!empty($exclude)) {
+            if (str_contains($exclude, $space_id)) {
+              $okay = false;
             }
             else {
-              $room_options[$space_id] = $space_id;
+              if (!empty($rooms[$room]['multi_room_parents']) &&
+                is_array($rooms[$room]['multi_room_parents'])) {
+                $xyz = 1;
+              }
             }
+          }
+          if ($okay) {
+            $room_option_label = $space_id;
+            if (!empty($labels[$key])) {
+              $room_option_label = $labels[$key];
+            }
+            if (!empty($rooms[$room]['multi_room_capacities'][$space_id])) {
+              $capacity = $rooms[$room]['multi_room_capacities'][$space_id];
+              if ($capacity > $max_headcount) {
+                $max_headcount = $capacity;
+              }
+              $room_option_label .= ' (Max: ' . $capacity . ')';
+            }
+            $room_options[$space_id] = $room_option_label;
           }
         }
         $room_default = NULL;
@@ -384,17 +416,17 @@ class StanfordEarthR25ReservationForm extends FormBase {
           '#type' => 'hidden',
           '#value' => $rooms[$room]['space_id'],
         ];
+        // For single-room calendars, max capacity comes from the room info.
+        if (!empty($rooms[$room]['location_info']['capacity'])) {
+          $max_headcount = $rooms[$room]['location_info']['capacity'];
+          $headcount_title = ' (Max: ' . $max_headcount . ')';
+        }
       }
     }
 
-    // Max headcount for a room comes from parameter passed to the function.
-    $max_headcount = 5;
-    if (!empty($rooms[$room]['location_info']['capacity'])) {
-      $max_headcount = $rooms[$room]['location_info']['capacity'];
-    }
     $form['stanford_r25_booking_headcount'] = [
       '#type' => 'number',
-      '#title' => $this->t('Headcount (required)'),
+      '#title' => $this->t('Headcount' . $headcount_title),
       '#min' => 1,
       '#max' => $max_headcount,
       '#required' => TRUE,
@@ -752,6 +784,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     // Save the input headcount
     if (!empty($user_input['stanford_r25_booking_headcount'])) {
+      if (!empty($rooms[$room]['multi_room_capacities'][$booking_info['space_id']]) &&
+          $user_input['stanford_r25_booking_headcount'] > $rooms[$room]['multi_room_capacities'][$booking_info['space_id']]) {
+        $form_state->setErrorByName('stanford_r25_booking_headcount',
+          new TranslatableMarkup('Headcount is higher than this room capacity.'));
+        return;
+      }
       $booking_info['headcount'] = $user_input['stanford_r25_booking_headcount'];
     }
     else {
@@ -865,6 +903,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           $todo_temp = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $todo_str);
           $todo_temp = str_replace('[r25_approver_id]', $key, $todo_temp);
           $todo_temp = str_replace('[r25_credential_id]', $contact_id, $todo_temp);
+          $todo_temp = str_replace('[r25_todo_comment]', '', $todo_temp);
           $todo_insert .= $todo_temp;
           if (!empty($mail_list)) {
             $mail_list .= ', ';
@@ -1057,6 +1096,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
         }
       }
 
+      // Replace the secgroup email address with 'room_administrator_emails' if set.
+      if (!empty($booking_info['room']['room_administrator_emails']) &&
+          !empty($booking_info['room']['use_admin_email_instead'])) {
+        $mail_list = $booking_info['room']['room_administrator_emails'];
+      }
       // Send an email about the booking if mail list is set.
       if (!empty($mail_list) && !empty($booking_info['room']['email_list'])) {
         $mail_list .= ', ';

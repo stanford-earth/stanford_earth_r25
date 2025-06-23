@@ -561,12 +561,20 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('Comma-separated list of contact addresses to be included in text of reservation emails. Leave blank for "none".'),
     ];
 
-    // Checkbox to specify room should use "Hartley" date rules.
-    $form['advanced']['hartley_date_rule'] = [
+    $form['advanced']['use_admin_email_instead'] = [
+      '#title' => $this->t('Use Administrator Email Instead of Secgroup Emails'),
       '#type' => 'checkbox',
-      '#title' => $this->t('Use Hartley Date Rule'),
-      '#description' => $this->t("Check this box if room should use Hartley October date rule."),
-      '#default_value' => $location->get('hartley_date_rule'),
+      '#default_value' => $location->get('use_admin_email_instead'),
+      '#description' => $this->t('Check this to send confirmation emails to the Room Administrator Email addresses instead of to the SecGroup email addresses.'),
+    ];
+
+    // Enter a rules category string for special processing
+    $form['advanced']['rules_category'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Rules Category'),
+      '#size' => 50,
+      '#description' => $this->t("Enter a rules category such as 'hartley','farm', or 'press building' for special processing."),
+      '#default_value' => $location->get('rules_category'),
     ];
 
     // How many days in the future can we book.
@@ -580,7 +588,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#required' => FALSE,
       '#size' => 30,
       '#default_value' => $futureDays,
-      '#description' => $this->t('The maximum number of into the future to allow bookings. Max=365 or leave blank for one year.'),
+      '#description' => $this->t('The maximum number of days into the future to allow bookings. Max=365 or leave blank for one year.'),
     ];
 
     $slot_min_time = $location->get('slot_min_time');
@@ -609,7 +617,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('The maximum timeslot to show of Fullcalendar in the form 00:00:00'),
     ];
 
-    // Checkbox to specify room should use "Hartley" date rules.
+    // Checkbox to specify hiding weekend columns from the room's calendar.
     $form['advanced']['hide_weekends'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Hide weekends on Fullcalendar'),

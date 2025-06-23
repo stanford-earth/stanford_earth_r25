@@ -227,9 +227,9 @@ stanford_earth_r25_location.*:
     room_administrator_emails:
       type: string
       label: 'Room Administrator Emails'
-    hartley_date_rule:
-      type: boolean
-      label: 'Use Hartley October Rule'
+    rules_category:
+      type: string
+      label: 'Rules Category'
     future_days:
       type: integer
       label: 'Future Days Limit'
@@ -245,3 +245,32 @@ stanford_earth_r25_location.*:
     hide_weekends:
       type: boolean
       label: 'Fullcalendar Weekend Setting'
+    multi_room_capacities:
+      type: sequence
+      label: 'Multi-Room Capacities'
+      sequence:
+        - type: mapping
+          label: 'Multi-Room Capacities'
+          mapping:
+            multi_room_space_id:
+              type: string
+              label: 'Space ID'
+            multi_room_capacity:
+              type: string
+              label: 'Capacity'
+    multi_room_parents:
+      type: sequence
+      label: 'Multi-Room Parents'
+      sequence:
+        - type: mapping
+          label: 'Multi-Room Parents'
+          mapping:
+            multi_room_parent_space_id:
+              type: string
+              label: 'Space ID'
+            multi_room_parents:
+              type: string
+              label: 'Parents'
+    use_admin_email_instead:
+      type: boolean
+      label: 'Use Admin Email Instead of Secgroup'

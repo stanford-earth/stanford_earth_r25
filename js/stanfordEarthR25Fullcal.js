@@ -298,7 +298,16 @@ var calendar;
         if (exclude.length > 0) {
           exclude += '-';
         }
-        exclude += events[i].extendedProps.space_id;
+        var exclude_space_id = events[i].extendedProps.space_id;
+        exclude += exclude_space_id;
+        if (stanford_r25_room.multi_room_parents !== null && stanford_r25_room.multi_room_parents !== undefined) {
+          if (exclude_space_id in stanford_r25_room.multi_room_parents) {
+            var parent = stanford_r25_room.multi_room_parents[exclude_space_id];
+            if (exclude.indexOf(parent) < 0) {
+              exclude += '-' + parent;
+            }
+          }
+        }
       }
     }
     var endStr = '';
@@ -337,7 +346,7 @@ var calendar;
           exclude_count += 1;
         }
       }
-      if (exclude_count == spaces.length) {
+      if (exclude_count >= spaces.length) {
         window.alert('No spaces are available for the selected timeslot. Please choose another.');
         okaytosubmit = false;
       }
