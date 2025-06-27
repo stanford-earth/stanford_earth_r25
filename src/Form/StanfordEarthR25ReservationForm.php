@@ -449,6 +449,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#required' => TRUE,
       '#maxlength' => 40,
     ];
+    if (intval($rooms[$room]['caltype']) === 3) {
+      $form['stanford_r25_booking_reason']['#default_value'] = $rooms[$room]['label'];
+      $form['stanford_r25_booking_reason']['#disabled'] = true;
+    }
+
 
     // Check for event attribute fields, and build 'em.
     // Each of these corresponds to a "custom attribute" for events in 25Live
@@ -709,8 +714,20 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // just checked the start date, and make sure it isn't earlier than the
     // start date.
     $end_date = NULL;
+    $booking_end_date = NULL;
     if (!empty($user_input['stanford_r25_booking_enddate'])) {
       $booking_end_date = $user_input['stanford_r25_booking_enddate'];
+    }
+    else {
+      $booking_end_val = $form_state->getValue('stanford_r25_booking_enddate');
+      if (!empty($booking_end_val)) {
+        $booking_end_date = [
+          'date' => $booking_end_val->format('Y-m-d'),
+          'time' => $booking_end_val->format('H:i'),
+        ];
+      }
+    }
+    if (!empty($booking_end_date)) {
       $booking_str = $booking_end_date['date'] . '-' . $booking_end_date['time'];
       $booking_str = str_replace(':', '-', $booking_str);
       $end_date = DrupalDateTime::createFromArray($this->parseDateStr($booking_str));
