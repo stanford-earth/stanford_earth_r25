@@ -53,7 +53,7 @@ function stanford_earth_hartley_form_alter(&$form,
       }
       $form['#submit'][] = 'stanford_earth_hartley_form_submit';
       if ($hartley_room || $press_building_room) {
-        $form['stanford_r25_booking_reason']['#title'] = 'Event name';
+        //$form['stanford_r25_booking_reason']['#title'] = 'Event name';
       }
       if (!empty($form['stanford_r25_booking_attr176']['#title'])) {
         $form['stanford_r25_booking_attr176']['#title'] = 'Is the event host using this space for the first time?';
@@ -153,6 +153,7 @@ function stanford_earth_hartley_form_alter(&$form,
           $form['stanford_r25_contact_175']['#required'] = true;
         }
       }
+      $form['#attached']['library'][] = 'stanford_earth_hartley/stanford_earth_hartley';
     }
   }
 }
@@ -350,4 +351,16 @@ function stanford_earth_hartley_stanford_r25_isbillable_alter(&$is_billable) {
     }
   }
   */
+}
+
+function stanford_earth_hartley_stanford_r25_force_confirmed_alter(&$event_state, $room_info) {
+  if (!empty($room_info['rules_category']) && $room_info['rules_category'] === 'press_building') {
+    if ($event_state === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
+      if (!empty(array_intersect(
+        Drupal::currentUser()->getRoles(), ['custm_press_building_user','custm_press_building_admin']))) {
+          $event_state = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_CONFIRMED;
+      }
+    }
+  }
+  $xyz = 1;
 }

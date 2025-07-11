@@ -692,12 +692,17 @@ class StanfordEarthR25Util {
    * @return string
    *   Comma delimited list of email addresses
    */
-  public static function stanfordR25BuildEventEmailList(array $results, $secgroup_id, $extra_list) {
+  public static function stanfordR25BuildEventEmailList(array $results, $secgroup_id, $admin_emails, $extra_list) {
 
     $user = \Drupal::currentUser();
-    // Get list of email addresses for approvers of the room's security group.
-    $mail_array = self::stanfordR25SecurityGroupEmails($secgroup_id);
-
+    $mail_array = [];
+    if (!empty($admin_emails)) {
+      $mail_array = explode(',', $admin_emails);
+    }
+    else if (!empty($secgroup_id)) {
+      // Get list of email addresses for approvers of the room's security group.
+      $mail_array = self::stanfordR25SecurityGroupEmails($secgroup_id);
+    }
     // Add on any extra email addresses for the room.
     if (!empty($extra_list)) {
       $extras = explode(',', $extra_list);

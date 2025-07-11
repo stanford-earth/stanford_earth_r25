@@ -253,7 +253,11 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       if (!empty($rooms[$room_id]['email_list'])) {
         $additional = $rooms[$room_id]['email_list'];
       }
-      $email_list = StanfordEarthR25Util::stanfordR25BuildEventEmailList($result, $secgroup_id, $additional);
+      $admin_emails = '';
+      if (!empty($rooms[$room_id]['room_administrator_emails'])) {
+        $admin_emails = $rooms[$room_id]['room_administrator_emails'];
+      }
+      $email_list = StanfordEarthR25Util::stanfordR25BuildEventEmailList($result, $secgroup_id, $admin_emails, $additional);
       $user = \Drupal::currentUser();
       // Get the event title from the XML for display.
       $title = '';

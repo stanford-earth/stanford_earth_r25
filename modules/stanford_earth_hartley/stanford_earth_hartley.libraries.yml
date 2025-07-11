@@ -1,0 +1,7 @@
+stanford_earth_hartley:
+  js:
+    js/stanford_earth_hartley.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+

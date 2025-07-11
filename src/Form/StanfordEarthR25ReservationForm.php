@@ -866,6 +866,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
         'This room may not be reserved through this website.');
       return;
     }
+    $this->moduleHandler->alter('stanford_r25_force_confirmed', $event_state, $booking_info['room']);
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
