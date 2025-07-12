@@ -198,6 +198,14 @@ class StanfordEarthR25Service {
           $xml_command = 'rm_reservations.xml?' . $post_data . '&include=pending+text+attributes';
           break;
 
+        case 'todo-post':
+          $xml_command = 'todo.xml';
+          break;
+
+        case 'todo-put':
+          $xml_command = 'todo.xml?todo_id=' . $id;
+          break;
+
         default:
           $xml_command = 'null.xml';
       }
@@ -208,14 +216,14 @@ class StanfordEarthR25Service {
       // GET, POST, or DELETE.
       $method = 'GET';
       $options = [];
-      if ($command == 'reserve' || $command == 'avail') {
+      if ($command == 'reserve' || $command == 'avail' || $command == 'todo-post') {
         // $post_data contains the XML for a reservation request
         $method = 'POST';
         $options['body'] = $post_data;
       }
       else {
         // Post_data has the XML to update an event or its billing group id.
-        if ($command == 'billing-put' || $command == 'event-put') {
+        if ($command == 'billing-put' || $command == 'event-put' || $command == 'todo-put') {
           $method = 'PUT';
           $options['body'] = $post_data;
         }

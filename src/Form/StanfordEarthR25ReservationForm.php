@@ -886,44 +886,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
         return;
     }
     $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
-    // We'll build a list of email addresses to send reservation info to.
-    $mail_list = '';
-
     $extension_path_resolver = \Drupal::service('extension.path.resolver');
     $module_path = $extension_path_resolver->getPath('module', 'stanford_earth_r25');
-
-    // Tentative reservations will generate 25Live "to do tasks" for approvers
-    // if the room has an approver security group id associated with it.
-    $todo_insert = '';
-    if ($event_state == StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE &&
-      !empty($booking_info['room']['approver_secgroup_id'])
-    ) {
-      // Get the list of email addresses for the security group.
-      $approver_list =
-        StanfordEarthR25Util::stanfordR25SecurityGroupEmails($booking_info['room']['approver_secgroup_id']);
-      if (!empty($approver_list)) {
-        // For each approver in the security group, add their email address to
-        // the list and create a "to do task" XML snippet with their 25Live id
-        // and the event information to be added to the request XML.
-        $contact_id = '';
-        if (!empty($adminSettings['stanford_r25_credential_contact_id'])) {
-          $contact_id = $adminSettings['stanford_r25_credential_contact_id'];
-        }
-        $todo_str = file_get_contents($module_path .
-          '/templates/stanford_r25_reserve_todo.xml');
-        foreach ($approver_list as $key => $value) {
-          $todo_temp = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $todo_str);
-          $todo_temp = str_replace('[r25_approver_id]', $key, $todo_temp);
-          $todo_temp = str_replace('[r25_credential_id]', $contact_id, $todo_temp);
-          //$todo_temp = str_replace('[r25_todo_comment]', '', $todo_temp);
-          $todo_insert .= $todo_temp;
-          if (!empty($mail_list)) {
-            $mail_list .= ', ';
-          }
-          $mail_list .= $value;
-        }
-      }
-    }
 
     // If there are 25Live custom attributes associated with this event, add
     // the XML snippet for each attribute with its id, type, and value to the
@@ -990,7 +954,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $xml = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $xml);
     $xml = str_replace('[r25_end_date_time]', $booking_info['dates']['end'], $xml);
     $xml = str_replace('[r25_space_id]', $booking_info['space_id'], $xml);
-    $xml = str_replace('[r25_todo]', $todo_insert, $xml);
+    //$xml = str_replace('[r25_todo]', $todo_insert, $xml);
     $xml = str_replace('[r25_attr]', $attr_insert, $xml);
 
     // We want to put some information about the user making this request into
@@ -1045,7 +1009,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // information to the request if defined, display a success message on the
     // page, and send an email to any approvers or others specified.
     if ($success) {
-
       // If the booking was successful, display a message to that effect.
       $date = DrupalDateTime::createFromFormat(DATE_W3C, $booking_info['dates']['start']);
       $state = intval($result['vals'][$result['index']['R25:STATE'][0]]['value']);
@@ -1108,6 +1071,53 @@ class StanfordEarthR25ReservationForm extends FormBase {
         }
       }
 
+      // We'll build a list of email addresses to send reservation info to.
+      $mail_list = '';
+      // Tentative reservations will generate 25Live "to do tasks" for approvers
+      // if the room has an approver security group id associated with it.
+      if ($event_state == StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE &&
+        !empty($booking_info['room']['approver_secgroup_id'])
+      ) {
+        // Get the list of email addresses for the security group.
+        $approver_list =
+          StanfordEarthR25Util::stanfordR25SecurityGroupEmails($booking_info['room']['approver_secgroup_id']);
+        if (!empty($approver_list)) {
+          // For each approver in the security group, add their email address to
+          // the list and create a "to do task" XML snippet with their 25Live id
+          // and the event information to be added to the request XML.
+          $contact_id = '';
+          if (!empty($adminSettings['stanford_r25_credential_contact_id'])) {
+            $contact_id = $adminSettings['stanford_r25_credential_contact_id'];
+          }
+          foreach ($approver_list as $key => $value) {
+            $todo_str = file_get_contents($module_path .
+              '/templates/stanford_r25_reserve_todo.xml');
+            $todo_id = '';
+            $todo_result1 = $this->r25Service->stanfordR25ApiCall('todo-post', '');
+            if ($todo_result1['status']['status'] === TRUE) {
+              $todo_result2 = $todo_result1['output'];
+              if (!empty($todo_result2['index']['R25:TODO_ID'][0]) &&
+                !empty($todo_result2['vals'][$todo_result2['index']['R25:TODO_ID'][0]]['value'])) {
+                $todo_id = $todo_result2['vals'][$todo_result2['index']['R25:TODO_ID'][0]]['value'];
+              }
+            }
+            if (!empty($todo_id)) {
+              $todo_str = str_replace('[r25_todo_id]', $todo_id, $todo_str);
+              $todo_str = str_replace('[r25_todo_name]', $form_vals['stanford_r25_booking_reason'], $todo_str);
+              $todo_str = str_replace(['r25_todo_due'], $date, $todo_str);
+              $todo_str = str_replace('[r25_todo_assigned_to]', $key, $todo_str);
+              $todo_str = str_replace('[r25_todo_assigned_by]', $contact_id, $todo_str);
+              $todo_str = str_replace('[r25_todo_eventid]', $eventid, $todo_str);
+              $todo_str = str_replace('[r25_todo_comment]', "Look at me!", $todo_str);
+              $todo_result3 = $this->r25Service->stanfordR25ApiCall('todo-put', $todo_str, $todo_id);
+            }
+            if (!empty($mail_list)) {
+              $mail_list .= ', ';
+            }
+            $mail_list .= $value;
+          }
+        }
+      }
       // Replace the secgroup email address with 'room_administrator_emails' if set.
       if (!empty($booking_info['room']['room_administrator_emails']) &&
           !empty($booking_info['room']['use_admin_email_instead'])) {

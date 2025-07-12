@@ -40,7 +40,6 @@ XML is posted to 25Live.
             <r25:text_type_name>Description</r25:text_type_name>
             <r25:text>[r25_created_by]</r25:text>
         </r25:event_text>
-        [r25_todo]
         [r25_attr]
      </r25:event>
 </r25:events>
