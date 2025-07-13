@@ -52,9 +52,6 @@ function stanford_earth_hartley_form_alter(&$form,
         $form['#submit'] = [];
       }
       $form['#submit'][] = 'stanford_earth_hartley_form_submit';
-      if ($hartley_room || $press_building_room) {
-        //$form['stanford_r25_booking_reason']['#title'] = 'Event name';
-      }
       if (!empty($form['stanford_r25_booking_attr176']['#title'])) {
         $form['stanford_r25_booking_attr176']['#title'] = 'Is the event host using this space for the first time?';
         $form['stanford_r25_booking_attr176']['#description'] = 'If so, we will be in touch with additional instructions after your reservation is confirmed.';
@@ -153,6 +150,10 @@ function stanford_earth_hartley_form_alter(&$form,
           $form['stanford_r25_contact_175']['#required'] = true;
         }
       }
+      if (!empty($form['stanford_r25_booking_attr311']['#title'])) {
+        $form['stanford_r25_booking_attr311']['#title'] = 'Food Allergies/Preferences';
+        $form['stanford_r25_booking_attr311']['#description'] = 'Please list any food allergies or preferences for your attendees.';
+      }
       $form['#attached']['library'][] = 'stanford_earth_hartley/stanford_earth_hartley';
     }
   }
@@ -245,7 +246,7 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       $mail_list = $storage['mailto'];
       $subject = $room['label'] . ': Your booking request is now pending approval';
       $body = [];
-      $body[] = 'The booking manager will review and approve your request as soon as possible, and will contact you only if there is a problem.';
+      $body[] = 'The booking manager will review and approve your request as soon as possible, and will contact you if there is a problem.';
       $body[] = 'The details of your booking request follow.';
       $body[] = 'Event name: ' . $storage['event_name'];
       $space_str = $room['label'];
@@ -273,8 +274,10 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       if ($est_fee > 0) {
         $body[] = 'Estimated Room Fee: $' . $est_fee . ' --reflects fee scheduled for time of event. Fees subject to change.';
       }
-      $body[] = 'If food IS served or consumed, you must get a work order from Custodial Services. This is not negotiable. ';
-      $body[] = 'Allow at least 30 minutes for cleanup if you get a work order.';
+      if ($hartley_room) {
+        $body[] = 'If food IS served or consumed, you must get a work order from Custodial Services. This is not negotiable. ';
+        $body[] = 'Allow at least 30 minutes for cleanup if you get a work order.';
+      }
       $emailAddr = '';
       if (($hartley_room || $farm_room || $press_building_room) &&
         !empty($room['room_administrator_emails'])) {

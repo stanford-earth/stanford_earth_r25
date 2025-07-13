@@ -44,6 +44,7 @@ var calendar;
         else {
           if (drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
             defaultView = 'listMonth';
+            //defaultView = 'dayGridMonth';
           } else {
             // otherwise, use the Default view set by Drupal for this room
             switch (drupalSettings.stanfordEarthR25.stanfordR25DefaultView) {
