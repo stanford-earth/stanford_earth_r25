@@ -866,7 +866,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
         'This room may not be reserved through this website.');
       return;
     }
-    $this->moduleHandler->alter('stanford_r25_force_confirmed', $event_state, $booking_info['room']);
+    $this->moduleHandler->alter('stanford_r25_force_confirmed', $event_state, $booking_info);
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
@@ -888,6 +888,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
     $extension_path_resolver = \Drupal::service('extension.path.resolver');
     $module_path = $extension_path_resolver->getPath('module', 'stanford_earth_r25');
+    $comment_str = '';
 
     // If there are 25Live custom attributes associated with this event, add
     // the XML snippet for each attribute with its id, type, and value to the
@@ -900,6 +901,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
     if (!empty($room['event_attributes_fields'])) {
       foreach ($room['event_attributes_fields'] as $key => $value) {
         if (!empty($form_vals['stanford_r25_booking_attr' . $key])) {
+          $comment_label = str_replace('SDSS ','', $value['name']);
+          if ($value['type'] === 'B' && $form_vals['stanford_r25_booking_attr' . $key] == 1) {
+            $comment_str .= $comment_label . ': checked<br/>';
+          } elseif ($value['type'] === 'X' || $value['type'] === 'S') {
+            $comment_str .= $comment_label . ': ' . $form_vals['stanford_r25_booking_attr' . $key] . '<br/>';
+          }
           $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
           $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
           $attr_temp = str_replace('[r25_attr_value]', $form_vals['stanford_r25_booking_attr' . $key], $attr_temp);
@@ -912,6 +919,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     if (!empty($room['contact_attribute_field'])) {
       foreach ($room['contact_attribute_field'] as $key => $value) {
         if (!empty($form_vals['stanford_r25_contact_' . $key])) {
+          $comment_str .= 'Contact: ' . $form_vals['stanford_r25_contact_' . $key] . '<br/>';
           $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
           $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
           $attr_temp = str_replace('[r25_attr_value]', $form_vals['stanford_r25_contact_' . $key], $attr_temp);
@@ -923,7 +931,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $booking_reason = htmlspecialchars($form_vals['stanford_r25_booking_reason']);
     // Get the XML template for creating an event and replace tokens with data
     // for this reservation.
-    $event_state = $event_state - 1;
+    $xml_event_state = $event_state - 1;
     $xml_file = '/templates/stanford_r25_reserve.xml';
     $xml = file_get_contents($module_path . $xml_file);
     $xml = str_replace('[r25_event_name]', $booking_reason, $xml);
@@ -940,7 +948,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $event_type = $room['override_event_code'];
     }
     $xml = str_replace('[r25_event_type]', $event_type, $xml);
-    $xml = str_replace('[r25_event_state]', $event_state, $xml);
+    $xml = str_replace('[r25_event_state]', $xml_event_state, $xml);
     $org_id = 'unknown';
     if (!empty($adminSettings['stanford_r25_org_id'])) {
       $org_id = $adminSettings['stanford_r25_org_id'];
@@ -967,6 +975,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     $contact_str = '<p>Self service reservation made by ' . $res_username . ' - <a href="mailto:' . $res_usermail . '">click to contact by email.</a></p>';
     $contact_str = htmlspecialchars($contact_str);
+    $comment_str = $contact_str . '<br/>' . $comment_str;
     // Send the request to our api function.
     $xml = str_replace('[r25_created_by]', $contact_str, $xml);
     // Send the request to our api function.
@@ -1010,9 +1019,30 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // page, and send an email to any approvers or others specified.
     if ($success) {
       // If the booking was successful, display a message to that effect.
+      $selected_space = '';
+      if (!empty($booking_info['room']['label'])) {
+        $selected_space = $booking_info['room']['label'];
+      }
+      if (!empty($booking_info['room']['space_id'])) {
+        if (str_contains($booking_info['room']['space_id'], "+")) {
+          if (!empty($booking_info['room']['legend_labels'])) {
+            $spaces = explode('+', $booking_info['room']['space_id']);
+            $labels = explode('+', $booking_info['room']['legend_labels']);
+            foreach ($spaces as $skey => $space) {
+              if ($space == $booking_info['space_id']) {
+                if (!empty($labels[$skey])) {
+                  $label_ex = explode('|', $labels[$skey]);
+                  $selected_space .= " - " .$label_ex[0];
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
       $date = DrupalDateTime::createFromFormat(DATE_W3C, $booking_info['dates']['start']);
       $state = intval($result['vals'][$result['index']['R25:STATE'][0]]['value']);
-      $msg = $booking_info['room']['label'] . ' has a <b>' . $result['vals'][$result['index']['R25:STATE_NAME'][0]]['value'] . '</b> reservation for "' . $form_vals['stanford_r25_booking_reason'] . '" on  ' . $date->format("l, F j, Y g:i a") . '.';
+      $msg = $selected_space . ' has a <b>' . $result['vals'][$result['index']['R25:STATE_NAME'][0]]['value'] . '</b> reservation for "' . $form_vals['stanford_r25_booking_reason'] . '" on  ' . $date->format("l, F j, Y g:i a") . '.';
       if (intval($result['vals'][$result['index']['R25:STATE'][0]]['value']) == 1) {
         $msg .= ' The room administrator will confirm or deny your request.';
       }
@@ -1104,11 +1134,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
             if (!empty($todo_id)) {
               $todo_str = str_replace('[r25_todo_id]', $todo_id, $todo_str);
               $todo_str = str_replace('[r25_todo_name]', $form_vals['stanford_r25_booking_reason'], $todo_str);
-              $todo_str = str_replace(['r25_todo_due'], $date, $todo_str);
-              $todo_str = str_replace('[r25_todo_assigned_to]', $key, $todo_str);
-              $todo_str = str_replace('[r25_todo_assigned_by]', $contact_id, $todo_str);
+              $todo_str = str_replace('[r25_todo_due]', $date, $todo_str);
+              $todo_str = str_replace('[r25_todo_assignedto]', $key, $todo_str);
+              $todo_str = str_replace('[r25_todo_assignedby]', $contact_id, $todo_str);
               $todo_str = str_replace('[r25_todo_eventid]', $eventid, $todo_str);
-              $todo_str = str_replace('[r25_todo_comment]', "Look at me!", $todo_str);
+              $todo_str = str_replace('[r25_todo_comment]', $comment_str, $todo_str);
               $todo_result3 = $this->r25Service->stanfordR25ApiCall('todo-put', $todo_str, $todo_id);
             }
             if (!empty($mail_list)) {
@@ -1151,7 +1181,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           '/details';
       }
 
-      $body[] = "Room: " . $booking_info['room']['label'];
+      $body[] = "Room: " . $selected_space; //$booking_info['room']['label'];
       if (!empty($form_vals['stanford_r25_booking_duration'])) {
         $body[] = "Date: " . $date->format("l, F j, Y g:i a");
         $duration = (intval($form_vals['stanford_r25_booking_duration']) * 30) + 30;

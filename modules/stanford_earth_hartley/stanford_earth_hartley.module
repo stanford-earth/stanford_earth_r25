@@ -353,14 +353,19 @@ function stanford_earth_hartley_stanford_r25_isbillable_alter(&$is_billable) {
   */
 }
 
-function stanford_earth_hartley_stanford_r25_force_confirmed_alter(&$event_state, $room_info) {
+function stanford_earth_hartley_stanford_r25_force_confirmed_alter(&$event_state, $booking_info) {
+  $room_info = $booking_info['room'];
   if (!empty($room_info['rules_category']) && $room_info['rules_category'] === 'press_building') {
     if ($event_state === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
-      if (!empty(array_intersect(
-        Drupal::currentUser()->getRoles(), ['custm_press_building_user','custm_press_building_admin']))) {
+      if ($booking_info['space_id'] != '2605') {
+        if (!empty(array_intersect(
+          Drupal::currentUser()->getRoles(), [
+          'custm_press_building_user',
+          'custm_press_building_admin'
+        ]))) {
           $event_state = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_CONFIRMED;
+        }
       }
     }
   }
-  $xyz = 1;
 }
