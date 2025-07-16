@@ -77,7 +77,7 @@ function stanford_earth_hartley_form_alter(&$form,
         ];
       }
       if (!empty($form['stanford_r25_booking_attr171']['#title'])) {
-        if ($room_admin) {
+        if ($room_admin && !$farm_room) {
           $form['stanford_r25_booking_attr171']['#type'] = 'hidden';
         }
         else {
@@ -86,23 +86,27 @@ function stanford_earth_hartley_form_alter(&$form,
         }
       }
       if (!empty($form['stanford_r25_booking_attr172']['#title'])) {
-        if ($room_admin) {
+        if ($room_admin && !$farm_room) {
           $form['stanford_r25_booking_attr172']['#type'] = 'hidden';
         }
         else {
           $form['stanford_r25_booking_attr172']['#title'] = 'University PTA number';
-          $form['stanford_r25_booking_attr172']['#description'] = 'PTA is required in format 1234567-1-ABCDE.';
-          $form['stanford_r25_booking_attr172']['#required'] = TRUE;
+          $form['stanford_r25_booking_attr172']['#description'] = 'PTA format is 1234567-1-ABCDE.';
+          if (!$room_admin) {
+            $form['stanford_r25_booking_attr172']['#required'] = TRUE;
+          }
         }
       }
       if (!empty($form['stanford_r25_booking_attr173']['#title'])) {
-        if ($room_admin) {
+        if ($room_admin && !$farm_room) {
           $form['stanford_r25_booking_attr173']['#type'] = 'hidden';
         }
         else {
           $form['stanford_r25_booking_attr173']['#title'] = 'Sponsoring Department';
           $form['stanford_r25_booking_attr173']['#description'] = 'Which school department sponsors this PTA?';
-          $form['stanford_r25_booking_attr173']['#required'] = TRUE;
+          if (!$room_admin) {
+            $form['stanford_r25_booking_attr173']['#required'] = TRUE;
+          }
         }
       }
       if (!empty($form['stanford_r25_booking_attr177']['#title'])) {

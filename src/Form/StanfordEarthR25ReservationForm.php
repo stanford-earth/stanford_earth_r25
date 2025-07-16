@@ -234,7 +234,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     if (!empty($rooms[$room]['displaytype']) && intval($rooms[$room]['displaytype']) == StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
       $form['stanford_r25_booking_tentative'] = [
         '#type' => 'markup',
-        '#markup' => "<p>This room only accepts tentative reservations which must be approved by the room's administrator.</p>",
+        '#markup' => "<p>This reservation will be marked 'tentative' until approved by the location's administrator.</p>",
       ];
     }
 
@@ -889,6 +889,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $extension_path_resolver = \Drupal::service('extension.path.resolver');
     $module_path = $extension_path_resolver->getPath('module', 'stanford_earth_r25');
     $comment_str = '';
+    $attr_email_info = [];
 
     // If there are 25Live custom attributes associated with this event, add
     // the XML snippet for each attribute with its id, type, and value to the
@@ -904,8 +905,10 @@ class StanfordEarthR25ReservationForm extends FormBase {
           $comment_label = str_replace('SDSS ','', $value['name']);
           if ($value['type'] === 'B' && $form_vals['stanford_r25_booking_attr' . $key] == 1) {
             $comment_str .= $comment_label . ': checked<br/>';
+            $attr_email_info[] = $comment_label . ': checked.';
           } elseif ($value['type'] === 'X' || $value['type'] === 'S') {
             $comment_str .= $comment_label . ': ' . $form_vals['stanford_r25_booking_attr' . $key] . '<br/>';
+            $attr_email_info[] = $comment_label . ': ' . $form_vals['stanford_r25_booking_attr' . $key];
           }
           $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
           $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
@@ -920,6 +923,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       foreach ($room['contact_attribute_field'] as $key => $value) {
         if (!empty($form_vals['stanford_r25_contact_' . $key])) {
           $comment_str .= 'Contact: ' . $form_vals['stanford_r25_contact_' . $key] . '<br/>';
+          $attr_email_info[] = 'Contact: ' . $form_vals['stanford_r25_contact_' . $key];
           $attr_temp = str_replace('[r25_attr_id]', $key, $attr_str);
           $attr_temp = str_replace('[r25_attr_type]', $value['type'], $attr_temp);
           $attr_temp = str_replace('[r25_attr_value]', $form_vals['stanford_r25_contact_' . $key], $attr_temp);
@@ -928,7 +932,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
-    $booking_reason = htmlspecialchars($form_vals['stanford_r25_booking_reason']);
+    $booking_reason = htmlspecialchars($form_vals['stanford_r25_booking_reason'],ENT_NOQUOTES);
     // Get the XML template for creating an event and replace tokens with data
     // for this reservation.
     $xml_event_state = $event_state - 1;
@@ -1201,6 +1205,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $body[] = "Requested by: " . $res_username . " " . $res_usermail;
       if ($estimated_charge > 0) {
         $body[] = "Estimated Fee: $" . $estimated_charge;
+      }
+      if (!empty($attr_email_info)) {
+        foreach ($attr_email_info as $attr_email_info_value) {
+          $body[] = $attr_email_info_value;
+        }
       }
       $params = [
         'body' => $body,
