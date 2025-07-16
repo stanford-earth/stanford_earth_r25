@@ -1,4 +1,10 @@
 # Stanford Earth R25
+8.x-1.17
+-------------------------------------------------------------------------
+-Release Date: 2025-07-15__
+
+- Fixed handling of PTA field for farm events and add attributes to email..
+
 8.x-1.16
 -------------------------------------------------------------------------
 -Release Date: 2025-07-13__
