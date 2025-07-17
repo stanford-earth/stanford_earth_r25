@@ -217,7 +217,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
     // Make the API call.
     $r25_result = $this->r25Service->stanfordR25ApiCall('feed', $args);
     if ($availability) {
-      // we're building an an availability list calendar of free events
+      // we're building an availability list calendar of free events
       $eventName = $r25_location->get('override_event_name');
       if (empty($eventName)) {
         $eventName = 'Available';
@@ -247,6 +247,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
               'title' => $eventName,
               'start' => $slot['start']->format("Y-m-d\\TH:i:sP"),
               'end' => $slot['end']->format("Y-m-d\\TH:i:sP"),
+              'price' => $slot['price'],
             ];
           }
         }

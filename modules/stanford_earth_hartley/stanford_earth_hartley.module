@@ -158,6 +158,16 @@ function stanford_earth_hartley_form_alter(&$form,
         $form['stanford_r25_booking_attr311']['#title'] = 'Food Allergies/Preferences';
         $form['stanford_r25_booking_attr311']['#description'] = 'Please list any food allergies or preferences for your attendees.';
       }
+      if (!empty($form['stanford_r25_booking_attr312']['#title'])) {
+        $storage = $form_state->getStorage();
+        if (!empty($storage['stanford_earth_r25']['price'])) {
+          $price  = $storage['stanford_earth_r25']['price'];
+          $form['stanford_r25_booking_attr312']['#value'] = $price;
+          unset($storage['stanford_earth_r25']['price']);
+          $form_state->setStorage($storage);
+        }
+        $form['stanford_r25_booking_attr312']['#type'] = 'hidden';
+      }
       $form['#attached']['library'][] = 'stanford_earth_hartley/stanford_earth_hartley';
     }
   }

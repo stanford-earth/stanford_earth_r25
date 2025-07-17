@@ -172,7 +172,7 @@ var calendar;
             if (drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
               reserveTime(eventClickInfo.event.start,
                 eventClickInfo.event.end, multiDay, maxDuration,
-                stanford_r25_room);
+                stanford_r25_room, eventClickInfo.event.extendedProps.price);
             }
           },
           eventDidMount: function (info) {
@@ -252,7 +252,7 @@ var calendar;
           select: function (selectInfo) {
             var start = selectInfo.start;
             var end = selectInfo.end;
-            reserveTime(start, end, multiDay, maxDuration, stanford_r25_room);
+            reserveTime(start, end, multiDay, maxDuration, stanford_r25_room,'');
           },
           // set whether the calendar is selectable, as defined up above
           selectable: selectable,
@@ -289,7 +289,7 @@ var calendar;
     }
   };
 
-  function reserveTime(start, end, multiDay, maxDuration, stanford_r25_room) {
+  function reserveTime(start, end, multiDay, maxDuration, stanford_r25_room, price) {
     //var start = selectInfo.start;
     //var end = selectInfo.end;
     var exclude = '';
@@ -373,6 +373,11 @@ var calendar;
         start.getDate() + '-' + start.getHours() + '-' +
         start.getMinutes() + endStr;
       link = link.replace('now', startStr);
+      var price_out = '0';
+      if (price.length > 0) {
+        price_out = price.toString();
+      }
+      link += '/' + price_out;
       if (exclude.length > 0) {
         link += '/' + exclude;
       }

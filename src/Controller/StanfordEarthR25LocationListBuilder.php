@@ -12,6 +12,23 @@ use Drupal\Core\Url;
 class StanfordEarthR25LocationListBuilder extends ConfigEntityListBuilder {
 
   /**
+   * Loads entity IDs using a pager sorted by the entity id.
+   *
+   * @return array
+   *   An array of entity IDs.
+   */
+  protected function getEntityIds() {
+    $query = $this->getStorage()->getQuery()
+      ->sort($this->entityType->getKey('label'));
+
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildHeader() {

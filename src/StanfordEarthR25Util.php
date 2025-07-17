@@ -101,9 +101,9 @@ class StanfordEarthR25Util {
           }
           if (count($ts_parts) > 3) {
             $price = trim($ts_parts[3]);
-            if (!is_numeric($price)) {
-              return "Price must be a number";
-            }
+            //if (!is_numeric($price)) {
+            //  return "Price must be a number";
+            //}
           }
           $timeslots[] = [
             'days' => $ts_days_array,
@@ -978,6 +978,7 @@ class StanfordEarthR25Util {
                 'start' => new DrupalDateTime($startString,$timezone),
                 'end' => new DrupalDateTime($endString,$timezone),
                 'free' => true,
+                'price' => $timeslot['price'],
               ];
             }
           }

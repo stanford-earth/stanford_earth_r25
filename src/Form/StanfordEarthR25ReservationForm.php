@@ -186,6 +186,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
                             FormStateInterface $form_state,
                             $room = NULL,
                             $start = NULL,
+                            $price = NULL,
                             $exclude = NULL,
                             $nopopup = false) {
     $rooms = [];
@@ -454,6 +455,21 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $form['stanford_r25_booking_reason']['#disabled'] = true;
     }
 
+    if (!empty($price) && !empty($rooms[$room]['event_attributes']) &&
+      str_contains($rooms[$room]['event_attributes'], "312")) {
+        $form['r25_price_markup'] = [
+          '#type' => 'markup',
+          '#markup' => check_markup('<br/><p><strong>Estimated cost will be: ' . $price . '</strong></p>',
+            filter_default_format()),
+        ];
+        // Store booking info in form storage.
+        $storage = $form_state->getStorage();
+        if (empty($storage['stanford_earth_r25'])) {
+          $storage['stanford_earth_r25'] = [];
+        }
+        $storage['stanford_earth_r25']['price'] = $price;
+        $form_state->setStorage($storage);
+    }
 
     // Check for event attribute fields, and build 'em.
     // Each of these corresponds to a "custom attribute" for events in 25Live
@@ -629,8 +645,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       return;
     }
     $room = $user_input['stanford_r25_booking_roomid'];
-    // Store booking inf
-    //o in form storage after validation.
+    // Store booking info in form storage after validation.
     $booking_info = [];
     $rooms = [];
     if (!empty($room)) {
@@ -646,7 +661,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
     else {
       $booking_info['room'] = $rooms[$room];
       if (empty($user_input['stanford_r25_booking_reason'])) {
-        $booking_info['stanford_r25_booking_reason'] = 'Unknown';
+        if (empty($form_state->getValue('stanford_r25_booking_reason'))) {
+          $booking_info['stanford_r25_booking_reason'] = 'Unknown';
+        }
+        else {
+          $booking_info['stanford_r25_booking_reason'] = $form_state->getValue('stanford_r25_booking_reason');
+        }
       }
       else {
         $booking_info['stanford_r25_booking_reason'] = $user_input['stanford_r25_booking_reason'];
@@ -1054,6 +1074,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       // If this event is billable, we have to retrieve billing XML for the
       // event, update the billing group code, and PUT the XML back to the
       // 25Live system.
+
       $estimated_charge = 0;
       $billable = FALSE;
       $eventid = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];

@@ -86,16 +86,19 @@ entity.stanford_earth_r25_location.calendar:
     _permission: 'view r25 room calendars'
 
 stanford_earth_r25_location.reservation:
-  path: '/r25/reservation/{location_id}/{start}/{exclude}'
+  path: '/r25/reservation/{location_id}/{start}/{price}/{exclude}'
   defaults:
     _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ReservationController::reserve'
     _title: 'Stanford R25 Reservation Page'
+    price: ''
     exclude: ''
   options:
     parameters:
       location_id:
         type: string
       start:
+        type: string
+      price:
         type: string
       exclude:
         type: string
