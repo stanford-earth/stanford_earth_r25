@@ -1,8 +1,8 @@
 <?php
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
+use Drupal\Core\Url;
 
 function stanford_earth_hartley_is_sdss_user() {
   if (!empty(array_intersect(
@@ -10,6 +10,67 @@ function stanford_earth_hartley_is_sdss_user() {
     return true;
   }
   return false;
+}
+
+function get_phone_number() {
+  $phone_number = '';
+  $access_token = '';
+  $token = Drupal::cache()->get("cap:access_token");
+  if (!empty($token)) {
+    $access_token = $token->data['access_token'];
+  }
+  else {
+    $config_pages = \Drupal::service('config_pages.loader');
+    $capid = $config_pages->getValue('stanford_person_importer','su_person_cap_username', 0, 'value') ?? '';
+    $capsecret = $config_pages->getValue('stanford_person_importer','su_person_cap_password', 0, 'value') ?? '';
+    if (!empty($capid) && !empty($capsecret)) {
+      $query = ['query' => ['grant_type' => 'client_credentials']];
+      $auth_url = Url::fromUri('https://authz.stanford.edu/oauth/token', $query);
+      $options = ['auth' => [$capid, $capsecret]];
+      try {
+        $response = Drupal::httpClient()->request('GET', $auth_url->toString(TRUE)->getGeneratedUrl(), $options);
+      }
+      catch (GuzzleException | \Exception $e) {
+        Drupal::cache()->delete('cap:access_token');
+        // Most errors originate from the API itself, log the error and let it
+        // fall over.
+        Drupal::logger('stanford_earth_r25')->error('An unexpected error came from the API: %message', ['%message' => $e->getMessage()]);
+      }
+      $token = false;
+      if ($response->getStatusCode() == 200) {
+        $token = json_decode($response->getBody(), true, 512);
+      }
+      if (!empty($token)) {
+        Drupal::cache()->set('cap:access_token', $token,
+          time() + $token['expires_in'] - 3600,
+          ['stanford_earth_r25']);
+        $access_token = $token['access_token'];
+      }
+    }
+  }
+  if (!empty($access_token)) {
+    /** @var \Drupal\user\Entity\User $user */
+    $user = user_load_by_name(Drupal::currentUser()->getAccountName());
+    if ($user->hasField('su_user_sunetid')) {
+      $sunet = $user->get('su_user_sunetid')->getValue();
+      if (!empty($sunet[0]['value'])) {
+        $uid = $sunet[0]['value'];
+        $query = [
+          'uids' => $uid,
+          'access_token' => $access_token,
+        ];
+        $options = ['query' => $query];
+        $url = Url::fromUri('https://cap.stanford.edu/cap-api/api/profiles/v1', $options);
+        $response = Drupal::httpClient()->request('GET', $url->toString(TRUE)
+          ->getGeneratedUrl());
+        $data = json_decode($response->getBody(), TRUE, 512);
+        if (!empty($data['values'][0]['primaryContact']['phoneNumbers'][0])) {
+          $phone_number = $data['values'][0]['primaryContact']['phoneNumbers'][0];
+        }
+      }
+    }
+  }
+  return $phone_number;
 }
 
 function stanford_earth_hartley_is_room_category($form, $category='') {
@@ -133,6 +194,11 @@ function stanford_earth_hartley_form_alter(&$form,
         }
       }
       if (!empty($form['stanford_r25_contact_175']['#title'])) {
+        $phone_number = get_phone_number();
+        if (!empty($phone_number)) {
+          $form['stanford_r25_contact_175']['#default_value'] .= $phone_number . "\r\n";
+          $form['stanford_r25_contact_175']['#description'] = 'Please make sure we have your correct contact information including email address and phone number';
+        }
         $form['stanford_r25_contact_175']['#title'] = 'Event Contact Info';
         $form['stanford_r25_contact_175']['#visible'] = FALSE;
         if ($press_building_room) {

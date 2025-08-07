@@ -192,8 +192,10 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $rooms = [];
     $adminSettings = [];
     if (!empty($room)) {
-      $rooms[$room] = $this->config('stanford_earth_r25.stanford_earth_r25.' . $room)->getRawData();
-      $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
+      $rooms[$room] = $this->config('stanford_earth_r25.stanford_earth_r25.' . $room)
+        ->getRawData();
+      $adminSettings = $this->config('stanford_earth_r25.adminsettings')
+        ->getRawData();
     }
     $form['#prefix'] = '<div id="modal_reservation_form">';
     $form['#suffix'] = '</div>';
@@ -299,11 +301,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#required' => TRUE,
       '#title' => 'Start Date/Time',
     ];
-    if (intval($rooms[$room]['caltype']) === 3) {
-      $form['stanford_r25_booking_date']['#disabled'] = true;
+
+    if (!empty($room) && intval($rooms[$room]['caltype']) === 3) {
+      $form['stanford_r25_booking_date']['#disabled'] = TRUE;
     }
 
-    if (empty($rooms[$room]['multi_day']) && intval($rooms[$room]['caltype']) !== 3) {
+    if (!empty($room) && empty($rooms[$room]['multi_day']) && intval($rooms[$room]['caltype']) !== 3) {
       // For non-multi-day rooms. default booking duration is limited
       // to 2 hours in 30 minute increments, but the room config can have
       // a different value.
@@ -346,7 +349,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
         '#required' => TRUE,
         '#title' => 'End Date/Time',
       ];
-      if (intval($rooms[$room]['caltype']) === 3) {
+      if (!empty($room) && intval($rooms[$room]['caltype']) === 3) {
         $form['stanford_r25_booking_enddate']['#disabled'] = true;
       }
     }
@@ -450,7 +453,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#required' => TRUE,
       '#maxlength' => 40,
     ];
-    if (intval($rooms[$room]['caltype']) === 3) {
+    if (!empty($room) && intval($rooms[$room]['caltype']) === 3) {
       $form['stanford_r25_booking_reason']['#default_value'] = $rooms[$room]['label'];
       $form['stanford_r25_booking_reason']['#disabled'] = true;
     }
