@@ -926,19 +926,29 @@ class StanfordEarthR25Util {
         'end' => new DrupalDateTime($daterange['end'],$timezone),
       ];
     }
+    // Find the earliest allowable date.
+    $earliest_day = new DrupalDateTime('now', $timezone);
+    $earliest_avail = $r25_location->get('earliest_day');
+    if (!empty($earliest_avail) && is_numeric($earliest_avail)) {
+      $earliest_avail = "+" . trim(strval($earliest_avail)) . " days";
+      $earliest_day->modify($earliest_avail);
+    }
     // loop through all the requested days and find the ones allowed
     for ($date = $startDate; $date <= $endDate; $date->modify('+1 day')){
-      // If no dateranges are specified, any date is allowed.
-      if (empty($dateranges)) {
-        $date_allowed = TRUE;
-      }
-      else {
-        $date_allowed = FALSE;
-        foreach ($dateranges as $daterange) {
-          // is the date within one of the date ranges?
-          if ($date >= $daterange['start'] && $date <= $daterange['end']) {
-            $date_allowed = TRUE;
-            break;
+      $date_allowed = FALSE;
+      if ($date >= $earliest_day) {
+        // If no dateranges are specified, any date is allowed.
+        if (empty($dateranges)) {
+          $date_allowed = TRUE;
+        }
+        else {
+          $date_allowed = FALSE;
+          foreach ($dateranges as $daterange) {
+            // is the date within one of the date ranges?
+            if ($date >= $daterange['start'] && $date <= $daterange['end']) {
+              $date_allowed = TRUE;
+              break;
+            }
           }
         }
       }

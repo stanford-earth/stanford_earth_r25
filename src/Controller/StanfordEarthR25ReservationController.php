@@ -100,6 +100,23 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   }
 
   /**
+   * {@inheritdoc}
+   *
+   * @param string $location_id
+   *   The room location code for which to get the page title..
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   */
+  public function getTitle($location_id) {
+     $title = 'Stanford R25 Reservation Page';
+     $location = $this->entityTypeManager
+       ->getStorage('stanford_earth_r25_location')
+       ->load($location_id);
+     $this->moduleHandler->alter('stanford_earth_resform_title', $title, $location);
+     return $this->t($title);
+   }
+
+  /**
    * Returns a calendar page render array.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse

@@ -274,3 +274,6 @@ stanford_earth_r25_location.*:
     use_admin_email_instead:
       type: boolean
       label: 'Use Admin Email Instead of Secgroup'
+    earliest_day:
+      type: int
+      label: 'Number of Days From Today for Earliest Booking'

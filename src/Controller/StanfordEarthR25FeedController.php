@@ -8,6 +8,7 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -456,6 +457,16 @@ class StanfordEarthR25FeedController extends ControllerBase {
       }
     }
     $this->killSwitch->trigger();
+    // If timeslot calendar and no availability within six months, send an error.
+    // This allows fullcalendar to show first available on initial display.
+    if (intval($r25_location->get('caltype')) === 3 && empty($items)) {
+      $search_start = DrupalDateTime::createFromFormat('Ymd', $start);
+      $search_limit = DrupalDateTime::createFromTimestamp(time());
+      $search_limit->modify('+6 months');
+      if ($search_start <= $search_limit) {
+        return new Response('', 404);
+      }
+    }
     return new JsonResponse($items);
   }
 

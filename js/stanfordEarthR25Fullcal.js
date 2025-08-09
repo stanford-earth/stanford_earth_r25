@@ -123,6 +123,7 @@ var calendar;
       if (hide_weekends == 1) {
         weekends = false;
       }
+      var initialDates = false;
       var setCalendar = true;
       if (typeof(calendar) === 'object') {
         if (calendar instanceof FullCalendar.Calendar) {
@@ -130,6 +131,7 @@ var calendar;
         }
       }
       if (setCalendar) {
+        initialDates = true;
         calendar = new FullCalendar.Calendar(calendarEl, {
           schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
           allDaySlot: false,
@@ -192,7 +194,7 @@ var calendar;
                 theme: 'stanford-earth-r25',
                 trigger: 'click',
               });
-             }
+            }
           },
           eventMouseEnter: function (mouseEnterInfo) {
             $('body').css('cursor', 'pointer');
@@ -207,7 +209,23 @@ var calendar;
               extraParams: {
                 room_id: stanford_r25_room,
               },
-            }
+              failure: function() {
+                if (initialDates && stanford_r25_room.caltype === "3") {
+                  var loading = document.getElementById('stanford-r25-loading');
+                  if (loading !== null) {
+                    loading.innerHTML = 'Searching for first available within 6 months...';
+                  }
+                  calendar.next();
+                }
+              },
+              success: function() {
+                initialDates = false;
+                var loading = document.getElementById('stanford-r25-loading');
+                if (loading !== null) {
+                  loading.innerHTML = 'Loading...';
+                }
+              }
+             }
           ],
           headerToolbar: {
             left: 'today prev,next',

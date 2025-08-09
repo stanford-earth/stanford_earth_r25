@@ -617,6 +617,15 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('The maximum timeslot to show of Fullcalendar in the form 00:00:00'),
     ];
 
+    $form['advanced']['earliest_day'] = [
+      '#title' => $this->t('Days From Today for First Timeslot'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#size' => 10,
+      '#default_value' => $location->get('earliest_day'),
+      '#description' => 'For timeslot calendars only, how many days from today should the first available timeslot be. Blank or Zero for none.',
+    ];
+
     // Checkbox to specify hiding weekend columns from the room's calendar.
     $form['advanced']['hide_weekends'] = [
       '#type' => 'checkbox',
@@ -708,6 +717,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
         $msg = 'This field must either be a number between 1 and 365 or left blank for 1 year.';
         $form_state->setErrorByName('future_days', $this->t($msg));
       }
+    }
+
+    // Validate earliest_day.
+    $earliest_day = $form_state->getValue('earliest_day');
+    if (!empty($earliest_day) &&
+      (!is_numeric($earliest_day) || intval($earliest_day) < 0 || intval($earliest_day) > 365)) {
+      $msg = 'This field must be blank or contain a number between 0 and 365';
+      $form_state->setErrorByName('earliest_day', $this->t($msg));
     }
 
   }

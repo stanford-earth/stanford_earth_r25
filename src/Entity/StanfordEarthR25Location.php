@@ -80,6 +80,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "multi_room_capacities",
  *     "multi_room_parents",
  *     "use_admin_email_instead",
+ *     "earliest_day",
  *   },
  *   links = {
  *     "edit-form" =
@@ -449,6 +450,13 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var bool
    */
   protected $use_admin_email_instead;
+
+  /**
+   * Earliest number of days from today for first possible booking
+   *
+   * @var int
+   */
+  protected $earliest_day;
 
   /**
    * {@inheritdoc}
