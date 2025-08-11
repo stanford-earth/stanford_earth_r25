@@ -191,7 +191,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
       // No timeslots? Send an empty list.
       if (empty($timeslots)) {
         $this->killSwitch->trigger();
-        return new JsonResponse([]);
+        return new Response('', 404);
+        //return new JsonResponse([]);
       }
     }
 
