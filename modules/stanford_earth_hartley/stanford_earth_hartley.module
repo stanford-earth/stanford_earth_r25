@@ -13,15 +13,9 @@ function stanford_earth_hartley_is_sdss_user() {
 }
 
 function get_phone_number() {
+  $uid = \Drupal::service('externalauth.authmap')
+    ->get(Drupal::currentUser()->id(),'samlauth');
   $phone_number = '';
-  $uid = '';
-  $user = user_load_by_name(Drupal::currentUser()->getAccountName());
-  if ($user->hasField('su_user_sunetid')) {
-    $sunet = $user->get('su_user_sunetid')->getValue();
-    if (!empty($sunet[0]['value'])) {
-      $uid = $sunet[0]['value'];
-    }
-  }
   if (!empty($uid)) {
     $access_token = '';
     $token = Drupal::cache()->get("cap:access_token");
