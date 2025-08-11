@@ -692,7 +692,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Some date and time formatting stuff - taking input from form date/time
     // and duration fields and returning start and end times in W3C format to
     // pass to the 25Live web services api.
-    $booking_date = $user_input['stanford_r25_booking_date'];
+    $booking_date = $user_input['stanford_r25_booking_date'] ?? '';
     if (empty($booking_date)) {
       $booking_val = $form_state->getValue('stanford_r25_booking_date');
       $booking_date = [

@@ -117,13 +117,15 @@ class StanfordEarthR25FeedController extends ControllerBase {
    *
    * @param \Drupal\Core\Entity\EntityInterface $r25_location
    *   An entity being edited.
+   * @param string $type
+   *   The type of feed to retrieve.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The currently processing request.
    *
    * @return Symfony\Component\HttpFoundation\JsonResponse
    *   JsonRespone object with calendar feed data.
    */
-  public function feed(EntityInterface $r25_location, Request $request) {
+  public function feed(EntityInterface $r25_location, string $type, Request $request) {
 
     // Format the request to the 25Live API from either POST or GET arrays.
     $room_id = $r25_location->get('id');
@@ -216,7 +218,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
     $args = 'space_id=' . $space_id . '&scope=extended&start_dt=' . $start . '&end_dt=' . $end;
     $items = [];
     // Make the API call.
-    $r25_result = $this->r25Service->stanfordR25ApiCall('feed', $args);
+    $r25_result = $this->r25Service->stanfordR25ApiCall($type, $args);
     if ($availability) {
       // we're building an availability list calendar of free events
       $eventName = $r25_location->get('override_event_name');
@@ -275,6 +277,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
           $scheduler_namex = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_NAME', $key);
           $scheduler_email = $this->stanfordR25FeedGetValue($results, 'R25:SCHEDULER_EMAIL', $key);
           $descriptionText = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_DESCRIPTION', $key);
+          $event_type = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_TYPE_NAME', $key);
           $space_name = $this->stanfordR25FeedGetValue($results, 'R25:SPACE_NAME', $key);
           if (!empty($abbreviations[$space_idx])) {
             $title = $abbreviations[$space_idx] . ": " . $title;
@@ -298,6 +301,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
               'scheduler_email' => $scheduler_email,
               'description_text' => $descriptionText,
               'space_name' => $space_name,
+              'type' => $event_type,
             ];
           }
         }
@@ -451,6 +455,39 @@ class StanfordEarthR25FeedController extends ControllerBase {
               $items[$key]['description'] = 'Reserved';
               $items[$key]['description_text'] = 'Reserved';
               $items[$key]['tip'] = '';
+            }
+          }
+          if ($type === 'download') {
+            if (!empty($results['index']['R25:ATTRIBUTE_NAME']) && is_array($results['index']['R25:ATTRIBUTE_NAME'])) {
+              foreach ($results['index']['R25:ATTRIBUTE_NAME'] as $key => $value) {
+                $reverse = array_reverse($items, true);
+                foreach ($reverse as $idx_key => $idx_val) {
+                  if ($value > $reverse[$idx_key]['index']) {
+                    $output_key = '';
+                    switch ($results['vals'][$value]['value']) {
+                      case 'SDSS Booking Contact Info':
+                        $output_key = 'contact';
+                        break;
+                      case 'SDSS PTA':
+                        $output_key = 'pta_number';
+                        break;
+                      case 'SDSS Sponsoring Department':
+                        $output_key = 'pta_auth';
+                        break;
+                      case 'SDSS Food Preferences':
+                        $output_key = 'food';
+                        break;
+                      case 'SDSS Description':
+                        $output_key = 'extra_description';
+                        break;
+                    }
+                    if (!empty($output_key)) {
+                      $items[$idx_key][$output_key] =
+                        $results['vals'][$results['index']['R25:ATTRIBUTE_VALUE'][$key]]['value'];
+                    }
+                  }
+                }
+              }
             }
           }
         }

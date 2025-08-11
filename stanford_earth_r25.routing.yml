@@ -60,14 +60,17 @@ entity.stanford_earth_r25_location.delete_form:
 
 entity.stanford_earth_r25_location.feed:
   # JSON feed to return to the JavaScript FullCalendar, parameterized by room id
-  path: '/r25/{r25_location}/r25_feed'
+  path: '/r25/{r25_location}/r25_feed/{type}'
   defaults:
     _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25FeedController::feed'
     _title: 'Stanford R25 Feed'
+    type: 'feed'
   options:
     parameters:
       r25_location:
         type: entity:stanford_earth_r25_location
+      type:
+        type: string
     no_cache: TRUE
   requirements:
     _permission: 'view r25 room calendars'
@@ -124,10 +127,11 @@ stanford_earth_r25_location.modify:
     _permission: 'book r25 rooms'
 
 stanford_earth_r25_booking.export:
-  path: '/r25/booking_export/{r25_location}/{start}/{end}'
+  path: '/r25/booking_export/{r25_location}/{start}/{end}/{extended}'
   defaults:
     _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25ExportController::export'
     _title: 'Stanford R25 Export Reservations'
+    extended: ''
   options:
     parameters:
       r25_location:
@@ -135,6 +139,8 @@ stanford_earth_r25_booking.export:
       start:
         type: string
       end:
+        type: string
+      extended:
         type: string
   requirements:
     _permission: 'administer stanford r25'

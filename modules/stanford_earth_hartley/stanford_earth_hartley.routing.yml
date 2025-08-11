@@ -1,0 +1,7 @@
+stanford_earth_farm_booking.export:
+  path: '/r25/farm_booking_export'
+  defaults:
+    _form: '\Drupal\stanford_earth_hartley\Form\StanfordEarthFarmExportForm'
+    _title: 'Stanford R25 Export Farm Reservations'
+  requirements:
+    _permission: 'download farm reservations'

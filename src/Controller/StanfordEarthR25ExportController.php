@@ -115,15 +115,15 @@ class StanfordEarthR25ExportController extends ControllerBase {
   private function duration($start, $end) {
     $startdate = new \DateTime();
     $startdate->setTimestamp(strtotime($start));
-    if (intval($startdate->format("Hi")) < 830) {
-      $startdate->setTime(8, 30);
-    }
+    //if (intval($startdate->format("Hi")) < 830) {
+    //  $startdate->setTime(8, 30);
+    //}
     $dayOfWeek = $startdate->format("l");
     $enddate = new \DateTime();
     $enddate->setTimestamp(strtotime($end));
-    if (intval($enddate->format("Hi")) > 1730) {
-      $enddate->setTime(17, 30);
-    }
+    //if (intval($enddate->format("Hi")) > 1730) {
+    //  $enddate->setTime(17, 30);
+    //}
     $duration = $startdate->diff($enddate, true);
     $minutes = ($duration->h * 60) + $duration->i;
     return [
@@ -199,13 +199,15 @@ class StanfordEarthR25ExportController extends ControllerBase {
    *   Start date.
    * @param string $end
    *   End date.
+   * @param string $extended
+   *   Include all booking fields.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The currently processing request.
    *
    * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
    *   Drupal page markup array.
    */
-  public function export(EntityInterface $r25_location, $start, $end, Request $request) {
+  public function export(EntityInterface $r25_location, $start, $end, $extended, Request $request) {
 
     // Format the request to the 25Live API from either POST or GET arrays.
     $earliest = 2399;
@@ -249,7 +251,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
         $this->user,
         $this->r25Service,
         $this->moduleHandler);
-      $json = $feedController->feed($r25_location, $newRequest);
+      $json = $feedController->feed($r25_location, 'download', $newRequest);
       $reservations = json_decode($json->getContent(), TRUE);
       if (!empty($reservations)) {
         $filename = $this->fileSystem->tempnam('temporary://', 'bookings_' . $room_id . '_');
@@ -257,13 +259,18 @@ class StanfordEarthR25ExportController extends ControllerBase {
         $row_array = [
           'Location',
           'Label',
-          'Type',
+          'Space',
           'DayOfWeek',
           'Date',
           'Duration',
           'Headcount',
           'Frontend',
         ];
+        if (!empty($extended)) {
+          $row_array = array_merge($row_array, [
+            'Type', 'Comment', 'Contact', 'PTA', 'Department', 'Food',
+          ]);
+        }
         $fp = fopen($filename, 'w');
         fputcsv($fp, $row_array);
         foreach ($reservations as $reservation) {
@@ -273,7 +280,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
             $row_array = [];
             $row_array['id'] = $room_id;
             $row_array['label'] = $room_label;
-            $row_array['type'] = $location_type;
+            $row_array['space'] = $location_type;
             $row_array['dayofweek'] = $resDate['dayofweek'];
             $row_array['date'] = $resDate['date'];
             $row_array['duration'] = $resDate['duration'];
@@ -290,6 +297,16 @@ class StanfordEarthR25ExportController extends ControllerBase {
               }
             }
             $row_array['frontend'] = $frontend;
+            if (!empty($extended)) {
+              //             'Comment', 'Contact', 'PTA', 'Department', 'Food Pref',
+              $row_array['space'] = $reservation['space_name'];
+              $row_array['type'] = $reservation['type'] ?? '';
+              $row_array['comment'] = $reservation['extra_description'] ?? '';
+              $row_array['contact'] = $reservation['contact'] ?? '';
+              $row_array['pta'] = $reservation['pta_number'] ?? '';
+              $row_array['department'] = $reservation['pta_auth'] ?? '';
+              $row_array['food'] = $reservation['food'] ?? '';
+            }
             fputcsv($fp, $row_array, ',', '"');
           }
         }
