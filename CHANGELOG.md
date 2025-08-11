@@ -1,4 +1,15 @@
 # Stanford Earth R25
+8.x-1.19
+-------------------------------------------------------------------------
+-Release Date: 2025-08-10__
+
+- Allow availability calendars to restrict first available date to set days from “today”.
+- Remove “max headcount” from reservation form for Farm events.
+- Set max headcount to 40 for all Farm events, except Fri/Sat Event Rentals.
+- For Farm/Hartley/Press Building, get user phone number from Stanford Profiles.
+- Offer form to download Farm reservations to CSV.
+- Change title on reservation form for Farm from R25 to O'Donohue Family Farm.
+
 8.x-1.18
 -------------------------------------------------------------------------
 -Release Date: 2025-07-16__
