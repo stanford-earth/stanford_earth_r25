@@ -56,7 +56,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
   protected $r25Service;
 
   /**
-   * Drupal ModuleHandlerInterface
+   * Drupal ModuleHandlerInterface.
    *
    * @var Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
@@ -66,11 +66,13 @@ class StanfordEarthR25FeedController extends ControllerBase {
   /**
    * StanfordEarthR25FeedController constructor.
    */
-  public function __construct(KillSwitch $killSwitch,
-                              ConfigFactory $configFactory,
-                              AccountInterface $user,
-                              StanfordEarthR25Service $r25Service,
-                              ModuleHandlerInterface $moduleHandler) {
+  public function __construct(
+    KillSwitch $killSwitch,
+    ConfigFactory $configFactory,
+    AccountInterface $user,
+    StanfordEarthR25Service $r25Service,
+    ModuleHandlerInterface $moduleHandler,
+  ) {
     $this->killSwitch = $killSwitch;
     $this->configFactory = $configFactory;
     $this->user = $user;
@@ -130,7 +132,6 @@ class StanfordEarthR25FeedController extends ControllerBase {
     // Format the request to the 25Live API from either POST or GET arrays.
     $room_id = $r25_location->get('id');
     $space_id = $r25_location->get('space_id');
-    //$space_ids = explode('+', $space_id);
     if (empty($room_id) || empty($space_id)) {
       throw new NotFoundHttpException();
     }
@@ -156,7 +157,6 @@ class StanfordEarthR25FeedController extends ControllerBase {
                                                       $this->moduleHandler)) {
       $this->killSwitch->trigger();
       return new JsonResponse([]);
-      //return JsonResponse::create([]);
     }
 
     $params = [];
@@ -182,17 +182,16 @@ class StanfordEarthR25FeedController extends ControllerBase {
     }
 
     // If this is an availability list, get possible timeslots.
-    $availability = false;
+    $availability = FALSE;
     $timeslots = [];
     if (intval($r25_location->get('caltype')) === 3) {
-      $availability = true;
+      $availability = TRUE;
       $timeslots = StanfordEarthR25Util::stanfordR25PossibleTimeslots(
         $r25_location, $start, $end);
       // No timeslots? Send an empty list.
       if (empty($timeslots)) {
         $this->killSwitch->trigger();
         return new Response('', 404);
-        //return new JsonResponse([]);
       }
     }
 
@@ -221,7 +220,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
     // Make the API call.
     $r25_result = $this->r25Service->stanfordR25ApiCall($type, $args);
     if ($availability) {
-      // we're building an availability list calendar of free events
+      // we're building an availability list calendar of free events.
       $eventName = $r25_location->get('override_event_name');
       if (empty($eventName)) {
         $eventName = 'Available';
@@ -237,9 +236,9 @@ class StanfordEarthR25FeedController extends ControllerBase {
           foreach ($timeslots as $slotkey => $slot) {
             if ($slot['free'] && $start1->format('Y-m-d') ===
               $slot['start']->format('Y-m-d')) {
-              $free = false;
+              $free = FALSE;
               if ($end1 <= $slot['start'] || $start1 >= $slot['end']) {
-                $free = true;
+                $free = TRUE;
               }
               $timeslots[$slotkey]['free'] = $free;
             }
@@ -399,8 +398,8 @@ class StanfordEarthR25FeedController extends ControllerBase {
                 $can_confirm = TRUE;
               }
             }
-            $toolTipStr = 'Status: ' . $item['state_name'] . '<br />' . 'Headcount: ' . $item['headcount'];
-            $toolTipStr .= '<br />' . $item['space_name'];
+            $toolTipStr = 'Status: ' . $item['state_name'] . '<br />' .
+              'Headcount: ' . $item['headcount'] . '<br />' . $item['space_name'];
             if (!empty($item['description'])) {
               $toolTipStr .= '<br />' . $item['description'];
             }
@@ -461,7 +460,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
           if ($type === 'download') {
             if (!empty($results['index']['R25:ATTRIBUTE_NAME']) && is_array($results['index']['R25:ATTRIBUTE_NAME'])) {
               foreach ($results['index']['R25:ATTRIBUTE_NAME'] as $key => $value) {
-                $reverse = array_reverse($items, true);
+                $reverse = array_reverse($items, TRUE);
                 foreach ($reverse as $idx_key => $idx_val) {
                   if ($value > $reverse[$idx_key]['index']) {
                     $output_key = '';
@@ -469,18 +468,23 @@ class StanfordEarthR25FeedController extends ControllerBase {
                       case 'SDSS Booking Contact Info':
                         $output_key = 'contact';
                         break;
+
                       case 'SDSS PTA':
                         $output_key = 'pta_number';
                         break;
+
                       case 'SDSS Sponsoring Department':
                         $output_key = 'pta_auth';
                         break;
+
                       case 'SDSS Food Preferences':
                         $output_key = 'food';
                         break;
+
                       case 'SDSS Description':
                         $output_key = 'extra_description';
                         break;
+
                     }
                     if (!empty($output_key)) {
                       $items[$idx_key][$output_key] =
@@ -495,7 +499,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
       }
     }
     $this->killSwitch->trigger();
-    // If timeslot calendar and no availability within six months, send an error.
+    // If timeslot calendar and no availability within 6 months, send an error.
     // This allows fullcalendar to show first available on initial display.
     if (intval($r25_location->get('caltype')) === 3 && empty($items)) {
       $search_start = DrupalDateTime::createFromFormat('Ymd', $start);

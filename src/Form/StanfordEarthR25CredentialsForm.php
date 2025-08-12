@@ -41,7 +41,8 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $configFactory,
     StanfordEarthR25Service $r25Service,
-    FileSystem $fileSystem) {
+    FileSystem $fileSystem,
+  ) {
     $this->configFactory = $configFactory;
     $this->r25Service = $r25Service;
     $this->fileSystem = $fileSystem;

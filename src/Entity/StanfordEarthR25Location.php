@@ -424,7 +424,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $slot_max_time;
 
   /**
-   * Hide weekends in Fullcalendar
+   * Hide weekends in Fullcalendar.
    *
    * @var bool
    */
@@ -445,14 +445,14 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $multi_room_parents;
 
   /**
-   * Use admin email address instead of secgroup email
+   * Use admin email address instead of secgroup email.
    *
    * @var bool
    */
   protected $use_admin_email_instead;
 
   /**
-   * Earliest number of days from today for first possible booking
+   * Earliest number of days from today for first possible booking.
    *
    * @var int
    */
@@ -477,11 +477,11 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
     $allowed_timeslots_fields =
       StanfordEarthR25Util::stanfordR25ParseTimeslots($this->get('allowed_timeslots'));
     $this->set('allowed_timeslots_fields', $allowed_timeslots_fields);
-    // If setting up a multi-room calendar, get capacities and parents for each room.
+    // If multi-room calendar, get capacities and parents for each room.
     $capacities = [];
     $parents = [];
     $space_id = $this->get('space_id');
-    if (strpos($space_id,"+") !== FALSE) {
+    if (strpos($space_id, "+") !== FALSE) {
       $locations = explode("+", $space_id);
       foreach ($locations as $location) {
         $location_data = StanfordEarthR25Util::stanfordR25GetRoomInfo($location);

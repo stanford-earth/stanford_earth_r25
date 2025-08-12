@@ -5,12 +5,9 @@ namespace Drupal\stanford_earth_r25;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\File\FileSystemInterface;
-use Drupal\File\FileRepositoryInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
 use Drupal\Core\File\FileExists;
-use DateTimeZone;
 use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
@@ -50,8 +47,7 @@ class StanfordEarthR25Util {
   }
 
   /**
-   * Parse a timeslot string with days, start and end times, and
-   * optional rental price and return an array.
+   * Parse a timeslot string with days,times, and rental price.
    *
    * @param string $inStr
    *   Input string from text area.
@@ -77,7 +73,7 @@ class StanfordEarthR25Util {
               'Wed',
               'Thu',
               'Fri',
-              'Sat'
+              'Sat',
             ])) {
               $ts_days_array[] = $ts_day;
             }
@@ -101,9 +97,6 @@ class StanfordEarthR25Util {
           }
           if (count($ts_parts) > 3) {
             $price = trim($ts_parts[3]);
-            //if (!is_numeric($price)) {
-            //  return "Price must be a number";
-            //}
           }
           $timeslots[] = [
             'days' => $ts_days_array,
@@ -156,7 +149,10 @@ class StanfordEarthR25Util {
    * @return array
    *   Array of security group email addresses.
    */
-  public static function stanfordR25SecurityGroupEmails(string $secgroup_id = NULL, $reset = FALSE) {
+  public static function stanfordR25SecurityGroupEmails(
+    ?string $secgroup_id = NULL,
+    ?bool $reset = FALSE,
+  ) {
     if (empty($secgroup_id)) {
       return [];
     }
@@ -232,7 +228,7 @@ class StanfordEarthR25Util {
       $r25_result = $r25_service->stanfordR25ApiCall('roominfo', $space_id);
       if ($r25_result['status']['status'] === TRUE) {
         $results = $r25_result['output'];
-        // See if the room has a parent
+        // See if the room has a parent.
         $room_info['parents'] = [];
         if (!empty($results['index']['R25:RELATIONSHIP_NAME']) && is_array($results['index']['R25:RELATIONSHIP_NAME'])) {
           foreach ($results['index']['R25:RELATIONSHIP_NAME'] as $rkey => $rval) {
@@ -355,9 +351,11 @@ class StanfordEarthR25Util {
    * @return bool
    *   Boolean indicating the room is viewable.
    */
-  public static function stanfordR25CanViewRoom(EntityInterface  $r25_location = NULL,
-                                                AccountInterface $account = NULL,
-                                                ModuleHandlerInterface $module_handler = NULL) {
+  public static function stanfordR25CanViewRoom(
+    ?EntityInterface $r25_location = NULL,
+    ?AccountInterface $account = NULL,
+    ?ModuleHandlerInterface $module_handler = NULL,
+  ) {
     // Check if the user can view the room calendar depending on Drupal
     // permissions and the location's override settings.
     $canView = FALSE;
@@ -367,10 +365,10 @@ class StanfordEarthR25Util {
     }
     if (!empty($room_id) && !empty($account)) {
       $canView = $account->hasPermission('view r25 room calendars');
-      // If Drupal says we can view, see if the location has further restrictions.
+      // See if location has restrictions beyond Drupal.
       if ($canView) {
         $roles = $account->getRoles();
-        // Even if roles are further restricted, don't restrict site or r25 admins.
+        // If roles are further restricted, don't restrict site or r25 admins.
         $isAdmin = $account->hasPermission('administer stanford r25');
         if (!$isAdmin) {
           $roles = $account->getRoles();
@@ -424,9 +422,11 @@ class StanfordEarthR25Util {
    * @return bool
    *   Boolean indicating that the room is bookable by the user.
    */
-  public static function stanfordR25CanBookRoom(EntityInterface  $r25_location = NULL,
-                                                AccountInterface $account = NULL,
-                                                ModuleHandlerInterface $module_handler = NULL) {
+  public static function stanfordR25CanBookRoom(
+    ?EntityInterface $r25_location = NULL,
+    ?AccountInterface $account = NULL,
+    ?ModuleHandlerInterface $module_handler = NULL,
+  ) {
     // Check if the user can book the room location depending on Drupal
     // permissions and the location's override settings.
     $canBook = FALSE;
@@ -436,10 +436,10 @@ class StanfordEarthR25Util {
     }
     if (!empty($room_id) && !empty($account)) {
       $canBook = $account->hasPermission('book r25 rooms');
-      // If Drupal says we can book, see if the location has further restrictions.
+      // Check for further restrictions beyond Drupal.
       if ($canBook) {
         $roles = $account->getRoles();
-        // Even if roles are further restricted, don't restrict site or r25 admins.
+        // If roles are further restricted, don't restrict site or r25 admins.
         $isAdmin = $account->hasPermission('administer stanford r25');
         if (!$isAdmin) {
           foreach ($roles as $userRole) {
@@ -562,7 +562,7 @@ class StanfordEarthR25Util {
       }
 
       if ((empty($result['index']['R25:SPACE_ID'])) || (!is_array($result['index']['R25:SPACE_ID'])) ||
-        (!str_contains($rooms[$room_id]['space_id'],$result['vals'][$result['index']['R25:SPACE_ID'][0]]['value']))
+        (!str_contains($rooms[$room_id]['space_id'], $result['vals'][$result['index']['R25:SPACE_ID'][0]]['value']))
       ) {
         \Drupal::messenger()
           ->addMessage('Room mismatch for confirm or cancel event.',
@@ -686,6 +686,8 @@ class StanfordEarthR25Util {
    *   Results data from R25 API call.
    * @param string $secgroup_id
    *   R25 security group id.
+   * @param string $admin_emails
+   *   Comma-separated email addresses whom to send notifications.
    * @param string $extra_list
    *   Additional email addresses to attach.
    *
@@ -699,7 +701,7 @@ class StanfordEarthR25Util {
     if (!empty($admin_emails)) {
       $mail_array = explode(',', $admin_emails);
     }
-    else if (!empty($secgroup_id)) {
+    elseif (!empty($secgroup_id)) {
       // Get list of email addresses for approvers of the room's security group.
       $mail_array = self::stanfordR25SecurityGroupEmails($secgroup_id);
     }
@@ -765,8 +767,10 @@ class StanfordEarthR25Util {
    * @return array
    *   Array containing calendar limit info.
    */
-  public static function stanfordR25CalendarLimit(EntityInterface $r25_location = NULL,
-                                                  ModuleHandlerInterface $module_handler = NULL) {
+  public static function stanfordR25CalendarLimit(
+    ?EntityInterface $r25_location = NULL,
+    ?ModuleHandlerInterface $module_handler = NULL,
+  ) {
     // The default calendar limit is for one year in the future, but we have
     // a hook, hook_stanford_r25_fullcalendar_limit_alter(&$calendar_limit)
     // where you can change it.
@@ -784,19 +788,17 @@ class StanfordEarthR25Util {
       'month' => $date->format('n'),
       'day' => $date->format('d'),
       'year' => $date->format('Y'),
-      //'year' => strval(intval(date('Y')) + 1),
     ];
     $module_handler->alter('stanford_r25_fullcalendar_limit', $calendar_limit);
     return $calendar_limit;
   }
 
   /**
-   * If using custom event attributes, use the ids to retrieve the name and type
-   * of each field.
+   * If using custom event attributes, use ids to retrieve each name and type.
    *
    * @param string $attr_list
    *   Comma separated string of attribute ids.
-   * @param boolean $contact
+   * @param bool $contact
    *   True if this is a contact attribute, false if this is an event attribute.
    *
    * @return array
@@ -845,19 +847,22 @@ class StanfordEarthR25Util {
     }
     return $field_info;
   }
+
   /**
    * Return a Date/Time string for use in R25 API for the given date and time.
    *
-   * @param DrupalDateTime $date
-   *   The date being examined for free timeslots
+   * @param \Drupal\Core\Datetime\DrupalDateTime $date
+   *   The date being examined for free timeslots.
    * @param string $time
    *   The time in HH:MM format for the beginning or end of the timeslot.
    *
    * @return string
    *   The date/time string in 'ATOM' format: Y-m-d\\TH:i:sP
    */
-  public static function stanfordR25AvailGetDateStr(DrupalDateTime $date,
-    string $time) {
+  public static function stanfordR25AvailGetDateStr(
+    DrupalDateTime $date,
+    string $time,
+  ) {
     $dateString = '';
     if (!empty($time) && is_string($time)) {
       $hm = explode(':', $time);
@@ -879,7 +884,8 @@ class StanfordEarthR25Util {
   /**
    * Return the default timezone.
    *
-   * @return DateTimeZone
+   * @return \DateTimeZone
+   *   The default DateTimeZone.
    */
   public static function stanfordR25DefaultTimezone() {
     $timezone = new DateTimeZone(date_default_timezone_get());
@@ -888,7 +894,8 @@ class StanfordEarthR25Util {
     if (!empty($tz_config['default'])) {
       try {
         $timezone = new DateTimeZone($tz_config['default']);
-      } catch (\Exception $e) {
+      }
+      catch (\Exception $e) {
       }
     }
     return $timezone;
@@ -902,28 +909,31 @@ class StanfordEarthR25Util {
    * @param string $start
    *   The start date for the request.
    * @param string $end
-   * *   The end date for the request.
+   *   The end date for the request.
    *
    * @return array
    *   The array of timeslots.
    */
   public static function stanfordR25PossibleTimeslots(
-    EntityInterface $r25_location, $start, $end) {
+    EntityInterface $r25_location,
+    $start,
+    $end,
+  ) {
 
-    // this is the xml string we will be building
+    // This is the xml string we will be building.
     $timeslotsArray = [];
     // Get the system or Drupal-default timezone.
     $timezone = self::stanfordR25DefaultTimezone();
     // Get the requested daterange from FullCalenar.
-    $startDate = new DrupalDateTime($start,$timezone);
-    $endDate = new DrupalDateTime($end,$timezone);
+    $startDate = new DrupalDateTime($start, $timezone);
+    $endDate = new DrupalDateTime($end, $timezone);
     // Get the allowed date ranges for this location.
-    $daterange_array = $r25_location->get('allowed_dates_fields');;
+    $daterange_array = $r25_location->get('allowed_dates_fields');
     $dateranges = [];
-    foreach ($daterange_array as $daterange ) {
+    foreach ($daterange_array as $daterange) {
       $dateranges[] = [
-        'start' => new DrupalDateTime($daterange['start'],$timezone),
-        'end' => new DrupalDateTime($daterange['end'],$timezone),
+        'start' => new DrupalDateTime($daterange['start'], $timezone),
+        'end' => new DrupalDateTime($daterange['end'], $timezone),
       ];
     }
     // Find the earliest allowable date.
@@ -933,8 +943,8 @@ class StanfordEarthR25Util {
       $earliest_avail = "+" . trim(strval($earliest_avail)) . " days";
       $earliest_day->modify($earliest_avail);
     }
-    // loop through all the requested days and find the ones allowed
-    for ($date = $startDate; $date <= $endDate; $date->modify('+1 day')){
+    // Loop through all the requested days and find the ones allowed.
+    for ($date = $startDate; $date <= $endDate; $date->modify('+1 day')) {
       $date_allowed = FALSE;
       if ($date >= $earliest_day) {
         // If no dateranges are specified, any date is allowed.
@@ -944,7 +954,7 @@ class StanfordEarthR25Util {
         else {
           $date_allowed = FALSE;
           foreach ($dateranges as $daterange) {
-            // is the date within one of the date ranges?
+            // Is the date within one of the date ranges?
             if ($date >= $daterange['start'] && $date <= $daterange['end']) {
               $date_allowed = TRUE;
               break;
@@ -952,17 +962,17 @@ class StanfordEarthR25Util {
           }
         }
       }
-      // if date is allowed, check if there are any timeslots for this day
+      // If date is allowed, check if there are any timeslots for this day.
       if ($date_allowed) {
         $dow = $date->format('D');
         $timeslots = $r25_location->get('allowed_timeslots_fields');
         foreach ($timeslots as $timeslot) {
-          $dow_allowed = false;
+          $dow_allowed = FALSE;
           if (!empty($timeslot['days']) && is_array($timeslot['days'])) {
             foreach ($timeslot['days'] as $day) {
               if ($day === $dow) {
                 // This timeslot should be checked for this day.
-                $dow_allowed = true;
+                $dow_allowed = TRUE;
                 break;
               }
             }
@@ -978,16 +988,16 @@ class StanfordEarthR25Util {
               $endString = self::stanfordR25AvailGetDateStr($date,
                 $timeslot['end']);
             }
-            // if the start time is in the past, don't add it.
-            if (new DrupalDateTime($startString,$timezone) <
-              new DrupalDateTime('now',$timezone)) {
+            // If the start time is in the past, don't add it.
+            if (new DrupalDateTime($startString, $timezone) <
+              new DrupalDateTime('now', $timezone)) {
               $startString = '';
             }
             if (!empty($startString) && !empty($endString)) {
               $timeslotsArray[] = [
-                'start' => new DrupalDateTime($startString,$timezone),
-                'end' => new DrupalDateTime($endString,$timezone),
-                'free' => true,
+                'start' => new DrupalDateTime($startString, $timezone),
+                'end' => new DrupalDateTime($endString, $timezone),
+                'free' => TRUE,
                 'price' => $timeslot['price'],
               ];
             }

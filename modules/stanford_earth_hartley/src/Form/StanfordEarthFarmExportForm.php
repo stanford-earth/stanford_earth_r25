@@ -12,12 +12,18 @@ use Drupal\Core\Datetime\DrupalDateTime;
  */
 class StanfordEarthFarmExportForm extends FormBase {
 
+  /**
+   * Drupal Form API form_id function.
+   *
+   * @return string
+   *   Remember the form_id? Well, it's back, in string form.
+   */
   public function getFormId() {
     return 'stanford_earth_farm_export_form';
   }
 
   /**
-   * {@inheritdoc }
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
@@ -70,9 +76,8 @@ class StanfordEarthFarmExportForm extends FormBase {
     $start = $form_state->getValue('farm_export_start_date')->format('Y-m-d');
     $end = $form_state->getValue('farm_export_end_date')->format('Y-m-d');
     $form_state->setRedirectUrl(new Url('stanford_earth_r25_booking.export',
-      ['r25_location'=>'of00', 'start'=>$start, 'end'=>$end, 'extended'=>'extended']
+      ['r25_location' => 'of00', 'start' => $start, 'end' => $end, 'extended' => 'extended']
     ));
-    //$form_state->setRedirectUrl(new Url('entity.stanford_earth_r25_location.calendar',['r25_location' => 'of00']));
   }
 
 }

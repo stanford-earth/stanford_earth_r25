@@ -4,4 +4,3 @@ stanford_earth_hartley:
   dependencies:
     - core/jquery
     - core/drupalSettings
-

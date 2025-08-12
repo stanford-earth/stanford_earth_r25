@@ -51,7 +51,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   protected $r25Service;
 
   /**
-   * Drupal ModuleHandlerInterface
+   * Drupal ModuleHandlerInterface.
    *
    * @var Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
@@ -59,7 +59,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   protected $moduleHandler;
 
   /**
-   * Drupal FileSystem
+   * Drupal FileSystem.
    *
    * @var Drupal\Core\File\FileSystem
    *   FileSystem service.
@@ -69,12 +69,14 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * StanfordEarthR25ExportController constructor.
    */
-  public function __construct(KillSwitch $killSwitch,
-                              ConfigFactory $configFactory,
-                              AccountInterface $user,
-                              StanfordEarthR25Service $r25Service,
-                              ModuleHandlerInterface $moduleHandler,
-                              FileSystem $fileSystem) {
+  public function __construct(
+    KillSwitch $killSwitch,
+    ConfigFactory $configFactory,
+    AccountInterface $user,
+    StanfordEarthR25Service $r25Service,
+    ModuleHandlerInterface $moduleHandler,
+    FileSystem $fileSystem,
+  ) {
     $this->killSwitch = $killSwitch;
     $this->configFactory = $configFactory;
     $this->user = $user;
@@ -115,16 +117,10 @@ class StanfordEarthR25ExportController extends ControllerBase {
   private function duration($start, $end) {
     $startdate = new \DateTime();
     $startdate->setTimestamp(strtotime($start));
-    //if (intval($startdate->format("Hi")) < 830) {
-    //  $startdate->setTime(8, 30);
-    //}
     $dayOfWeek = $startdate->format("l");
     $enddate = new \DateTime();
     $enddate->setTimestamp(strtotime($end));
-    //if (intval($enddate->format("Hi")) > 1730) {
-    //  $enddate->setTime(17, 30);
-    //}
-    $duration = $startdate->diff($enddate, true);
+    $duration = $startdate->diff($enddate, TRUE);
     $minutes = ($duration->h * 60) + $duration->i;
     return [
       'duration' => $minutes,
@@ -142,32 +138,36 @@ class StanfordEarthR25ExportController extends ControllerBase {
     // If they are the same, return the duration for the same-day booking.
     if ($startJd['julian'] === $endJd['julian']) {
       $duration = $this->duration($start, $end);
-      return [[
-        'date' => $startJd['date'],
-        'dayofweek' => $duration['dayofweek'],
-        'duration' => $duration['duration'],
-      ]];
+      return [
+        [
+          'date' => $startJd['date'],
+          'dayofweek' => $duration['dayofweek'],
+          'duration' => $duration['duration'],
+        ],
+      ];
     }
     else {
       // Otherwise get durations for each day in the booking.
       $date = substr($start, 0, 10);
       $firstStart = $start;
-      $firstEnd = substr($start,0,11) . "17:30:00" .
+      $firstEnd = substr($start, 0, 11) . "17:30:00" .
         substr($start, 19);
       $duration = $this->duration($firstStart, $firstEnd);
-      $results = [[
-        'date' => $date,
-        'dayofweek' => $duration['dayofweek'],
-        'duration' => $duration['duration'],
-      ]];
-      for ($jd = $startJd['julian']+1; $jd < $endJd['julian']; $jd++) {
+      $results = [
+        [
+          'date' => $date,
+          'dayofweek' => $duration['dayofweek'],
+          'duration' => $duration['duration'],
+        ],
+      ];
+      for ($jd = $startJd['julian'] + 1; $jd < $endJd['julian']; $jd++) {
         $dateobj = \DateTime::createFromFormat('m/d/Y',
                     jdtogregorian($jd),
                     new \DateTimeZone('America/Los_Angeles'));
-        $dateobj->setTime(8,30);
+        $dateobj->setTime(8, 30);
         $midStart = $dateobj->format(DATE_W3C);
-        $dateobj->setTime(17,30);
-        $midEnd =  $dateobj->format(DATE_W3C);
+        $dateobj->setTime(17, 30);
+        $midEnd = $dateobj->format(DATE_W3C);
         $duration = $this->duration($midStart, $midEnd);
         $results[] = [
           'date' => substr($midStart, 0, 10),
@@ -222,15 +222,19 @@ class StanfordEarthR25ExportController extends ControllerBase {
           case 1:
             $location_type = "Meeting";
             break;
+
           case 2:
             $location_type = "Lab/Seminar";
             break;
+
           case 3:
             $location_type = "Event";
             break;
+
           case 4:
             $location_type = "Vehicle";
             break;
+
         }
       }
       $room_id = $r25_location->get('id');
@@ -238,12 +242,12 @@ class StanfordEarthR25ExportController extends ControllerBase {
       $start_date = new \DateTime($start, new \DateTimeZone('America/Los_Angeles'));
       $start_date_out = $start_date->format(DATE_W3C);
       $end = date("Y-m-t", strtotime($end));
-      $end = date("Y-m-t H:i", strtotime($end) + ((60*23)+59)*60);
+      $end = date("Y-m-t H:i", strtotime($end) + ((60 * 23) + 59) * 60);
       $end_date = new \DateTime($end, new \DateTimeZone('America/Los_Angeles'));
       $end_date_out = $end_date->format(DATE_W3C);
       $newRequest = new Request([
         'start' => $start_date_out,
-        'end' => $end_date_out
+        'end' => $end_date_out,
       ]);
       $feedController = new StanfordEarthR25FeedController(
         $this->killSwitch,
@@ -298,7 +302,6 @@ class StanfordEarthR25ExportController extends ControllerBase {
             }
             $row_array['frontend'] = $frontend;
             if (!empty($extended)) {
-              //             'Comment', 'Contact', 'PTA', 'Department', 'Food Pref',
               $row_array['space'] = $reservation['space_name'];
               $row_array['type'] = $reservation['type'] ?? '';
               $row_array['comment'] = $reservation['extra_description'] ?? '';
@@ -313,7 +316,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
         fclose($fp);
         $response = new BinaryFileResponse($filename, 200);
         $response->headers->set('Content_type', 'application/excel');
-        $response->headers->set('Content-Disposition', 'attachment; filename="'.substr($filename,12).'"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . substr($filename, 12) . '"');
         $response->deleteFileAfterSend();
         return $response;
       }
@@ -330,5 +333,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
         '#markup' => $r25_location->label() . ' is not currently available.',
       ];
     }
+
   }
+
 }

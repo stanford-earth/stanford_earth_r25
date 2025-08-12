@@ -22,7 +22,7 @@ class StanfordEarthR25TwigExtension extends AbstractExtension {
   /**
    * StanfordEarthR25TwigExtension constructor.
    *
-   * @param \Drupal\Core\Config\ConfigFactory
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
    *   The config factory service object.
    */
   public function __construct(ConfigFactory $configFactory) {
@@ -30,6 +30,8 @@ class StanfordEarthR25TwigExtension extends AbstractExtension {
   }
 
   /**
+   * Define a Twig function.
+   *
    * @return \Twig\TwigFunction[]
    *   TwigFunction array.
    */

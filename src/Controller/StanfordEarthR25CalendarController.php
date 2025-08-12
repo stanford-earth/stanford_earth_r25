@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Provides a calendar page.
@@ -45,7 +46,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   protected $formBuilder;
 
   /**
-   * Drupal ModuleHandlerInterface
+   * Drupal ModuleHandlerInterface.
    *
    * @var Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
@@ -63,11 +64,13 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * StanfordEarthR25CalendarController constructor.
    */
-  public function __construct(KillSwitch $killSwitch,
-                              AccountInterface $user,
-                              FormBuilder $formBuilder,
-                              ModuleHandlerInterface $moduleHandler,
-                              PrivateTempStoreFactory $tempStore) {
+  public function __construct(
+    KillSwitch $killSwitch,
+    AccountInterface $user,
+    FormBuilder $formBuilder,
+    ModuleHandlerInterface $moduleHandler,
+    PrivateTempStoreFactory $tempStore,
+  ) {
     $this->killSwitch = $killSwitch;
     $this->user = $user;
     $this->formBuilder = $formBuilder;
@@ -102,7 +105,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   public function title(EntityInterface $r25_location, Request $request) {
     $this->killSwitch->trigger();
     return [
-      '#markup' =>  $r25_location->get('label'),
+      '#markup' => $r25_location->get('label'),
     ];
   }
 
@@ -155,8 +158,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
     if (!StanfordEarthR25Util::stanfordR25CanViewRoom($r25_location,
                                                       $this->user,
                                                       $this->moduleHandler)) {
-      throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
-      //$status = StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_DISABLED;
+      throw new AccessDeniedHttpException();
     }
 
     // Make sure we have an enabled room, otherwise display error msg (below).

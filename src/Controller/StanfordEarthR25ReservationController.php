@@ -40,7 +40,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   protected $account;
 
   /**
-   * Drupal ModuleHandlerInterface
+   * Drupal ModuleHandlerInterface.
    *
    * @var Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
@@ -66,14 +66,16 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *   The current Drupal user account.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Drupal ModuleHandlerInterface to call hooks.
-   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
-   *   Drupal KillSwitch to keep from caching
+   * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $killSwitch
+   *   Drupal KillSwitch to keep from caching.
    */
-  public function __construct(FormBuilder $formBuilder,
-                              EntityTypeManager $entityTypeManager,
-                              AccountInterface $account,
-                              ModuleHandlerInterface $moduleHandler,
-                              KillSwitch $killSwitch) {
+  public function __construct(
+    FormBuilder $formBuilder,
+    EntityTypeManager $entityTypeManager,
+    AccountInterface $account,
+    ModuleHandlerInterface $moduleHandler,
+    KillSwitch $killSwitch,
+  ) {
     $this->formBuilder = $formBuilder;
     $this->entityTypeManager = $entityTypeManager;
     $this->account = $account;
@@ -106,15 +108,16 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    *   The room location code for which to get the page title..
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The translatable markup for the page title.
    */
   public function getTitle($location_id) {
-     $title = 'Stanford R25 Reservation Page';
-     $location = $this->entityTypeManager
-       ->getStorage('stanford_earth_r25_location')
-       ->load($location_id);
-     $this->moduleHandler->alter('stanford_earth_resform_title', $title, $location);
-     return $this->t($title);
-   }
+    $title = 'Stanford R25 Reservation Page';
+    $location = $this->entityTypeManager
+      ->getStorage('stanford_earth_r25_location')
+      ->load($location_id);
+    $this->moduleHandler->alter('stanford_earth_resform_title', $title, $location);
+    return $this->t('@title', ['@title' => $title]);
+  }
 
   /**
    * Returns a calendar page render array.
@@ -155,7 +158,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
         $this->moduleHandler)) {
         $response =
           $this->formBuilder->getForm('Drupal\stanford_earth_r25\Form\StanfordEarthR25ReservationForm',
-            $location_id, $start, $price, $exclude, true);
+            $location_id, $start, $price, $exclude, TRUE);
       }
       else {
         $response = ['#markup' => 'You do not have permission to book this room.'];

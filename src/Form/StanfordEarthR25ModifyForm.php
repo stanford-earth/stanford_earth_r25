@@ -52,12 +52,14 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form,
-                            FormStateInterface $form_state,
-                            $op = NULL,
-                            $locationId = NULL,
-                            $eventId = NULL,
-                            $start = NULL) {
+  public function buildForm(
+    array $form,
+    FormStateInterface $form_state,
+    $op = NULL,
+    $locationId = NULL,
+    $eventId = NULL,
+    $start = NULL,
+  ) {
     $storage = $form_state->getStorage();
     $result = $storage['stanford_earth_r25']['event_info']['output'];
     $rooms = [];

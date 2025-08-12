@@ -70,11 +70,13 @@ class StanfordEarthR25Service {
    * @param \Drupal\Core\Session\AccountInterface $curUser
    *   The current Drupal user.
    */
-  public function __construct(ClientInterface $http_client,
-                              ConfigFactory $config = NULL,
-                              LoggerChannelFactoryInterface $logger_factory,
-                              MailManager $mailmgr,
-                              AccountInterface $curUser) {
+  public function __construct(
+    ClientInterface $http_client,
+    ?ConfigFactory $config = NULL,
+    LoggerChannelFactoryInterface $logger_factory,
+    MailManager $mailmgr,
+    AccountInterface $curUser,
+  ) {
     $this->httpClient = $http_client;
     $this->config = $config->get('stanford_earth_r25.credentialsettings');
     $this->logger = $logger_factory->get('system');
@@ -99,9 +101,9 @@ class StanfordEarthR25Service {
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function stanfordR25ApiCall(
-    string $command = NULL,
-    string $post_data = NULL,
-    string $id = NULL
+    ?string $command = NULL,
+    ?string $post_data = NULL,
+    ?string $id = NULL,
   ) {
 
     $api_result = [

@@ -4,7 +4,6 @@ namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Mail\MailManager;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
@@ -81,21 +80,23 @@ class StanfordEarthR25ReservationForm extends FormBase {
   /**
    * Drupal temp store service.
    *
-   * @var Drupal\Core\TempStore\PrivateTempStoreFactory;
+   * @var Drupal\Core\TempStore\PrivateTempStoreFactory
    */
   protected $tempStore;
 
   /**
    * Class constructor.
    */
-  public function __construct(AccountInterface $user,
-                              MailManager $mailManager,
-                              StanfordEarthR25Service $r25Service,
-                              EntityTypeManager $entityTypeManager,
-                              Renderer $renderer,
-                              Messenger $messenger,
-                              ModuleHandlerInterface $moduleHandler,
-                              PrivateTempStoreFactory $tempStore) {
+  public function __construct(
+    AccountInterface $user,
+    MailManager $mailManager,
+    StanfordEarthR25Service $r25Service,
+    EntityTypeManager $entityTypeManager,
+    Renderer $renderer,
+    Messenger $messenger,
+    ModuleHandlerInterface $moduleHandler,
+    PrivateTempStoreFactory $tempStore,
+  ) {
     $this->user = $user;
     $this->mailManager = $mailManager;
     $this->r25Service = $r25Service;
@@ -182,13 +183,15 @@ class StanfordEarthR25ReservationForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form,
-                            FormStateInterface $form_state,
-                            $room = NULL,
-                            $start = NULL,
-                            $price = NULL,
-                            $exclude = NULL,
-                            $nopopup = false) {
+  public function buildForm(
+    array $form,
+    FormStateInterface $form_state,
+    $room = NULL,
+    $start = NULL,
+    $price = NULL,
+    $exclude = NULL,
+    $nopopup = FALSE,
+  ) {
     $rooms = [];
     $adminSettings = [];
     if (!empty($room)) {
@@ -214,7 +217,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#value' => $room,
     ];
 
-    // Display the room label
+    // Display the room label.
     if (!empty($rooms[$room]['label'])) {
       $form['stanford_r25_booking_label'] = [
         '#type' => 'markup',
@@ -350,18 +353,19 @@ class StanfordEarthR25ReservationForm extends FormBase {
         '#title' => 'End Date/Time',
       ];
       if (!empty($room) && intval($rooms[$room]['caltype']) === 3) {
-        $form['stanford_r25_booking_enddate']['#disabled'] = true;
+        $form['stanford_r25_booking_enddate']['#disabled'] = TRUE;
       }
     }
 
-    $max_headcount = 5; // Initializing this for later.
+    // Set a default max headcount.
+    $max_headcount = 5;
     $headcount_title = '';
-    $multi_room = false;
-    // Check if we have multiple locations to choose from
+    $multi_room = FALSE;
+    // Check if we have multiple locations to choose from.
     if (!empty($rooms[$room]['space_id'])) {
       if (str_contains($rooms[$room]['space_id'], "+")) {
-        // make options
-        $multi_room = true;
+        // Make options.
+        $multi_room = TRUE;
         $space_ids = explode("+", $rooms[$room]['space_id']);
         $labels = [];
         if (!empty($rooms[$room]['legend_labels'])) {
@@ -373,10 +377,10 @@ class StanfordEarthR25ReservationForm extends FormBase {
         }
         $room_options = [];
         foreach ($space_ids as $key => $space_id) {
-          $okay = true;
+          $okay = TRUE;
           if (!empty($exclude)) {
             if (str_contains($exclude, $space_id)) {
-              $okay = false;
+              $okay = FALSE;
             }
           }
           if ($okay) {
@@ -401,15 +405,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
         $form['stanford_r25_booking_spaceid'] = [
           '#type' => 'select',
           '#title' => $this->t('Room Selection'),
-          // '#default_value' => array_key_first($room_options),
           '#options' => $room_options,
-          // '#description' => $this->t('Choose one of the possible rooms shown.'),
           '#required' => TRUE,
           '#default_value' => $room_default,
         ];
       }
       else {
-        // set selected as single space id
+        // Set selected as single space id.
         $form['stanford_r25_booking_spaceid'] = [
           '#type' => 'hidden',
           '#value' => $rooms[$room]['space_id'],
@@ -424,28 +426,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     $form['stanford_r25_booking_headcount'] = [
       '#type' => 'number',
-      '#title' => $this->t('Headcount' . $headcount_title),
+      '#title' => $this->t('Headcount @headcount_title', ['@headcount_title' => $headcount_title]),
       '#min' => 1,
       '#max' => $max_headcount,
       '#required' => TRUE,
     ];
-    /*
-    // Max headcount for a room comes from parameter passed to the function.
-    $form['stanford_r25_booking_headcount'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Headcount (required)'),
-      '#options' => [],
-      '#required' => TRUE,
-    ];
-    $max_headcount = 5;
-    if (!empty($rooms[$room]['location_info']['capacity'])) {
-      $max_headcount = $rooms[$room]['location_info']['capacity'];
-    }
-    // Add to the select list for the number of possible headcounts.
-    for ($i = 1; $i < $max_headcount + 1; $i++) {
-      $form['stanford_r25_booking_headcount']['#options'][] = strval($i);
-    }
-    */
     // Every booking needs some reason text.
     $form['stanford_r25_booking_reason'] = [
       '#type' => 'textfield',
@@ -455,23 +440,23 @@ class StanfordEarthR25ReservationForm extends FormBase {
     ];
     if (!empty($room) && intval($rooms[$room]['caltype']) === 3) {
       $form['stanford_r25_booking_reason']['#default_value'] = $rooms[$room]['label'];
-      $form['stanford_r25_booking_reason']['#disabled'] = true;
+      $form['stanford_r25_booking_reason']['#disabled'] = TRUE;
     }
 
     if (!empty($price) && !empty($rooms[$room]['event_attributes']) &&
       str_contains($rooms[$room]['event_attributes'], "312")) {
-        $form['r25_price_markup'] = [
-          '#type' => 'markup',
-          '#markup' => check_markup('<br/><p><strong>Estimated cost will be: ' . $price . '</strong></p>',
-            filter_default_format()),
-        ];
-        // Store booking info in form storage.
-        $storage = $form_state->getStorage();
-        if (empty($storage['stanford_earth_r25'])) {
-          $storage['stanford_earth_r25'] = [];
-        }
-        $storage['stanford_earth_r25']['price'] = $price;
-        $form_state->setStorage($storage);
+      $form['r25_price_markup'] = [
+        '#type' => 'markup',
+        '#markup' => check_markup('<br/><p><strong>Estimated cost will be: ' . $price . '</strong></p>',
+          filter_default_format()),
+      ];
+      // Store booking info in form storage.
+      $storage = $form_state->getStorage();
+      if (empty($storage['stanford_earth_r25'])) {
+        $storage['stanford_earth_r25'] = [];
+      }
+      $storage['stanford_earth_r25']['price'] = $price;
+      $form_state->setStorage($storage);
     }
 
     // Check for event attribute fields, and build 'em.
@@ -682,10 +667,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
     if (!StanfordEarthR25Util::stanfordR25CanBookRoom(
       $entity,
       $this->user,
-      $this->moduleHandler)) {
-        $form_state->setErrorByName('stanford_r25_booking_reason',
-          new TranslatableMarkup('User does not have permission to book rooms.'));
-        return;
+      $this->moduleHandler,
+    )) {
+      $form_state->setErrorByName('stanford_r25_booking_reason',
+        new TranslatableMarkup('User does not have permission to book rooms.'));
+      return;
     }
 
     // Make sure we have a valid date.
@@ -718,7 +704,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
 
     // Make sure the reservation isn't too far in the future.
-    $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($entity,$this->moduleHandler);
+    $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($entity, $this->moduleHandler);
     $bdate = DrupalDateTime::createFromArray([
       'year' => $calendar_limit['year'],
       'month' => $calendar_limit['month'],
@@ -816,7 +802,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
-    // Save the input headcount
+    // Save the input headcount.
     if (!empty($user_input['stanford_r25_booking_headcount'])) {
       if (!empty($rooms[$room]['multi_room_capacities'][$booking_info['space_id']]) &&
           $user_input['stanford_r25_booking_headcount'] > $rooms[$room]['multi_room_capacities'][$booking_info['space_id']]) {
@@ -840,11 +826,16 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
   }
 
-  private function postMessage (FormStateInterface  $form_state,
-                                $nopopup = false,
-                                $msgType = 'status',
-                                $msg = '') {
-    $msgT = new TranslatableMarkup($msg);
+  /**
+   * {@inheritdoc}
+   */
+  private function postMessage(
+    FormStateInterface $form_state,
+    $nopopup = FALSE,
+    $msgType = 'status',
+    $msg = '',
+  ) {
+    $msgT = new TranslatableMarkup('@msg', ['@msg' => $msg]);
     if ($nopopup) {
       $this->messenger->addMessage($msgT, $msgType);
     }
@@ -893,8 +884,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
 
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($booking_info['room']['id']);
-    //$nopopup = $entity->get('nopopup_reservation_form');
-    // if nopopup redirect with $form_state['redirect'] = 'home';
     if ($nopopup) {
       $url = new Url('entity.stanford_earth_r25_location.calendar',
         ['r25_location' => $booking_info['room']['id']]);
@@ -904,9 +893,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $entity,
       $this->user,
       $this->moduleHandler)) {
-        $this->postMessage($form_state, $nopopup, 'error',
-          'You do not have permission to book this room.');
-        return;
+      $this->postMessage($form_state, $nopopup, 'error',
+        'You do not have permission to book this room.');
+      return;
     }
     $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
     $extension_path_resolver = \Drupal::service('extension.path.resolver');
@@ -925,11 +914,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
     if (!empty($room['event_attributes_fields'])) {
       foreach ($room['event_attributes_fields'] as $key => $value) {
         if (!empty($form_vals['stanford_r25_booking_attr' . $key])) {
-          $comment_label = str_replace('SDSS ','', $value['name']);
+          $comment_label = str_replace('SDSS ', '', $value['name']);
           if ($value['type'] === 'B' && $form_vals['stanford_r25_booking_attr' . $key] == 1) {
             $comment_str .= $comment_label . ': checked<br/>';
             $attr_email_info[] = $comment_label . ': checked.';
-          } elseif ($value['type'] === 'X' || $value['type'] === 'S') {
+          }
+          elseif ($value['type'] === 'X' || $value['type'] === 'S') {
             $comment_str .= $comment_label . ': ' . $form_vals['stanford_r25_booking_attr' . $key] . '<br/>';
             $attr_email_info[] = $comment_label . ': ' . $form_vals['stanford_r25_booking_attr' . $key];
           }
@@ -955,7 +945,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
     }
 
-    $booking_reason = htmlspecialchars($form_vals['stanford_r25_booking_reason'],ENT_NOQUOTES);
+    $booking_reason = htmlspecialchars($form_vals['stanford_r25_booking_reason'], ENT_NOQUOTES);
     // Get the XML template for creating an event and replace tokens with data
     // for this reservation.
     $xml_event_state = $event_state - 1;
@@ -985,11 +975,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     $xml = str_replace('[r25_organization_id]', $org_id, $xml);
     $xml = str_replace('[r25_expected_headcount]', $booking_info['headcount'], $xml);
-    //$xml = str_replace('[r25_expected_headcount]', $form_state->getCompleteForm()['stanford_r25_booking_headcount']['#options'][$form_vals['stanford_r25_booking_headcount']], $xml);
     $xml = str_replace('[r25_start_date_time]', $booking_info['dates']['start'], $xml);
     $xml = str_replace('[r25_end_date_time]', $booking_info['dates']['end'], $xml);
     $xml = str_replace('[r25_space_id]', $booking_info['space_id'], $xml);
-    //$xml = str_replace('[r25_todo]', $todo_insert, $xml);
     $xml = str_replace('[r25_attr]', $attr_insert, $xml);
 
     // We want to put some information about the user making this request into
@@ -1059,7 +1047,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
               if ($space == $booking_info['space_id']) {
                 if (!empty($labels[$skey])) {
                   $label_ex = explode('|', $labels[$skey]);
-                  $selected_space .= " - " .$label_ex[0];
+                  $selected_space .= " - " . $label_ex[0];
                   break;
                 }
               }
@@ -1077,7 +1065,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
       // If this event is billable, we have to retrieve billing XML for the
       // event, update the billing group code, and PUT the XML back to the
       // 25Live system.
-
       $estimated_charge = 0;
       $billable = FALSE;
       $eventid = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
@@ -1176,7 +1163,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           }
         }
       }
-      // Replace the secgroup email address with 'room_administrator_emails' if set.
+      // Replace secgroup email address with room_administrator_emails if set.
       if (!empty($booking_info['room']['room_administrator_emails']) &&
           !empty($booking_info['room']['use_admin_email_instead'])) {
         $mail_list = $booking_info['room']['room_administrator_emails'];
@@ -1209,7 +1196,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
           '/details';
       }
 
-      $body[] = "Room: " . $selected_space; //$booking_info['room']['label'];
+      $body[] = "Room: " . $selected_space;
       if (!empty($form_vals['stanford_r25_booking_duration'])) {
         $body[] = "Date: " . $date->format("l, F j, Y g:i a");
         $duration = (intval($form_vals['stanford_r25_booking_duration']) * 30) + 30;

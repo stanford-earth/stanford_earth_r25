@@ -58,7 +58,8 @@ class StanfordEarthR25LocationListBuilder extends ConfigEntityListBuilder {
     $caltype = $entity->get('caltype');
     if ($caltype == 1) {
       $caltype = '25Live Publisher';
-    } else if ($caltype == 3) {
+    }
+    elseif ($caltype == 3) {
       $caltype = 'Fullcalendar List';
     }
     else {

@@ -37,7 +37,11 @@ class StanfordEarthR25LocationForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  private function checkRadioVals($inputval="", $min=0, $max=0) {
+  private function checkRadioVals(
+    $inputval = "",
+    $min = 0,
+    $max = 0,
+  ) {
     $outputval = strval($min);
     if (is_numeric($inputval)) {
       $intval = intval($inputval);
@@ -76,7 +80,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
 
     // Location type - is this location a Meeting Room, Lab/Seminar Room,
     // Event Space, Vehicle, or Unknown.
-    $locationtype = $this->checkRadioVals($location->get('locationtype'), 0,4);
+    $locationtype = $this->checkRadioVals($location->get('locationtype'), 0, 4);
     $form['locationtype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Location Reporting Type'),
@@ -95,7 +99,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     // Room display type - whether it should display a calendar and allow
     // reservations, display a calendar without allowing reservations, or
     // display a calendar and allow tentative or confirmed reservations.
-    $displaytype = $this->checkRadioVals($location->get('displaytype'), 0,3);
+    $displaytype = $this->checkRadioVals($location->get('displaytype'), 0, 3);
     $form['displaytype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Room Display Options'),
@@ -390,7 +394,6 @@ class StanfordEarthR25LocationForm extends EntityForm {
     $form['advanced']['legend_labels'] = [
       '#title' => $this->t('Multi-Room Legend Labels'),
       '#type' => 'textarea',
-      //'#size' => 255,
       '#default_value' => $location->get('legend_labels'),
       '#description' => $this->t('For use on multi-room calendars in the form label1+label2+label3'),
     ];
@@ -418,7 +421,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#title' => $this->t('Override Organization ID'),
       '#description' => $this->t("Enter a 25Live Organization ID for this location if different from the system default."),
       '#default_value' => $location->get('override_organization_id'),
-      '#required' => false,
+      '#required' => FALSE,
     ];
 
     $form['advanced']['override_event_code'] = [
@@ -426,7 +429,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#title' => $this->t('Override Event Type Code'),
       '#description' => $this->t("Enter a 25Live Event Code for this location if different from the system default."),
       '#default_value' => $location->get('override_event_code'),
-      '#required' => false,
+      '#required' => FALSE,
     ];
 
     $form['advanced']['override_event_name'] = [
@@ -434,23 +437,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#title' => $this->t('Display Name for Override Event Type'),
       '#description' => $this->t("Enter the availability calendar display name for this Event Type."),
       '#default_value' => $location->get('override_event_name'),
-      '#required' => false,
+      '#required' => FALSE,
     ];
 
-    // A list of allowed date ranges for booking
+    // A list of allowed date ranges for booking.
     $allowed_dates = $location->get('allowed_dates');
     if (empty($allowed_dates)) {
       $allowed_dates = '';
     }
-//    elseif (is_array($allowed_dates)) {
-//      $allowed_dates_str = '';
-//      foreach ($allowed_dates as $value) {
-//        if (is_array($value)) {
-//          $allowed_dates_str .= $value['start'] . " - " . $value['end'] . "\r\n";
-//        }
-//      }
-//      $allowed_dates = $allowed_dates_str;
-//    }
     $form['advanced']['allowed_dates'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Allowed Dates'),
@@ -458,46 +452,11 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $allowed_dates,
     ];
 
-    // A list of allowed timeslots for booking
+    // A list of allowed timeslots for booking.
     $allowed_timeslots = $location->get('allowed_timeslots');
     if (empty($allowed_timeslots)) {
       $allowed_timeslots = '';
     }
-    /*
-    elseif (is_array($allowed_timeslots)) {
-      $allowed_timeslots_str = '';
-      foreach ($allowed_timeslots as $value) {
-        $timeslot_str = '';
-        if (is_array($value)) {
-          if (!empty($value['days']) && is_array($value['days'])) {
-            foreach ($value['days'] as $day) {
-              if (!empty($day)) {
-                if (!empty($timeslot_str)) {
-                  $timeslot_str .= ',';
-                }
-                $timeslot_str .= $day;
-              }
-            }
-            if (!empty($timeslot_str)) {
-              $timeslot_str .= '|';
-            }
-            if (!empty($value['start'])) {
-              $timeslot_str .= $value['start'] . '|';
-            }
-            if (!empty($value['end'])) {
-              $timeslot_str .= $value['end'];
-            }
-            if (!empty($value['price'])) {
-              $timeslot_str .= '|' . $value['price'];
-            }
-            $timeslot_str .= "\r\n";
-          }
-        }
-        $allowed_timeslots_str .= $timeslot_str;
-      }
-      $allowed_timeslots = $allowed_timeslots_str;
-    }
-    */
     $form['advanced']['allowed_timeslots'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Allowed Timslots'),
@@ -506,7 +465,6 @@ class StanfordEarthR25LocationForm extends EntityForm {
     ];
 
     // Get the user roles.
-    //$roles = user_roles();
     $roles = Role::loadMultiple();
     $roleOptions = [];
     foreach ($roles as $rid => $role) {
@@ -552,7 +510,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t("Choose role(s) for users who have admin rights to this room."),
     ];
 
-    // Email addresses for room admins to be included in body of reservation emails.
+    // Email addresses for admins to be included in body of reservation emails.
     $form['advanced']['room_administrator_emails'] = [
       '#title' => $this->t('Room Administrator Emails'),
       '#type' => 'textfield',
@@ -568,7 +526,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('Check this to send confirmation emails to the Room Administrator Email addresses instead of to the SecGroup email addresses.'),
     ];
 
-    // Enter a rules category string for special processing
+    // Enter a rules category string for special processing.
     $form['advanced']['rules_category'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Rules Category'),
@@ -579,9 +537,6 @@ class StanfordEarthR25LocationForm extends EntityForm {
 
     // How many days in the future can we book.
     $futureDays = $location->get('future_days');
-    //if (empty($futureDays)) {
-    //  $futureDays = "365";
-    //}
     $form['advanced']['future_days'] = [
       '#title' => $this->t('Allowed Future Days'),
       '#type' => 'textfield',
@@ -700,22 +655,22 @@ class StanfordEarthR25LocationForm extends EntityForm {
     $allowed = $form_state->getValue('allowed_timeslots');
     if (!empty($allowed)) {
       $result = StanfordEarthR25Util::stanfordR25ParseTimeslots($allowed);
-      if (!is_array($result) || empty($result))
-      {
+      if (!is_array($result) || empty($result)) {
         $msg = 'Invalid format for allowed timeslots.';
         if (is_string($result) and !empty($result)) {
-          $msg = $msg . ' ' .$result;
+          $msg = $msg . ' ' . $result;
         }
-        $form_state->setErrorByName('allowed_timeslots', $this->t($msg));
+        $form_state->setErrorByName('allowed_timeslots',
+          $this->t('@msg', ['@msg' => $msg]));
       }
     }
 
     // Validate future days.
     $futureDays = $form_state->getValue('future_days');
     if (!empty($futureDays)) {
-      if (intval($futureDays) < 1 || intval($futureDays) > 365 ) {
+      if (intval($futureDays) < 1 || intval($futureDays) > 365) {
         $msg = 'This field must either be a number between 1 and 365 or left blank for 1 year.';
-        $form_state->setErrorByName('future_days', $this->t($msg));
+        $form_state->setErrorByName('future_days', $this->t('@msg', ['@msg' => $msg]));
       }
     }
 
@@ -724,7 +679,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     if (!empty($earliest_day) &&
       (!is_numeric($earliest_day) || intval($earliest_day) < 0 || intval($earliest_day) > 365)) {
       $msg = 'This field must be blank or contain a number between 0 and 365';
-      $form_state->setErrorByName('earliest_day', $this->t($msg));
+      $form_state->setErrorByName('earliest_day', $this->t('@msg', ['@msg' => $msg]));
     }
 
   }

@@ -8,12 +8,13 @@ Changelog: [Changelog.txt](CHANGELOG.txt)
 Description
 ---
 
-The Stanford Earth R25 module interfaces with the Collegenet R25 API for room reservation.
+The Stanford Earth R25 module interfaces with the Collegenet R25 API for
+room reservation.
 
 Accessibility
 ---
 [![WCAG Conformance 2.0 AA Badge](https://www.w3.org/WAI/wcag2AA-blue.png)](https://www.w3.org/TR/WCAG20/)
-Evaluation Date: 201X-XX-XX  
+Evaluation Date: 201X-XX-XX
 This module conforms to level AA WCAG 2.0 standards as required by the university's accessibility policy. For more information on the policy please visit: [https://ucomm.stanford.edu/policies/accessibility-policy.html](https://ucomm.stanford.edu/policies/accessibility-policy.html).
 
 Installation
@@ -30,12 +31,16 @@ TBD.
 Troubleshooting
 ---
 
-If you are experiencing issues with this module try reverting the feature first. If you are still experiencing issues try posting an issue on the GitHub issues page.
+If you are experiencing issues with this module try reverting the feature first.
+If you are still experiencing issues try posting an issue on the GitHub issues
+page.
 
 Developer
 ---
 
-If you wish to develop on this module you will most likely need to compile some new css. Please use the sass structure provided and compile with the sass compiler packaged in this module. To install:
+If you wish to develop on this module you will most likely need to compile some
+new css. Please use the sass structure provided and compile with the sass
+compiler packaged in this module. To install:
 
 ```
 npm install

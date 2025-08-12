@@ -37,8 +37,10 @@ class StanfordEarthR25ModifyController extends ControllerBase {
    * @param \Drupal\Core\Form\FormBuilder $formBuilder
    *   The form builder.
    */
-  public function __construct(AccountInterface $user,
-                              FormBuilder $formBuilder) {
+  public function __construct(
+    AccountInterface $user,
+    FormBuilder $formBuilder,
+  ) {
     $this->user = $user;
     $this->formBuilder = $formBuilder;
   }

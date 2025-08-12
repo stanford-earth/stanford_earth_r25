@@ -36,8 +36,10 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
    * @param \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service $r25Service
    *   The Workgroup service.
    */
-  public function __construct(ConfigFactoryInterface $configFactory,
-    StanfordEarthR25Service $r25Service) {
+  public function __construct(
+    ConfigFactoryInterface $configFactory,
+    StanfordEarthR25Service $r25Service,
+  ) {
     $this->configFactory = $configFactory;
     $this->r25Service = $r25Service;
     parent::__construct($configFactory);

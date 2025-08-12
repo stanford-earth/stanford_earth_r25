@@ -9,7 +9,8 @@
 -------------------------------------------------------------------------
 -Release Date: 2025-08-10__
 
-- Allow availability calendars to restrict first available date to set days from “today”.
+- Allow availability calendars to restrict first available date to # of days
+from “today”.
 - Remove “max headcount” from reservation form for Farm events.
 - Set max headcount to 40 for all Farm events, except Fri/Sat Event Rentals.
 - For Farm/Hartley/Press Building, get user phone number from Stanford Profiles.

@@ -16,9 +16,9 @@
  *   The parameter array whose contents can be used to format the message.
  */
 function stanford_earth_r25_mail($key, array &$message, array $params) {
-  $options = array(
+  $options = [
     'langcode' => $message['langcode'],
-  );
+  ];
 
   $body = '';
   if (!empty($params['message']) && is_array($params['message'])) {
@@ -29,14 +29,16 @@ function stanford_earth_r25_mail($key, array &$message, array $params) {
   switch ($key) {
     case 'r25_operation':
       $message['from'] = \Drupal::config('system.site')->get('mail');
-      $message['subject'] = t('@operation', array('@operation' => $params['r25_operation']), $options);
+      $message['subject'] = t('@operation', ['@operation' => $params['r25_operation']], $options);
       $message['body'][] = $body;
       break;
+
     case 'r25_error':
       $message['from'] = \Drupal::config('system.site')->get('mail');
       $message['subject'] = t('R25 API error: @title', ['@title' => $params['r25']]);
       $message['body'][] = $body;
       break;
+
   }
 }
 
@@ -51,20 +53,20 @@ function stanford_earth_r25_mail($key, array &$message, array $params) {
  *   The name of the theme being implemented.
  * @param string $path
  *   The directory path of the module.
+ *
  * @return array
  *   Theme template information.
  */
 function stanford_earth_r25_theme($existing, $type, $theme, $path) {
 
   return [
-    // Name of the theme hook. This is used in the controller to trigger the hook.
+    // Name of the theme hook, used in the controller to trigger the hook.
     'stanford_earth_r25-theme-hook' => [
       'render element' => 'children',
-      // If no template name is defined here, it defaults to the name of the theme hook, ie. module-name-theme-hook.html.twig
       'template' => 'stanford_earth_r25-theme-hook',
-      // Optionally define path to Twig template files. Defaults to the module's ./templates/ directory.
+      // Optionally define path to Twig template files.
       'path' => $path . '/templates',
-      // Optionally define variables that will be passed to the Twig template and set default values for them.
+      // Optionally define variables that will be passed to the Twig template.
       'variables' => [
         'r25_location' => NULL,
         'photo_url' => '',
