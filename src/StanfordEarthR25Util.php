@@ -888,12 +888,12 @@ class StanfordEarthR25Util {
    *   The default DateTimeZone.
    */
   public static function stanfordR25DefaultTimezone() {
-    $timezone = new DateTimeZone(date_default_timezone_get());
+    $timezone = new \DateTimeZone(date_default_timezone_get());
     $tz_config = \Drupal::configFactory()->getEditable('system.date')
       ->get('timezone');
     if (!empty($tz_config['default'])) {
       try {
-        $timezone = new DateTimeZone($tz_config['default']);
+        $timezone = new \DateTimeZone($tz_config['default']);
       }
       catch (\Exception $e) {
       }
