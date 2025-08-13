@@ -5,6 +5,7 @@ namespace Drupal\stanford_earth_r25\Form;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\user\Entity\Role;
@@ -73,7 +74,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#type' => 'machine_name',
       '#default_value' => $location->id(),
       '#machine_name' => [
-        'exists' => [$this, 'exist'],
+        'exists' => [$this, 'exists'],
       ],
       '#disabled' => !$location->isNew(),
     ];
@@ -706,13 +707,10 @@ class StanfordEarthR25LocationForm extends EntityForm {
   }
 
   /**
-   * Helper function to check whether a Location configuration entity exists.
+   * {@inheritdoc}
    */
-  public function exist($id) {
-    $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')->getQuery()
-      ->condition('id', $id)
-      ->execute();
-    return (bool) $entity;
+  public function exists($entity_id, array $element, FormStateInterface $form_state) {
+    return StanfordEarthR25Location::load($entity_id);
   }
 
 }
