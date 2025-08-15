@@ -7,6 +7,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\File\FileSystem;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 
 /**
@@ -20,6 +21,13 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
+
+  /**
+   * The typed configuration manager.
+   *
+   * @var \Drupal\Core\Config\TypedConfigManagerInterface
+   */
+  protected $configManager;
 
   /**
    * The R25 service.
@@ -40,13 +48,15 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
+    TypedConfigManagerInterface $configManager,
     StanfordEarthR25Service $r25Service,
     FileSystem $fileSystem,
   ) {
     $this->configFactory = $configFactory;
+    $this->configManager = $configManager;
     $this->r25Service = $r25Service;
     $this->fileSystem = $fileSystem;
-    parent::__construct($configFactory);
+    parent::__construct($configFactory, $configManager);
   }
 
   /**
@@ -55,6 +65,7 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('stanford_earth_r25.r25_call'),
       $container->get('file_system')
     );

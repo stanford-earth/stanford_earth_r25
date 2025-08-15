@@ -5,6 +5,7 @@ namespace Drupal\stanford_earth_r25\Form;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
@@ -22,6 +23,13 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
   protected $configFactory;
 
   /**
+   * The typed configuration manager.
+   *
+   * @var \Drupal\Core\Config\TypedConfigManagerInterface
+   */
+  protected $configManager;
+
+  /**
    * The R25 service.
    *
    * @var \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
@@ -33,16 +41,20 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The ConfigFactory interface.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $configManager
+   *   The Typed Config Manager interface.
    * @param \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service $r25Service
    *   The Workgroup service.
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
+    TypedConfigManagerInterface $configManager,
     StanfordEarthR25Service $r25Service,
   ) {
     $this->configFactory = $configFactory;
+    $this->configManager = $configManager;
     $this->r25Service = $r25Service;
-    parent::__construct($configFactory);
+    parent::__construct($configFactory, $configManager);
   }
 
   /**
@@ -51,6 +63,7 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('stanford_earth_r25.r25_call')
     );
   }
