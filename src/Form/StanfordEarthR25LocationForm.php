@@ -5,10 +5,10 @@ namespace Drupal\stanford_earth_r25\Form;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\user\Entity\Role;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
 /**
@@ -60,6 +60,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
+    /** @var \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $location */
     $location = $this->entity;
 
     $form['label'] = [
@@ -704,6 +705,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     }
 
     $form_state->setRedirect('entity.stanford_earth_r25_location.collection');
+    return $status;
   }
 
   /**

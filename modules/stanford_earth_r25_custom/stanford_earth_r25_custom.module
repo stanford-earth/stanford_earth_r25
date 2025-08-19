@@ -12,7 +12,7 @@ function stanford_earth_r25_custom_user_format_name_alter(&$name, $account) {
   if (!empty($account)) {
     /** @var \Drupal\user\Entity\User $user */
     $user = user_load_by_name($account->getAccountName());
-    if (!empty($user) && $user->hasField('su_display_name')) {
+    if ($user->hasField('su_display_name')) {
       $displayName = $user->get('su_display_name')->getValue();
       if (!empty($displayName[0]['value'])) {
         $name = $displayName[0]['value'];

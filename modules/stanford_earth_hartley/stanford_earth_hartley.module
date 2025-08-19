@@ -7,7 +7,9 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\Core\Url;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * {@inheritdoc}
@@ -40,6 +42,7 @@ function stanford_earth_hartley_get_phone_number() {
       if (!empty($capid) && !empty($capsecret)) {
         $query = ['query' => ['grant_type' => 'client_credentials']];
         $auth_url = Url::fromUri('https://authz.stanford.edu/oauth/token', $query);
+        $response = NULL;
         $options = ['auth' => [$capid, $capsecret]];
         try {
           $response = Drupal::httpClient()
@@ -53,7 +56,7 @@ function stanford_earth_hartley_get_phone_number() {
             ->error('An unexpected error came from the API: %message', ['%message' => $e->getMessage()]);
         }
         $token = FALSE;
-        if ($response->getStatusCode() == 200) {
+        if (!empty($response) && $response->getStatusCode() == 200) {
           $token = json_decode($response->getBody(), TRUE, 512);
         }
         if (!empty($token)) {
@@ -101,9 +104,7 @@ function stanford_earth_hartley_is_room_category($form, $category = '') {
 function stanford_earth_hartley_is_room_admin($form) {
   $isAdmin = FALSE;
   if (!empty($form['stanford_r25_booking_roomid']['#value'])) {
-    $location = Drupal::entityTypeManager()
-      ->getStorage('stanford_earth_r25_location')
-      ->load($form['stanford_r25_booking_roomid']['#value']);
+    $location = StanfordEarthR25Location::load($form['stanford_r25_booking_roomid']['#value']);
     if (!empty($location->get('room_administrator_roles')) &&
       !empty(array_intersect(Drupal::currentUser()->getRoles(),
         $location->get('room_administrator_roles')))) {
@@ -452,7 +453,7 @@ function stanford_earth_hartley_stanford_r25_fullcalendar_limit_alter(&$calendar
         $calendar_limit = array_merge($calendar_limit,
           [
             'month' => date('n'),
-            'day' => date(format('d')),
+            'day' => date('d'),
             'year' => strval(date('Y') + 3),
           ]);
       }

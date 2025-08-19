@@ -42,7 +42,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   /**
    * Drupal ModuleHandlerInterface.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
@@ -50,7 +50,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
   /**
    * Page cache kill switch.
    *
-   * @var Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
    *   The kill switch service.
    */
   protected $killSwitch;
@@ -127,6 +127,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    */
   public function reserve($location_id, $start, $price, $exclude) {
     // Make sure the current user has permission to book the room.
+    /** @var \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $entity */
     $entity = $this->entityTypeManager->getStorage('stanford_earth_r25_location')
       ->load($location_id);
     $nopopup = $entity->get('nopopup_reservation_form');

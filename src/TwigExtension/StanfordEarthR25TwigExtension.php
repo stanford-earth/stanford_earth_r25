@@ -14,7 +14,7 @@ class StanfordEarthR25TwigExtension extends AbstractExtension {
   /**
    * Config factory.
    *
-   * @var Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Config\ConfigFactory
    *   The config factory service.
    */
   protected $configFactory;

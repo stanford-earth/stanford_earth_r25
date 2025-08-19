@@ -45,6 +45,12 @@ class StanfordEarthR25LocationListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}
+   *
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $entity
+   *   Entity Interface.
+   *
+   * @return array
+   *   An array of rows.
    */
   public function buildRow(EntityInterface $entity) {
     $row['label'] = [

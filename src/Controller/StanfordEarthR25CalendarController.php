@@ -3,9 +3,9 @@
 namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Component\Utility\Html;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -24,7 +24,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Page cache kill switch.
    *
-   * @var Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
    *   The kill switch service.
    */
   protected $killSwitch;
@@ -32,7 +32,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Current user.
    *
-   * @var Drupal\Core\Session\AccountInterface
+   * @var \Drupal\Core\Session\AccountInterface
    *   The current user.
    */
   protected $user;
@@ -40,7 +40,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Drupal FormBuilder.
    *
-   * @var Drupal\Core\Form\FormBuilder
+   * @var \Drupal\Core\Form\FormBuilder
    *   The form builder class.
    */
   protected $formBuilder;
@@ -48,7 +48,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Drupal ModuleHandlerInterface.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
@@ -56,7 +56,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Drupal Private TempStore (session)
    *
-   * @var Drupal\Core\TempStore\PrivateTempStoreFactory
+   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
    *   Temporary storage for reservation page.
    */
   protected $tempStore;
@@ -94,7 +94,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Returns a calendar page title.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   A location entity being displayed.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The currently processing request.
@@ -102,7 +102,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
    * @return array
    *   Drupal page markup array.
    */
-  public function title(EntityInterface $r25_location, Request $request) {
+  public function title(StanfordEarthR25LocationInterface $r25_location, Request $request) {
     $this->killSwitch->trigger();
     return [
       '#markup' => $r25_location->get('label'),
@@ -112,7 +112,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
   /**
    * Returns a calendar page render array.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   An entity being edited.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The currently processing request.
@@ -120,7 +120,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
    * @return array
    *   Drupal page markup array.
    */
-  public function page(EntityInterface $r25_location, Request $request) {
+  public function page(StanfordEarthR25LocationInterface $r25_location, Request $request) {
 
     $photo_url = NULL;
     if (!empty($r25_location->get('location_info')['photo_id'])) {

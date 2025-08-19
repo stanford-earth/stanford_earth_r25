@@ -2,13 +2,14 @@
 
 namespace Drupal\stanford_earth_r25;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
 use Drupal\Core\File\FileExists;
+use Drupal\Core\File\Exception\InvalidStreamWrapperException;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface;
 
 /**
  * Encapsulates information and utility methods.
@@ -341,7 +342,7 @@ class StanfordEarthR25Util {
   /**
    * Check if current user can view a specific room's calendar.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   Room entity to compare against the current user.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Account to check against override_view_roles for location.
@@ -352,7 +353,7 @@ class StanfordEarthR25Util {
    *   Boolean indicating the room is viewable.
    */
   public static function stanfordR25CanViewRoom(
-    ?EntityInterface $r25_location = NULL,
+    ?StanfordEarthR25LocationInterface $r25_location = NULL,
     ?AccountInterface $account = NULL,
     ?ModuleHandlerInterface $module_handler = NULL,
   ) {
@@ -382,6 +383,7 @@ class StanfordEarthR25Util {
         }
         // If not an admin user, now check for role restrictions.
         // Only checked roles cam view, if any are checked.
+        $isAdmin = FALSE;
         if (!$isAdmin) {
           $override_view_roles = $r25_location->get('override_view_roles');
           if (!empty($override_view_roles) && is_array($override_view_roles)) {
@@ -412,7 +414,7 @@ class StanfordEarthR25Util {
   /**
    * Check if current user can book a specific room.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   Room entity to compare against the current user.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Account to check against override_view_roles for location.
@@ -423,7 +425,7 @@ class StanfordEarthR25Util {
    *   Boolean indicating that the room is bookable by the user.
    */
   public static function stanfordR25CanBookRoom(
-    ?EntityInterface $r25_location = NULL,
+    ?StanfordEarthR25LocationInterface $r25_location = NULL,
     ?AccountInterface $account = NULL,
     ?ModuleHandlerInterface $module_handler = NULL,
   ) {
@@ -759,7 +761,7 @@ class StanfordEarthR25Util {
   /**
    * Get the calendar limit for the room, in 1-year unless altered by hook.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   Room entity to compare against the current user.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to call alter hooks.
@@ -768,7 +770,7 @@ class StanfordEarthR25Util {
    *   Array containing calendar limit info.
    */
   public static function stanfordR25CalendarLimit(
-    ?EntityInterface $r25_location = NULL,
+    ?StanfordEarthR25LocationInterface $r25_location = NULL,
     ?ModuleHandlerInterface $module_handler = NULL,
   ) {
     // The default calendar limit is for one year in the future, but we have
@@ -904,7 +906,7 @@ class StanfordEarthR25Util {
   /**
    * Return an array of possible location timeslots for the given date range.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   An the location entity being queried.
    * @param string $start
    *   The start date for the request.
@@ -915,7 +917,7 @@ class StanfordEarthR25Util {
    *   The array of timeslots.
    */
   public static function stanfordR25PossibleTimeslots(
-    EntityInterface $r25_location,
+    StanfordEarthR25LocationInterface $r25_location,
     $start,
     $end,
   ) {

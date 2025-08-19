@@ -3,12 +3,12 @@
 namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -22,7 +22,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * Page cache kill switch.
    *
-   * @var Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
    *   The kill switch service.
    */
   protected $killSwitch;
@@ -30,7 +30,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * Config factory.
    *
-   * @var Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Config\ConfigFactory
    *   The config factory service.
    */
   protected $configFactory;
@@ -38,7 +38,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * Current user.
    *
-   * @var Drupal\Core\Session\AccountInterface
+   * @var \Drupal\Core\Session\AccountInterface
    *   The current user.
    */
   protected $user;
@@ -46,14 +46,14 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * Stanford R25 API Service.
    *
-   * @var Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
+   * @var \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
    */
   protected $r25Service;
 
   /**
    * Drupal ModuleHandlerInterface.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
@@ -61,7 +61,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * Drupal FileSystem.
    *
-   * @var Drupal\Core\File\FileSystem
+   * @var \Drupal\Core\File\FileSystem
    *   FileSystem service.
    */
   protected $fileSystem;
@@ -193,7 +193,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
   /**
    * Returns a set of 25Live reservations for a location.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   An entity being edited.
    * @param string $start
    *   Start date.
@@ -207,7 +207,13 @@ class StanfordEarthR25ExportController extends ControllerBase {
    * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
    *   Drupal page markup array.
    */
-  public function export(EntityInterface $r25_location, $start, $end, $extended, Request $request) {
+  public function export(
+    StanfordEarthR25LocationInterface $r25_location,
+    $start,
+    $end,
+    $extended,
+    Request $request,
+  ) {
 
     // Format the request to the 25Live API from either POST or GET arrays.
     $earliest = 2399;

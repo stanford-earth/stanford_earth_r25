@@ -72,7 +72,7 @@ class StanfordEarthR25Service {
    */
   public function __construct(
     ClientInterface $http_client,
-    ?ConfigFactory $config = NULL,
+    ConfigFactory $config,
     LoggerChannelFactoryInterface $logger_factory,
     MailManager $mailmgr,
     AccountInterface $curUser,

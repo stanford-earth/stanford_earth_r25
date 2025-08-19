@@ -73,14 +73,14 @@ class StanfordEarthR25ReservationForm extends FormBase {
   /**
    * Drupal Module Handler.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
   /**
    * Drupal temp store service.
    *
-   * @var Drupal\Core\TempStore\PrivateTempStoreFactory
+   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
    */
   protected $tempStore;
 
@@ -144,7 +144,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
   private function parseDateStr($dateStr) {
     $dayParts = [];
     $dayBits = explode('-', $dateStr);
-    if (!empty($dayBits) && count($dayBits) > 4) {
+    if (count($dayBits) > 4) {
       $dayParts['year'] = $dayBits[0];
       $dayParts['month'] = $dayBits[1];
       $dayParts['day'] = $dayBits[2];
@@ -448,7 +448,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $form['r25_price_markup'] = [
         '#type' => 'markup',
         '#markup' => check_markup('<br/><p><strong>Estimated cost will be: ' . $price . '</strong></p>',
-          filter_default_format()),
+          $adminSettings['stanford_r25_booking_instructions']['format']),
       ];
       // Store booking info in form storage.
       $storage = $form_state->getStorage();
@@ -636,9 +636,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // Store booking info in form storage after validation.
     $booking_info = [];
     $rooms = [];
-    if (!empty($room)) {
-      $rooms[$room] = $this->config('stanford_earth_r25.stanford_earth_r25.' . $room)->getRawData();
-    }
+    $rooms[$room] = $this->config('stanford_earth_r25.stanford_earth_r25.' . $room)->getRawData();
 
     // Make sure we have a valid room id in the form input.
     if (!isset($rooms[$room])) {
@@ -689,7 +687,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $booking_str = $booking_date['date'] . '-' . $booking_date['time'];
     $booking_str = str_replace(':', '-', $booking_str);
     $date = DrupalDateTime::createFromArray($this->parseDateStr($booking_str));
-    if (empty($date) || $date->hasErrors()) {
+    if ($date->hasErrors()) {
       $form_state->setErrorByName('stanford_r25_booking_date',
         new TranslatableMarkup('The start date is invalid.'));
       return;
@@ -740,7 +738,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $booking_str = $booking_end_date['date'] . '-' . $booking_end_date['time'];
       $booking_str = str_replace(':', '-', $booking_str);
       $end_date = DrupalDateTime::createFromArray($this->parseDateStr($booking_str));
-      if (empty($end_date) || $end_date->hasErrors()) {
+      if ($end_date->hasErrors()) {
         $form_state->setErrorByName('stanford_r25_booking_enddate',
           new TranslatableMarkup('The end date is invalid.'));
         return;
@@ -1032,7 +1030,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     // If the reservation request was successful, we want to add any billing
     // information to the request if defined, display a success message on the
     // page, and send an email to any approvers or others specified.
-    if ($success) {
+    if ($success && !empty($result)) {
       // If the booking was successful, display a message to that effect.
       $selected_space = '';
       if (!empty($booking_info['room']['label'])) {

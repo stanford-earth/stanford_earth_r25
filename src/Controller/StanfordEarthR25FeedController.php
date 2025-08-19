@@ -3,7 +3,6 @@
 namespace Drupal\stanford_earth_r25\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -17,7 +16,8 @@ use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\DateTime\DrupalDateTime;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface;
 
 /**
  * Provide R25 event feed by location to fullcalendar js.
@@ -27,7 +27,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
   /**
    * Page cache kill switch.
    *
-   * @var Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
    *   The kill switch service.
    */
   protected $killSwitch;
@@ -35,7 +35,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
   /**
    * Config factory.
    *
-   * @var Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Config\ConfigFactory
    *   The config factory service.
    */
   protected $configFactory;
@@ -43,7 +43,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
   /**
    * Current user.
    *
-   * @var Drupal\Core\Session\AccountInterface
+   * @var \Drupal\Core\Session\AccountInterface
    *   The current user.
    */
   protected $user;
@@ -51,14 +51,14 @@ class StanfordEarthR25FeedController extends ControllerBase {
   /**
    * Stanford R25 API Service.
    *
-   * @var Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
+   * @var \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
    */
   protected $r25Service;
 
   /**
    * Drupal ModuleHandlerInterface.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    *   ModulehandlerInterface to call hooks.
    */
   protected $moduleHandler;
@@ -117,17 +117,17 @@ class StanfordEarthR25FeedController extends ControllerBase {
   /**
    * Return an Ajax dialog command for editing a referenced entity.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $r25_location
-   *   An entity being edited.
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
+   *   Location for which to get a feed.
    * @param string $type
    *   The type of feed to retrieve.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The currently processing request.
    *
-   * @return Symfony\Component\HttpFoundation\JsonResponse
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
    *   JsonRespone object with calendar feed data.
    */
-  public function feed(EntityInterface $r25_location, string $type, Request $request) {
+  public function feed(StanfordEarthR25LocationInterface $r25_location, string $type, Request $request) {
 
     // Format the request to the 25Live API from either POST or GET arrays.
     $room_id = $r25_location->get('id');
@@ -318,6 +318,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
               $scheduler_name = $item['scheduler_name'];
               if (!empty($scheduler_name) && str_contains($scheduler_name, ',')) {
                 $name_array = explode(',', $scheduler_name);
+                $last = '';
                 foreach ($name_array as $nkey => $name) {
                   $scheduler_name = '';
                   $subname = ucfirst(trim($name));

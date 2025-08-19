@@ -17,7 +17,7 @@ class StanfordEarthR25ModifyController extends ControllerBase {
   /**
    * Current user.
    *
-   * @var Drupal\Core\Session\AccountInterface
+   * @var \Drupal\Core\Session\AccountInterface
    *   The current user.
    */
   protected $user;
