@@ -277,3 +277,6 @@ stanford_earth_r25_location.*:
     earliest_day:
       type: int
       label: 'Number of Days From Today for Earliest Booking'
+    email_only_request:
+      type: string
+      label: 'Email-only Booking Request'

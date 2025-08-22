@@ -81,6 +81,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "multi_room_parents",
  *     "use_admin_email_instead",
  *     "earliest_day",
+ *     "email_only_request",
  *   },
  *   links = {
  *     "edit-form" =
@@ -457,6 +458,13 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var int
    */
   protected $earliest_day;
+
+  /**
+   * String containing subject and body for an email-only booking request.
+   *
+   * @var string
+   */
+  protected $email_only_request;
 
   /**
    * {@inheritdoc}

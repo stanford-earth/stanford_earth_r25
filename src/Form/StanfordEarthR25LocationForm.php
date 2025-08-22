@@ -583,6 +583,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => 'For timeslot calendars only, how many days from today should the first available timeslot be. Blank or Zero for none.',
     ];
 
+    $form['advanced']['email_only_request'] = [
+      '#title' => $this->t('Send an email request for the Booking'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#default_value' => $location->get('email_only_request'),
+      '#description' => $this->t('For availability calendars with an admin email address, send email instead of booking directly. Enter subject/body.'),
+    ];
+
     // Checkbox to specify hiding weekend columns from the room's calendar.
     $form['advanced']['hide_weekends'] = [
       '#type' => 'checkbox',
@@ -684,6 +692,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
       $form_state->setErrorByName('earliest_day', $this->t('@msg', ['@msg' => $msg]));
     }
 
+    $email_only_request = $form_state->getValue('email_only_request');
+    if (!empty($email_only_request)) {
+      $admin_email_addr = $form_state->getValue('room_administrator_emails');
+      if (empty($admin_email_addr)) {
+        $msg = 'Email only requests require the Room Administrator Email field be set.';
+        $form_state->setErrorByName('room_administrator_emails', $this->t('@msg', ['@msg' => $msg]));
+      }
+    }
   }
 
   /**
