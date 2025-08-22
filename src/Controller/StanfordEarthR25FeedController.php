@@ -225,22 +225,23 @@ class StanfordEarthR25FeedController extends ControllerBase {
       if (empty($eventName)) {
         $eventName = 'Available';
       }
-      if ($r25_result['status']['status'] === TRUE &&
-        !empty($r25_result['output']['index']['R25:RESERVATION_ID'])) {
+      if ($r25_result['status']['status'] === TRUE) {
         $results = $r25_result['output'];
-        foreach ($results['index']['R25:RESERVATION_ID'] as $key => $value) {
-          $start1 = new DrupalDateTime($this->stanfordR25FeedGetValue($results,
-            'R25:RESERVATION_START_DT', $key));
-          $end1 = new DrupalDateTime($this->stanfordR25FeedGetValue($results,
-            'R25:RESERVATION_END_DT', $key));
-          foreach ($timeslots as $slotkey => $slot) {
-            if ($slot['free'] && $start1->format('Y-m-d') ===
-              $slot['start']->format('Y-m-d')) {
-              $free = FALSE;
-              if ($end1 <= $slot['start'] || $start1 >= $slot['end']) {
-                $free = TRUE;
+        if (!empty($results['index']['R25:RESERVATION_ID'])) {
+          foreach ($results['index']['R25:RESERVATION_ID'] as $key => $value) {
+            $start1 = new DrupalDateTime($this->stanfordR25FeedGetValue($results,
+              'R25:RESERVATION_START_DT', $key));
+            $end1 = new DrupalDateTime($this->stanfordR25FeedGetValue($results,
+              'R25:RESERVATION_END_DT', $key));
+            foreach ($timeslots as $slotkey => $slot) {
+              if ($slot['free'] && $start1->format('Y-m-d') ===
+                $slot['start']->format('Y-m-d')) {
+                $free = FALSE;
+                if ($end1 <= $slot['start'] || $start1 >= $slot['end']) {
+                  $free = TRUE;
+                }
+                $timeslots[$slotkey]['free'] = $free;
               }
-              $timeslots[$slotkey]['free'] = $free;
             }
           }
         }
@@ -451,7 +452,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
                 '">Click to manage in 25Live</a>';
             }
 
-            if ($r25_location->get('hide_titles_for_non_managers') && !$approver) {
+            if ($r25_location->get('hide_titles_for_non_managers') && !$can_cancel) {
               $items[$key]['title'] = 'Reserved';
               $items[$key]['description'] = 'Reserved';
               $items[$key]['description_text'] = 'Reserved';
