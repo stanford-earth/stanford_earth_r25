@@ -451,7 +451,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     if (empty($override_instr['format'])) {
       $override_instr['format'] = filter_default_format();
     }
-    $form['advanced']['override_blackout_instructions'] = [
+    $form['reservations']['override_blackout_instructions'] = [
       '#type' => 'text_format',
       '#title' => $this->t('Override Blackout Instructions'),
       '#description' => $this->t('User instructions for booking during blackout periods, if "Honor Blackout Dates" is checked. Default site message displayed if left blank.
