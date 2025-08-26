@@ -1055,7 +1055,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       }
       $date = DrupalDateTime::createFromFormat(DATE_W3C, $booking_info['dates']['start']);
       $state = intval($result['vals'][$result['index']['R25:STATE'][0]]['value']);
-      $msg = $selected_space . ' has a <b>' . $result['vals'][$result['index']['R25:STATE_NAME'][0]]['value'] . '</b> reservation for "' . $form_vals['stanford_r25_booking_reason'] . '" on  ' . $date->format("l, F j, Y g:i a") . '.';
+      $msg = $selected_space . ' has a ' . $result['vals'][$result['index']['R25:STATE_NAME'][0]]['value'] . ' reservation for "' . $form_vals['stanford_r25_booking_reason'] . '" on  ' . $date->format("l, F j, Y g:i a") . '.';
       if (intval($result['vals'][$result['index']['R25:STATE'][0]]['value']) == 1) {
         $msg .= ' The room administrator will confirm or deny your request.';
       }

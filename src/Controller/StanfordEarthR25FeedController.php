@@ -307,6 +307,26 @@ class StanfordEarthR25FeedController extends ControllerBase {
           }
         }
 
+        // Set up arrays of background colors for multi-room calendars.
+        $colors = [];
+        $tentativeColors = [];
+        $legend_labels = $r25_location->get('legend_labels');
+        if (!empty($legend_labels)) {
+          $spaces = explode('+', $r25_location->get('space_id'));
+          $labels = explode('+', $legend_labels);
+          foreach ($spaces as $key => $space) {
+            if (!empty($labels[$key])) {
+              $label_ex = explode('|', $labels[$key]);
+              if (!empty($label_ex[1])) {
+                $colors[$space] = $label_ex[1];
+              }
+              if (!empty($label_ex[2])) {
+                $tentativeColors[$space] = $label_ex[2];
+              }
+            }
+          }
+        }
+
         // For logged in users, we want to display event status, headcount,
         // and who did the booking.
         if ($this->user->isAuthenticated()) {
@@ -364,24 +384,6 @@ class StanfordEarthR25FeedController extends ControllerBase {
             }
           }
 
-          $colors = [];
-          $tentativeColors = [];
-          $legend_labels = $r25_location->get('legend_labels');
-          if (!empty($legend_labels)) {
-            $spaces = explode('+', $r25_location->get('space_id'));
-            $labels = explode('+', $legend_labels);
-            foreach ($spaces as $key => $space) {
-              if (!empty($labels[$key])) {
-                $label_ex = explode('|', $labels[$key]);
-                if (!empty($label_ex[1])) {
-                  $colors[$space] = $label_ex[1];
-                }
-                if (!empty($label_ex[2])) {
-                  $tentativeColors[$space] = $label_ex[2];
-                }
-              }
-            }
-          }
           foreach ($items as $key => $item) {
             $can_confirm = FALSE;
             if (!empty($colors[$item['space_id']])) {
@@ -495,6 +497,20 @@ class StanfordEarthR25FeedController extends ControllerBase {
                   }
                 }
               }
+            }
+          }
+        }
+        else {
+          foreach ($items as $key => $item) {
+            // Hide event titles for anonymous users if location specifies.
+            if ($r25_location->get('hide_titles_for_non_managers')) {
+              $items[$key]['title'] = 'Reserved';
+              $items[$key]['description'] = 'Reserved';
+              $items[$key]['description_text'] = 'Reserved';
+              $items[$key]['tip'] = '';
+            }
+            if (!empty($colors[$item['space_id']])) {
+              $items[$key]['backgroundColor'] = $colors[$item['space_id']];
             }
           }
         }

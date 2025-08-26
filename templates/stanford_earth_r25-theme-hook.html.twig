@@ -107,7 +107,7 @@
     {% set legend_labels = r25_location.get('legend_labels') %}
     {% set labels = legend_labels|split('+') %}
     {% set legend_label = 'Legend:' %}
-    {% if displaytype == 2 %}
+    {% if displaytype == 2 and logged_in %}
       {% set legend_label = 'Confirmed:' %}
     {% endif %}
     {% if legend_labels is not empty %}
@@ -118,7 +118,7 @@
           {% set line = label|split('|') %}
           <span style="background-color: {{ line[1] }}; color: white">{{ line[0] }}</span>
         {% endfor %}
-        {% if displaytype == 2 %}
+        {% if displaytype == 2 and logged_in %}
           <br />
           <p>Tentative:</p>
           {% for label in labels %}
