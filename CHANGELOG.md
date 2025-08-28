@@ -1,4 +1,13 @@
 # Stanford Earth R25
+8.x-1.21
+-------------------------------------------------------------------------
+-Release Date: 2025-08-28__
+
+- Various bug fixes.
+- Add option to email booking requests instead of booking 25Live.
+- Code cleanup per drupal-check and phpcs.
+- Drupal 11 code updates.
+
 8.x-1.20
 -------------------------------------------------------------------------
 -Release Date: 2025-08-11__
