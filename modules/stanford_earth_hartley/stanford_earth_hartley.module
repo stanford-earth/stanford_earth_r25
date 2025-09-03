@@ -10,6 +10,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\Core\Url;
 use GuzzleHttp\Exception\GuzzleException;
+use Drupal\node\NodeInterface;
 
 /**
  * {@inheritdoc}
@@ -497,5 +498,18 @@ function stanford_earth_hartley_stanford_earth_resform_title_alter(&$title, $loc
   $category = $location->get('rules_category');
   if ($category === 'farm') {
     $title = "O'Donohue Family Farm Reservations";
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function stanford_earth_hartley_page_attachments(array &$attachments) {
+  // Get the node from the route.
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if (!empty($node)) {
+    if ($node instanceof NodeInterface && $node->bundle() === 'stanford_page') {
+      //$attachments['#attached']['library'][] = 'stanford_earth_hartley/stanford_earth_r25_farm_cards';
+    }
   }
 }

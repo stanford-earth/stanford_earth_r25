@@ -4,3 +4,10 @@ stanford_earth_hartley:
   dependencies:
     - core/jquery
     - core/drupalSettings
+
+stanford_earth_r25_farm_cards:
+  js:
+    js/stanfordEarthR25FarmCards.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
