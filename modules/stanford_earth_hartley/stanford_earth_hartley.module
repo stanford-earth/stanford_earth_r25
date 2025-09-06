@@ -267,6 +267,32 @@ function stanford_earth_hartley_form_alter(
       $form['#attached']['library'][] = 'stanford_earth_hartley/stanford_earth_hartley';
     }
   }
+  else if ($form_id === 'stanford_earth_r25_modify') {
+    $isAdmin = FALSE;
+    $farm_room = FALSE;
+    if (!empty($form['room_id']['#value'])) {
+      $location = StanfordEarthR25Location::load($form['room_id']['#value']);
+      if (!empty($location->get('room_administrator_roles')) &&
+        !empty(array_intersect(Drupal::currentUser()->getRoles(),
+          $location->get('room_administrator_roles')))) {
+        $isAdmin = TRUE;
+      }
+      if (!empty($location->get('rules_category')) &&
+        $location->get('rules_category') == 'farm') {
+        $farm_room = TRUE;
+      }
+    }
+    if ($isAdmin && $farm_room) {
+      $build_info = $form_state->getBuildInfo();
+      if (!empty($build_info['args'][0]) &&
+        $build_info['args'][0] == 'confirm') {
+        if (empty($form['#submit'])) {
+          $form['#submit'] = [];
+        }
+        $form['#submit'][] = 'stanford_earth_hartley_farm_confirm';
+      }
+    }
+  }
 }
 
 /**
@@ -414,6 +440,13 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
   $storage = $form_state->getStorage();
   unset($storage['stanford_earth_r25']['stanford_r25_postprocess']);
   $form_state->setStorage($storage);
+}
+
+/**
+ * {@inheritdoc}
+ */
+function stanford_earth_hartley_farm_confirm(&$form, FormStateInterface $form_state) {
+  $xyz = 1;
 }
 
 /**

@@ -568,11 +568,11 @@ class StanfordEarthR25LocationForm extends EntityForm {
     ];
 
     $form['reservations']['email_only_request'] = [
-      '#title' => $this->t('Send an email request for the Booking'),
+      '#title' => $this->t('Send an email request for the Booking for Anonymous users'),
       '#type' => 'textfield',
       '#required' => FALSE,
       '#default_value' => $location->get('email_only_request'),
-      '#description' => $this->t('For availability calendars with an admin email address, send email instead of booking directly. Enter subject/body.'),
+      '#description' => $this->t('For availability calendars with an admin email address, send email for booking request for anonymous users.'),
     ];
 
     // A fieldset of rarely-needed, advanced settings.
@@ -601,10 +601,10 @@ class StanfordEarthR25LocationForm extends EntityForm {
     // characters than the event title.
     $form['rarely_used']['description_as_title'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Show event description as event name in FullCalendar'),
+      '#title' => $this->t('Show Reserver Name in Title'),
       '#return_value' => 1,
       '#default_value' => $location->get('description_as_title'),
-      '#description' => $this->t("Check if you would like to use the Event Description field instead of the Event Name in the FullCalendar time slot."),
+      '#description' => $this->t("Repurposed from 'Description as Title'. Inserts the name of the reserver into the event title."),
     ];
 
     // A billing code to use if you want to auto-select a billing code

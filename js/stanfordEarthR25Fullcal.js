@@ -138,7 +138,7 @@ var calendar;
           // if in month view for a non-multi-day room and the user clicks a date, go to agenda day view
 
           dateClick: function (info) {
-            if (info.view.type === 'dayGridMonth' && !multiDay) {
+            if (info.view.type === 'dayGridMonth') {
               calendar.gotoDate(info.dateStr);
               calendar.changeView('timeGridDay');
             }
@@ -172,31 +172,33 @@ var calendar;
           dayMaxEventRows: true,
           eventClick: function (eventClickInfo) {
             if (drupalSettings.stanfordEarthR25.stanfordR25CalType === 3) {
-              var email_only = stanford_r25_room.email_only_request;
-              if (email_only) {
-                var admin_email = stanford_r25_room.room_administrator_emails;
-                if (admin_email) {
-                  var request_date_str = calendar.formatDate(eventClickInfo.event.start, {
-                    month: 'long', year: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: 'local'
-                  })
-                  var msg_array = email_only.split('|');
-                  var subject = msg_array[0];
-                  subject = subject + ' for ' + request_date_str;
-                  var body = "Please tell us your contact info and group size.";
-                  if (msg_array.length > 1) {
-                    body = msg_array[1];
-                  }
-                  var mailtoLink = "mailto:" + admin_email + "?subject=" + subject + "&body=" + body;
-                  window.location.href = mailtoLink;
-                }
-                else {
-                  alert('Room administrator email unavailable.');
-                }
-              }
-              else {
+              var canBook = drupalSettings.stanfordEarthR25.stanfordR25Access;
+              if (canBook) {
                 reserveTime(eventClickInfo.event.start,
                   eventClickInfo.event.end, multiDay, maxDuration,
                   stanford_r25_room, eventClickInfo.event.extendedProps.price);
+              }
+              else {
+                var email_only = stanford_r25_room.email_only_request;
+                if (typeof email_only === "string" && email_only.length > 0) {
+                  var admin_email = stanford_r25_room.room_administrator_emails;
+                  if (typeof admin_email === "string" && admin_email.length > 0) {
+                    var request_date_str = calendar.formatDate(eventClickInfo.event.start, {
+                      month: 'long', year: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', timeZone: 'local'
+                    })
+                    var msg_array = email_only.split('|');
+                    var subject = msg_array[0];
+                    subject = subject + ' for ' + request_date_str;
+                    var body = "Please tell us your contact info and group size.";
+                    if (msg_array.length > 1) {
+                      body = msg_array[1];
+                    }
+                    var mailtoLink = "mailto:" + admin_email + "?subject=" + subject + "&body=" + body;
+                    window.location.href = mailtoLink;
+                  } else {
+                    alert('Room administrator email unavailable.');
+                  }
+                }
               }
             }
           },

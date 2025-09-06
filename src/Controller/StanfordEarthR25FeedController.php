@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
@@ -280,7 +279,9 @@ class StanfordEarthR25FeedController extends ControllerBase {
           $descriptionText = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_DESCRIPTION', $key);
           $event_type = $this->stanfordR25FeedGetValue($results, 'R25:EVENT_TYPE_NAME', $key);
           $space_name = $this->stanfordR25FeedGetValue($results, 'R25:SPACE_NAME', $key);
+          $abbreviations_used = FALSE;
           if (!empty($abbreviations[$space_idx])) {
+            $abbreviations_used = TRUE;
             $title = $abbreviations[$space_idx] . ": " . $title;
           }
           if (empty($related_space)) {
@@ -303,6 +304,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
               'description_text' => $descriptionText,
               'space_name' => $space_name,
               'type' => $event_type,
+              'abbreviations' => $abbreviations_used,
             ];
           }
         }
@@ -378,7 +380,25 @@ class StanfordEarthR25FeedController extends ControllerBase {
               // Display event description as title if room is so marked.
               if (!empty($r25_location->get('description_as_title')) &&
                 intval($r25_location->get('description_as_title')) == 1) {
-                $items[$key]['title'] = MailFormatHelper::htmlToText($text);
+                $reserver = '';
+                $name_pos1 = strpos($text, 'made by ');
+                if ($name_pos1 !== FALSE) {
+                  $name_pos1 += 8;
+                  $name_pos2 = strpos($text, " - ", $name_pos1);
+                  if ($name_pos2 !== FALSE) {
+                    $reserver = substr($text, $name_pos1, $name_pos2 - $name_pos1);
+                  }
+                }
+                if (!empty($reserver)) {
+                  if ($items[$key]['abbreviations']) {
+                    $title_parts = explode(':', $items[$key]['title'], 2);
+                    if (count($title_parts) > 1) {
+                      $reserver = $title_parts[0] . ': ' . $reserver;
+                      $items[$key]['title'] = $title_parts[1];
+                    }
+                  }
+                  $items[$key]['title'] = $reserver . ' - ' . $items[$key]['title'];
+                }
               }
               $items[$key]['description'] = $text;
             }
