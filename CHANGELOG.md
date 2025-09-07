@@ -1,4 +1,11 @@
 # Stanford Earth R25
+8.x-1.22
+-------------------------------------------------------------------------
+-Release Date: 2025-09-07__
+
+- Repurpose description-as-title to add requestor name to event title.
+- Allow rooms to do normal booking for auth'd users and email for anon. 
+
 8.x-1.21
 -------------------------------------------------------------------------
 -Release Date: 2025-08-28__

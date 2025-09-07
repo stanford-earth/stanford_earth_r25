@@ -43,6 +43,40 @@ function stanford_earth_r25_mail($key, array &$message, array $params) {
 }
 
 /**
+ * Hook Mail Alter.
+ *
+ * @param array $message
+ *   Message array for email.
+ *
+ * @return void
+ *   Updates array directly without a return value.
+ */
+function stanford_earth_r25_mail_alter(array &$message) {
+  if (strpos($message['to'], 'bcc:') !== FALSE) {
+    $tos = explode(', ', $message['to']);
+    $newto = '';
+    $bccs = '';
+    foreach ($tos as $to) {
+      if (strpos($to, 'bcc:') === FALSE) {
+        if (!empty($newto)) {
+          $newto .= ', ';
+        }
+        $newto .= $to;
+      }
+      else {
+        $bcc = substr($to, 4);
+        if (!empty($bccs)) {
+          $bccs .= ', ';
+        }
+        $bccs .= $bcc;
+      }
+    }
+    $message['to'] = $newto;
+    $message['headers']['Bcc'] = $bccs;
+  }
+}
+
+/**
  * Hook to establish twig template for module.
  *
  * @param array $existing

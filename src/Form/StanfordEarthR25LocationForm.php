@@ -358,7 +358,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#type' => 'textfield',
       '#size' => 30,
       '#default_value' => $location->get('email_list'),
-      '#description' => $this->t('Comma-separated list of email addresses which should receive notification of any reservation requests. Leave blank for "none".'),
+      '#description' => $this->t('Comma-separated list of email addresses which should receive notification of any reservation requests. Prepend each email with bcc: if needed. Leave blank for "none".'),
     ];
 
     // Maximum number of hours for a booking. Ignored for multi-day bookable.
