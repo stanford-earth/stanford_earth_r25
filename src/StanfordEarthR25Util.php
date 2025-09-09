@@ -928,7 +928,10 @@ class StanfordEarthR25Util {
     $timezone = self::stanfordR25DefaultTimezone();
     // Get the requested daterange from FullCalenar.
     $startDate = new DrupalDateTime($start, $timezone);
-    $endDate = new DrupalDateTime($end, $timezone);
+    // Replace supplied end date with the last date of the start date's month.
+    //$endDate = new DrupalDateTime($end, $timezone);
+    $endDate = new DrupalDateTime($start, $timezone);
+    $endDate->modify('last day of this month');
     // Get the allowed date ranges for this location.
     $daterange_array = $r25_location->get('allowed_dates_fields');
     $dateranges = [];
