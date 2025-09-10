@@ -71,8 +71,14 @@ function stanford_earth_r25_mail_alter(array &$message) {
         $bccs .= $bcc;
       }
     }
-    $message['to'] = $newto;
-    $message['headers']['Bcc'] = $bccs;
+    // Only switch to bccs as long as there is one to.
+    if (empty($newto)) {
+      $message['to'] = $bccs;
+    }
+    else {
+      $message['to'] = $newto;
+      $message['headers']['Bcc'] = $bccs;
+    }
   }
 }
 
