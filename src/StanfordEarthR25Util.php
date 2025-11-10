@@ -796,6 +796,67 @@ class StanfordEarthR25Util {
   }
 
   /**
+   * Get any minimum/maximum time slots for the location and modify if appropos.
+   *
+   * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
+   *   Room entity to compare against the current user.
+   *
+   * @return array
+   *   Array containing min/max timeslot info.
+   */
+  public static function stanfordR25TimeslotMinMax(
+    ?StanfordEarthR25LocationInterface $r25_location = NULL,
+    ?AccountInterface $account = NULL,
+  ) {
+    $minmax = [
+      'min' => '00:00:00',
+      'max' => '24:00:00',
+    ];
+    if (!empty($r25_location)) {
+      $slot_min_time = $r25_location->get('slot_min_time');
+      if (!empty($slot_min_time)) {
+        $minmax['min'] = $slot_min_time;
+      }
+      $slot_max_time = $r25_location->get('slot_max_time');
+      if (!empty($slot_max_time)) {
+        $minmax['max'] = $slot_max_time;
+      }
+    }
+    if (!empty($account)) {
+      $extra_hours = intval($r25_location->get('extra_hours'));
+      if (!empty($extra_hours)) {
+        $do_extra_hours = FALSE;
+        $extra_hours_roles = $r25_location->get('extra_hours_roles');
+        $userRoles = $account->getRoles();
+        foreach ($userRoles as $role) {
+          if (!empty($extra_hours_roles[$role])) {
+            $do_extra_hours = TRUE;
+            break;
+          }
+        }
+        if ($do_extra_hours) {
+          $min = explode(':', $minmax['min']);
+          $minhour = intval($min[0]) - $extra_hours;
+          if ($minhour < 0) {
+            $minhour = 0;
+          }
+          $minmax['min'] = sprintf('%02d', $minhour) . ':' .
+            $min[1] . ':' . $min[2];
+          $max = explode(':', $minmax['max']);
+          $maxhour = intval($max[0]) + $extra_hours;
+          if ($maxhour >  24) {
+            $maxhour = 24;
+          }
+          $minmax['max'] = sprintf('%02d', $maxhour) . ':' .
+            $max[1] . ':' . $max[2];
+
+        }
+      }
+    }
+    return $minmax;
+  }
+
+  /**
    * If using custom event attributes, use ids to retrieve each name and type.
    *
    * @param string $attr_list

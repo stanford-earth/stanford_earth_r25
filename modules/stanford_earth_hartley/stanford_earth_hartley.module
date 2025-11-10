@@ -410,10 +410,17 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       $replyto = \Drupal::config('system.site')->get('mail');
       Drupal::service('plugin.manager.mail')->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
+    $xyz = 1;
   }
   $storage = $form_state->getStorage();
   unset($storage['stanford_earth_r25']['stanford_r25_postprocess']);
   $form_state->setStorage($storage);
+  $url = Url::fromUri('https://docs.google.com/forms/d/e/1FAIpQLSdSEpFhwRwOx9zC274mSn0xlRumbzEN1YVpxDkWGuKRCWaOvw/viewform');
+  $xyz = $form_state->isRebuilding();
+  $form_state->setRebuild(FALSE);
+  $form_state->disableRedirect(FALSE);
+  $form_state->setRedirectUrl($url);
+
 }
 
 /**

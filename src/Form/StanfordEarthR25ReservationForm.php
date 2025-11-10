@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Ajax\CloseModalDialogCommand;
+use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Mail\MailManager;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
@@ -619,12 +620,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $response->addCommand(new CloseModalDialogCommand());
     }
     $response->addCommand(new InvokeCommand('body', 'stanfordEarthR25DefaultCursor'));
+    //$response->addCommand(new RedirectCommand('https://docs.google.com/forms/d/e/1FAIpQLSdSEpFhwRwOx9zC274mSn0xlRumbzEN1YVpxDkWGuKRCWaOvw/viewform'));
     return $response;
   }
 
   /**
    * {@inheritdoc}
-   */
+   *///
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
     if (empty($user_input['stanford_r25_booking_roomid'])) {

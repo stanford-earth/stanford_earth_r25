@@ -116,14 +116,16 @@
         <p>{{  legend_label }}</p>
         {% for label in labels %}
           {% set line = label|split('|') %}
-          <span style="background-color: {{ line[1] }}; color: white">{{ line[0] }}</span>
+          {% set labelx = line[0]|split(' -- ',2) %}
+          <span style="background-color: {{ line[1] }}; color: white">{{ labelx[0] }}</span>
         {% endfor %}
         {% if displaytype == 2 and logged_in %}
           <br />
           <p>Tentative:</p>
           {% for label in labels %}
             {% set line = label|split('|') %}
-            <span style="background-color: {{ line[2] }}; color: black">{{ line[0] }}</span>
+            {% set labelx = line[0]|split(' -- ',2) %}
+            <span style="background-color: {{ line[2] }}; color: black">{{ labelx[0] }}</span>
           {% endfor %}
         {% endif %}
       </div>

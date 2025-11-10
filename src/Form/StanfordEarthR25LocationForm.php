@@ -277,6 +277,32 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#description' => $this->t('The maximum timeslot to show of Fullcalendar in the form 00:00:00'),
     ];
 
+    $extra_hours = $location->get('extra_hours');
+    if (empty($extra_hours)) {
+      $extra_hours = "0";
+    }
+    $form['calendar']['extra_hours'] = [
+      '#title' => $this->t('Extra Hours for Certain Roles'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#size' => 10,
+      '#default_value' => $extra_hours,
+      '#description' => $this->t('Add extra hours before minimum time and maximum time for selected roles'),
+    ];
+
+    // Choose which roles get extra hours.
+    $extra_hours_roles = $location->get('extra_hours_roles');
+    if (empty($extra_hours_roles) || !is_array($extra_hours_roles)) {
+      $extra_hours_roles = [];
+    }
+    $form['calendar']['extra_hours_roles'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Which roles get extra hours.'),
+      '#options' => $roleOptions,
+      '#default_value' => $extra_hours_roles,
+      '#description' => $this->t("Choose which roles receive extra hours. Leave all blank to ignore extra hours value."),
+    ];
+
     // Checkbox to specify hiding weekend columns from the room's calendar.
     $form['calendar']['hide_weekends'] = [
       '#type' => 'checkbox',
@@ -717,6 +743,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
         $form_state->setErrorByName('room_administrator_emails', $this->t('@msg', ['@msg' => $msg]));
       }
     }
+
+    $extra_hours = $form_state->getValue('extra_hours',"0");
+    if (filter_var($extra_hours,
+        FILTER_VALIDATE_INT,
+        array('options' => array('min_range' => 0))) === FALSE) {
+      $form_state->setErrorByName('extra_hours', 'Extra hours must be zero or a positive whole number.');
+    }
+
   }
 
   /**

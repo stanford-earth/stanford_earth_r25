@@ -196,6 +196,13 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $drupalSettings['stanfordR25CalendarLimitYear'] = $calendar_limit['year'];
       $drupalSettings['stanfordR25CalendarLimitDay'] = $calendar_limit['day'];
 
+      // Get the min and max hours to display on the calendar.
+      $minmax = StanfordEarthR25Util::stanfordR25TimeslotMinMax(
+        $r25_location,
+        $this->user);
+      $drupalSettings['stanfordR25CalendarMinHour'] = $minmax['min'];
+      $drupalSettings['stanfordR25CalendarMaxHour'] = $minmax['max'];
+
       $library = [
         'core/drupal.dialog.ajax',
       ];

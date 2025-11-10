@@ -110,11 +110,11 @@ var calendar;
       if (selectable && stanford_r25_room.space_id.indexOf("+") > -1) {
         allowOverlap = true;
       }
-      var minTimeSlot = stanford_r25_room.slot_min_time;
+      var minTimeSlot = drupalSettings.stanfordEarthR25.stanfordR25CalendarMinHour;
       if (minTimeSlot == null) {
         minTimeSlot = '00:00:00';
       }
-      var maxTimeSlot = stanford_r25_room.slot_max_time;
+      var maxTimeSlot = drupalSettings.stanfordEarthR25.stanfordR25CalendarMaxHour;
       if (maxTimeSlot == null) {
         maxTimeSlot = '24:00:00';
       }

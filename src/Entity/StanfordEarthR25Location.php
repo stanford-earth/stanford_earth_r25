@@ -82,6 +82,8 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "use_admin_email_instead",
  *     "earliest_day",
  *     "email_only_request",
+ *     "extra_hours",
+ *     "extra_hours_roles",
  *   },
  *   links = {
  *     "edit-form" =
@@ -465,6 +467,20 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var string
    */
   protected $email_only_request;
+
+  /**
+   * Extra hours to add before slot_min_time and after slot_max_time.
+   *
+   * @var int
+   */
+  protected $extra_hours;
+
+  /**
+   * Extra hours roles.
+   *
+   * @var array
+   */
+  protected $extra_hours_roles;
 
   /**
    * {@inheritdoc}
