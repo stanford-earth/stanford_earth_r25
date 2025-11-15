@@ -84,6 +84,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "email_only_request",
  *     "extra_hours",
  *     "extra_hours_roles",
+ *     "post_process_redirect_url",
  *   },
  *   links = {
  *     "edit-form" =
@@ -481,6 +482,13 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var array
    */
   protected $extra_hours_roles;
+
+  /**
+   * Post-process redirect url.
+   *
+   * @var string
+   */
+  protected $post_process_redirect_url;
 
   /**
    * {@inheritdoc}

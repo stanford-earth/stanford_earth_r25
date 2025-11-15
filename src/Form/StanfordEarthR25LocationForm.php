@@ -496,6 +496,14 @@ class StanfordEarthR25LocationForm extends EntityForm {
       '#default_value' => $location->get('nopopup_reservation_form'),
     ];
 
+    // Url to redirect after post-processing bookings.
+    $form['reservations']['post_process_redirect_url'] = [
+      '#title' => $this->t('Redirect URL When Custom Postprocessing Bookings'),
+      '#type' => 'textarea',
+      '#default_value' => $location->get('post_process_redirect_url'),
+      '#description' => $this->t('URL to redirect in post-processing after booking Only works with no pop-up reservation forms. Leave blank for "none".'),
+    ];
+
     $form['reservations']['override_organization_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Override Organization ID'),

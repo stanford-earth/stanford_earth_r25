@@ -383,7 +383,6 @@ class StanfordEarthR25Util {
         }
         // If not an admin user, now check for role restrictions.
         // Only checked roles cam view, if any are checked.
-        $isAdmin = FALSE;
         if (!$isAdmin) {
           $override_view_roles = $r25_location->get('override_view_roles');
           if (!empty($override_view_roles) && is_array($override_view_roles)) {

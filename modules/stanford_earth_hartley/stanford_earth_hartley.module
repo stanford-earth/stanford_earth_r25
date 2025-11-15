@@ -9,6 +9,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\Core\Url;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
@@ -410,17 +412,51 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       $replyto = \Drupal::config('system.site')->get('mail');
       Drupal::service('plugin.manager.mail')->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
-    $xyz = 1;
+    if (!empty($storage['room']['post_process_redirect_url']) && !empty($storage['room']['nopopup_reservation_form']) &&
+      !empty($storage['event_state']) && $storage['event_state'] === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
+      $redirect = $storage['room']['post_process_redirect_url'];
+      $startDate = '';
+      $endDate = '';
+      $dates = '';
+      $email = '';
+      $name = '';
+      $startTime = '';
+      $endTime = '';
+      if (!empty($storage['mailto'])) {
+        $email = $storage['mailto'];
+      }
+      if (!empty($storage['reserver_name'])) {
+        $name = $storage['reserver_name'];
+      }
+      if (!empty($storage['dates']['start'])) {
+        $temp = DrupalDateTime::createFromFormat(DATE_W3C, $storage['dates']['start']);
+        $startDate = $temp->format('m/d/Y');
+        $startTime = $temp->format('H:i');
+      }
+      if (!empty($storage['dates']['end'])) {
+        $temp = DrupalDateTime::createFromFormat(DATE_W3C, $storage['dates']['end']);
+        $endDate = $temp->format('m/d/Y');
+        $endTime = $temp->format('H:i');
+      }
+      if (!empty($startDate)) {
+        $dates = $startDate;
+        if (!empty($endDate)) {
+          $dates .= ' - ';
+        }
+      }
+      $dates .= $endDate;
+      $redirect = str_replace('[dates]', $dates, $redirect);
+      $redirect = str_replace('[start]', $startTime, $redirect);
+      $redirect = str_replace('[end]', $endTime, $redirect);
+      $redirect = str_replace('[email]', $email, $redirect);
+      $redirect = str_replace('[name]', $name, $redirect);
+      $response = new TrustedRedirectResponse($redirect);
+      $form_state->setResponse($response);
+    }
   }
   $storage = $form_state->getStorage();
   unset($storage['stanford_earth_r25']['stanford_r25_postprocess']);
   $form_state->setStorage($storage);
-  $url = Url::fromUri('https://docs.google.com/forms/d/e/1FAIpQLSdSEpFhwRwOx9zC274mSn0xlRumbzEN1YVpxDkWGuKRCWaOvw/viewform');
-  $xyz = $form_state->isRebuilding();
-  $form_state->setRebuild(FALSE);
-  $form_state->disableRedirect(FALSE);
-  $form_state->setRedirectUrl($url);
-
 }
 
 /**

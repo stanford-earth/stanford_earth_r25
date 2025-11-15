@@ -3,7 +3,6 @@
 namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Ajax\CloseModalDialogCommand;
-use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Mail\MailManager;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
@@ -703,6 +702,19 @@ class StanfordEarthR25ReservationForm extends FormBase {
       return;
     }
 
+    // Get the minimum and maximum times this user may book this room.
+    $minmax = StanfordEarthR25Util::stanfordR25TimeslotMinMax(
+      $entity,
+      $this->user);
+    $minparts = explode(":", $minmax['min']);
+    $earliest = clone $date;
+    $earliest->setTime($minparts[0], $minparts[1], $minparts[2]);
+    if ($date < $earliest) {
+      $form_state->setErrorByName('stanford_r25_booking_date',
+        new TranslatableMarkup('The starting time is earlier than the room is available.'));
+      return;
+    }
+
     // Make sure the reservation isn't too far in the future.
     $calendar_limit = StanfordEarthR25Util::stanfordR25CalendarLimit($entity, $this->moduleHandler);
     $bdate = DrupalDateTime::createFromArray([
@@ -750,6 +762,15 @@ class StanfordEarthR25ReservationForm extends FormBase {
           new TranslatableMarkup('The end date may not be before the start date.'));
         return;
       }
+      // Make sure the end time is not out of bounds.
+      $maxparts = explode(":", $minmax['max']);
+      $latest = clone $end_date;
+      $latest->setTime($maxparts[0], $maxparts[1], $maxparts[2]);
+      if ($end_date > $latest) {
+        $form_state->setErrorByName('stanford_r25_booking_enddate',
+          new TranslatableMarkup('The ending time is later than the room is available.'));
+        return;
+      }
     }
 
     // Make sure date isn't blacked out if room checks for that.
@@ -784,6 +805,16 @@ class StanfordEarthR25ReservationForm extends FormBase {
         'start' => $date->format(DATE_W3C),
         'end' => $date->add(new \DateInterval('PT' . $duration . 'M'))->format(DATE_W3C),
       ];
+      //$end_date = $date->add(new \DateInterval('PT' . $duration . 'M'));
+      $maxparts = explode(":", $minmax['max']);
+      $latest = clone $date;
+      $latest->setTime($maxparts[0], $maxparts[1], $maxparts[2]);
+      if ($date > $latest) {
+        $form_state->setErrorByName('stanford_r25_booking_duration',
+          new TranslatableMarkup('The ending time is later than the room is available.'));
+        return;
+      }
+
     }
     $booking_info['dates'] = $date_strs;
 
@@ -1244,6 +1275,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
           'event_name' => $booking_info['stanford_r25_booking_reason'],
           'eventid' => $eventid,
           'est_charge' => $estimated_charge,
+          'event_state' => $event_state,
+          'reserver_name' => $res_username,
         ];
         $storage['stanford_earth_r25']['stanford_r25_postprocess'] = $stanford_r25_postprocess;
         $form_state->setStorage($storage);
