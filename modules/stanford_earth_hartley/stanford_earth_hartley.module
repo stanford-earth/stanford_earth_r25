@@ -11,6 +11,7 @@ use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\Core\Url;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Render\Markup;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
@@ -137,6 +138,24 @@ function stanford_earth_hartley_form_alter(
       }
     }
     if ($hartley_room || $press_building_room || $farm_room) {
+      if ($press_building_room) {
+        if (!empty($form['#attached']['drupalSettings']['stanfordEarthR25']['stanfordR25Room']['post_process_redirect_url'])) {
+          $press_user = $room_admin ||
+            !empty(array_intersect(Drupal::currentUser()->getRoles(),
+              ['custm_press_building_user', 'custm_press_building_admin']));
+          $press_user = FALSE;
+          if (!$press_user) {
+            $form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'] = TRUE;
+            if (!empty($form['stanford_r25_booking_roomid']['#value']) &&
+              $form['stanford_r25_booking_roomid']['#value'] === 'sa03') {
+                $markup = strval($form['r25_instructions']['#markup']);
+                $markup = str_replace("<p>Reservations", "<p>Meeting reservations", $markup);
+                $markup = str_replace("For questions", "For the Event Space, you will be redirected to a detailed request form after clicking Reserve below. For questions", $markup);
+                $form['r25_instructions']['#markup'] = $markup;
+              }
+          }
+        }
+      }
       if (empty($form['#validate'])) {
         $form['#validate'] = [];
       }

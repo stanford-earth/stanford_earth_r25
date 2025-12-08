@@ -759,6 +759,13 @@ class StanfordEarthR25LocationForm extends EntityForm {
       $form_state->setErrorByName('extra_hours', 'Extra hours must be zero or a positive whole number.');
     }
 
+    $redirect_url = $form_state->getValue('post_process_redirect_url');
+    if (!empty($redirect_url)) {
+      $nopopup = $form_state->getValue('nopopup_reservation_form');
+      if (empty($nopopup)) {
+        $form_state->setErrorByName('nopopup_reservation_form', 'Using the redirect URL requires that the No Pop-up Reservation Form option is checked.' );
+      }
+    }
   }
 
   /**

@@ -619,13 +619,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $response->addCommand(new CloseModalDialogCommand());
     }
     $response->addCommand(new InvokeCommand('body', 'stanfordEarthR25DefaultCursor'));
-    //$response->addCommand(new RedirectCommand('https://docs.google.com/forms/d/e/1FAIpQLSdSEpFhwRwOx9zC274mSn0xlRumbzEN1YVpxDkWGuKRCWaOvw/viewform'));
     return $response;
   }
 
   /**
    * {@inheritdoc}
-   *///
+   */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
     if (empty($user_input['stanford_r25_booking_roomid'])) {
@@ -805,7 +804,6 @@ class StanfordEarthR25ReservationForm extends FormBase {
         'start' => $date->format(DATE_W3C),
         'end' => $date->add(new \DateInterval('PT' . $duration . 'M'))->format(DATE_W3C),
       ];
-      //$end_date = $date->add(new \DateInterval('PT' . $duration . 'M'));
       $maxparts = explode(":", $minmax['max']);
       $latest = clone $date;
       $latest->setTime($maxparts[0], $maxparts[1], $maxparts[2]);
