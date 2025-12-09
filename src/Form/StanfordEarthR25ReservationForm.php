@@ -431,6 +431,12 @@ class StanfordEarthR25ReservationForm extends FormBase {
       '#max' => $max_headcount,
       '#required' => TRUE,
     ];
+
+    $form['stanford_r25_booking_extra_msg'] = [
+      '#type' => 'markup',
+      '#markup' => '<div id="stanford-r25-booking-extra-msg"><br/></div>',
+    ];
+
     // Every booking needs some reason text.
     $form['stanford_r25_booking_reason'] = [
       '#type' => 'textfield',

@@ -143,7 +143,6 @@ function stanford_earth_hartley_form_alter(
           $press_user = $room_admin ||
             !empty(array_intersect(Drupal::currentUser()->getRoles(),
               ['custm_press_building_user', 'custm_press_building_admin']));
-          $press_user = FALSE;
           if (!$press_user) {
             $form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'] = TRUE;
             if (!empty($form['stanford_r25_booking_roomid']['#value']) &&
@@ -221,23 +220,40 @@ function stanford_earth_hartley_form_alter(
           }
         }
       }
+      $press_redirect = !empty($form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect']);
       if (!empty($form['stanford_r25_booking_attr177']['#title'])) {
         $form['stanford_r25_booking_attr177']['#title'] = 'Description/Comments';
         $form['stanford_r25_booking_attr177']['#description'] = 'Any information, questions or remarks about this reservation.';
         if ($press_building_room) {
           $form['stanford_r25_booking_attr177']['#visible'] = FALSE;
-          $form['stanford_r25_booking_attr177']['#states'] = [
-            'required' => [
-              ':input[name="stanford_r25_booking_spaceid"]' => [
-                'value' => '2605',
+          if (!$press_redirect) {
+            $form['stanford_r25_booking_attr177']['#states'] = [
+              'required' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => '2605',
+                ],
               ],
-            ],
-            'visible' => [
-              ':input[name="stanford_r25_booking_spaceid"]' => [
-                'value' => '2605',
+              'visible' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => '2605',
+                ],
               ],
-            ],
-          ];
+            ];
+          }
+          else {
+            $form['stanford_r25_booking_attr177']['#states'] = [
+              'required' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => 'XXXX',
+                ],
+              ],
+              'visible' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => 'XXXX',
+                ],
+              ],
+            ];
+          }
         }
         else {
           $form['stanford_r25_booking_attr177']['#visible'] = TRUE;
@@ -253,18 +269,34 @@ function stanford_earth_hartley_form_alter(
         $form['stanford_r25_contact_175']['#title'] = 'Event Contact Info';
         $form['stanford_r25_contact_175']['#visible'] = FALSE;
         if ($press_building_room) {
-          $form['stanford_r25_contact_175']['#states'] = [
-            'required' => [
-              ':input[name="stanford_r25_booking_spaceid"]' => [
-                'value' => '2605',
+          if (!$press_redirect) {
+            $form['stanford_r25_contact_175']['#states'] = [
+              'required' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => '2605',
+                ],
               ],
-            ],
-            'visible' => [
-              ':input[name="stanford_r25_booking_spaceid"]' => [
-                'value' => '2605',
+              'visible' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => '2605',
+                ],
               ],
-            ],
-          ];
+            ];
+          }
+          else {
+            $form['stanford_r25_contact_175']['#states'] = [
+              'required' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => 'XXXX',
+                ],
+              ],
+              'visible' => [
+                ':input[name="stanford_r25_booking_spaceid"]' => [
+                  'value' => 'XXXX',
+                ],
+              ],
+            ];
+          }
         }
         else {
           $form['stanford_r25_contact_175']['#visible'] = TRUE;
@@ -431,8 +463,15 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       $replyto = \Drupal::config('system.site')->get('mail');
       Drupal::service('plugin.manager.mail')->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
+    if ($space_id === '2605') {
+      if (!empty($form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'])) {
+
+      }
+    }
     if (!empty($storage['room']['post_process_redirect_url']) && !empty($storage['room']['nopopup_reservation_form']) &&
-      !empty($storage['event_state']) && $storage['event_state'] === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE) {
+      !empty($storage['event_state']) && $storage['event_state'] === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE &&
+      !empty($form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect']) &&
+      $space_id ==='2605') {
       $redirect = $storage['room']['post_process_redirect_url'];
       $startDate = '';
       $endDate = '';
@@ -457,6 +496,7 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
         $endDate = $temp->format('m/d/Y');
         $endTime = $temp->format('H:i');
       }
+
       if (!empty($startDate)) {
         $dates = $startDate;
         if (!empty($endDate)) {
