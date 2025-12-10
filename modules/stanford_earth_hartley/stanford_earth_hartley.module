@@ -11,7 +11,6 @@ use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\Core\Url;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Routing\TrustedRedirectResponse;
-use Drupal\Core\Render\Markup;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
@@ -147,11 +146,11 @@ function stanford_earth_hartley_form_alter(
             $form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'] = TRUE;
             if (!empty($form['stanford_r25_booking_roomid']['#value']) &&
               $form['stanford_r25_booking_roomid']['#value'] === 'sa03') {
-                $markup = strval($form['r25_instructions']['#markup']);
-                $markup = str_replace("<p>Reservations", "<p>Meeting reservations", $markup);
-                $markup = str_replace("For questions", "For the Event Space, you will be redirected to a detailed request form after clicking Reserve below. For questions", $markup);
-                $form['r25_instructions']['#markup'] = $markup;
-              }
+              $markup = strval($form['r25_instructions']['#markup']);
+              $markup = str_replace("<p>Reservations", "<p>Meeting reservations", $markup);
+              $markup = str_replace("For questions", "For the Event Space, you will be redirected to a detailed request form after clicking Reserve below. For questions", $markup);
+              $form['r25_instructions']['#markup'] = $markup;
+            }
           }
         }
       }
@@ -406,24 +405,24 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
   $storage = $form_state->getStorage();
   if (!empty($storage['stanford_earth_r25']['stanford_r25_postprocess'])) {
     $storage = $storage['stanford_earth_r25']['stanford_r25_postprocess'];
+    $room = $storage['room'];
+    $dates = $storage['dates'];
+    $space_str = $room['label'];
+    $space_id = '';
+    if (str_contains($room['space_id'], '+')) {
+      $space_id = $form_state->getValue('stanford_r25_booking_spaceid');
+      $space_str = $form['stanford_r25_booking_spaceid']['#options'][$space_id];
+    }
     if (!empty($storage['mailto'])) {
       $hartley_room = stanford_earth_hartley_is_room_category($form, 'hartley');
       $press_building_room = stanford_earth_hartley_is_room_category($form, 'press_building');
       $farm_room = stanford_earth_hartley_is_room_category($form, 'farm');
-      $room = $storage['room'];
-      $dates = $storage['dates'];
       $mail_list = $storage['mailto'];
       $subject = $room['label'] . ': Your booking request is now pending approval';
       $body = [];
       $body[] = 'The booking manager will review and approve your request as soon as possible, and will contact you if there is a problem.';
       $body[] = 'The details of your booking request follow.';
       $body[] = 'Event name: ' . $storage['event_name'];
-      $space_str = $room['label'];
-      $space_id = '';
-      if (str_contains($room['space_id'], '+')) {
-        $space_id = $form_state->getValue('stanford_r25_booking_spaceid');
-        $space_str = $form['stanford_r25_booking_spaceid']['#options'][$space_id];
-      }
       if ($hartley_room) {
         if ($space_id == '1675') {
           $space_str .= ' (Does *not* include Mitchell Patio)';
@@ -463,15 +462,10 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       $replyto = \Drupal::config('system.site')->get('mail');
       Drupal::service('plugin.manager.mail')->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
-    if ($space_id === '2605') {
-      if (!empty($form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'])) {
-
-      }
-    }
     if (!empty($storage['room']['post_process_redirect_url']) && !empty($storage['room']['nopopup_reservation_form']) &&
       !empty($storage['event_state']) && $storage['event_state'] === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE &&
       !empty($form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect']) &&
-      $space_id ==='2605') {
+      $space_id === '2605') {
       $redirect = $storage['room']['post_process_redirect_url'];
       $startDate = '';
       $endDate = '';

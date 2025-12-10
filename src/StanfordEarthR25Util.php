@@ -799,6 +799,8 @@ class StanfordEarthR25Util {
    *
    * @param \Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface $r25_location
    *   Room entity to compare against the current user.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   User account making reservations.
    *
    * @return array
    *   Array containing min/max timeslot info.
@@ -843,7 +845,7 @@ class StanfordEarthR25Util {
             $min[1] . ':' . $min[2];
           $max = explode(':', $minmax['max']);
           $maxhour = intval($max[0]) + $extra_hours;
-          if ($maxhour >  24) {
+          if ($maxhour > 24) {
             $maxhour = 24;
           }
           $minmax['max'] = sprintf('%02d', $maxhour) . ':' .

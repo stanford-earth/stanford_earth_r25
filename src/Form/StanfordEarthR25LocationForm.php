@@ -752,10 +752,10 @@ class StanfordEarthR25LocationForm extends EntityForm {
       }
     }
 
-    $extra_hours = $form_state->getValue('extra_hours',"0");
+    $extra_hours = $form_state->getValue('extra_hours', "0");
     if (filter_var($extra_hours,
         FILTER_VALIDATE_INT,
-        array('options' => array('min_range' => 0))) === FALSE) {
+        ['options' => ['min_range' => 0]]) === FALSE) {
       $form_state->setErrorByName('extra_hours', 'Extra hours must be zero or a positive whole number.');
     }
 
@@ -763,7 +763,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
     if (!empty($redirect_url)) {
       $nopopup = $form_state->getValue('nopopup_reservation_form');
       if (empty($nopopup)) {
-        $form_state->setErrorByName('nopopup_reservation_form', 'Using the redirect URL requires that the No Pop-up Reservation Form option is checked.' );
+        $form_state->setErrorByName('nopopup_reservation_form', 'Using the redirect URL requires that the No Pop-up Reservation Form option is checked.');
       }
     }
   }

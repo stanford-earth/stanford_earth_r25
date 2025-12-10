@@ -1,4 +1,14 @@
 # Stanford Earth R25
+8.x-1.23
+-------------------------------------------------------------------------
+-Release Date: 2025-12-10__
+
+- Allow addtional calendar hours based on role for calendars with min/max hours
+- Added field for post booking redirects  for submodules doing post processing
+- Added special processing for press building event space based on role
+- Fix bcc email - now only bcc if ‘to’ not empty otherwise put bccs in ‘to’
+- Legend labels - split at “ — “ so long labels can be used in reservation form
+
 8.x-1.22
 -------------------------------------------------------------------------
 -Release Date: 2025-09-07__
