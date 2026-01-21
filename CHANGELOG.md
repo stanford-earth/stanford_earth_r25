@@ -1,4 +1,11 @@
 # Stanford Earth R25
+8.x-1.24
+-------------------------------------------------------------------------
+-Release Date: 2026-01-21__
+
+- Catch error response from CAP API for user phone number.
+- Add additional logging for R25 API rejection of reservation request.
+
 8.x-1.23
 -------------------------------------------------------------------------
 -Release Date: 2025-12-10__
