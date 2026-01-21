@@ -71,17 +71,24 @@ function stanford_earth_hartley_get_phone_number() {
       }
     }
     if (!empty($access_token)) {
-      $query = [
-        'uids' => $uid,
-        'access_token' => $access_token,
-      ];
-      $options = ['query' => $query];
-      $url = Url::fromUri('https://cap.stanford.edu/cap-api/api/profiles/v1', $options);
-      $response = Drupal::httpClient()->request('GET', $url->toString(TRUE)
-        ->getGeneratedUrl());
-      $data = json_decode($response->getBody(), TRUE, 512);
-      if (!empty($data['values'][0]['primaryContact']['phoneNumbers'][0])) {
-        $phone_number = $data['values'][0]['primaryContact']['phoneNumbers'][0];
+      try {
+        $query = [
+          'uids' => $uid,
+          'access_token' => $access_token,
+        ];
+        $options = ['query' => $query];
+        $url = Url::fromUri('https://cap.stanford.edu/cap-api/api/profiles/v1', $options);
+        $response = Drupal::httpClient()->request('GET', $url->toString(TRUE)
+          ->getGeneratedUrl());
+        $data = json_decode($response->getBody(), TRUE, 512);
+        if (!empty($data['values'][0]['primaryContact']['phoneNumbers'][0])) {
+          $phone_number = $data['values'][0]['primaryContact']['phoneNumbers'][0];
+        }
+      }
+      catch (GuzzleException | \Exception $e) {
+        // Most errors originate from the API itself, log and fail over.
+        Drupal::logger('stanford_earth_r25')
+          ->error('Unable to retrieve phone number from the CAP API: %message', ['%message' => $e->getMessage()]);
       }
     }
   }
