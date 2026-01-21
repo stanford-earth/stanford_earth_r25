@@ -1291,10 +1291,13 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     else {
       // Display a message if the booking failed.
+      if (!empty($result['index']['R25:MSG_TEXT'][0]) && !empty($result['vals'][$result['index']['R25:MSG_TEXT'][0]]['value'])) {
+        $this->logger('stanford_earth-r25')->info('R25 reservation error: '.
+          $result['vals'][$result['index']['R25:MSG_TEXT'][0]]['value']);
+      }
       $this->postMessage($form_state, $nopopup, 'error',
         'The system was <strong>unable</strong> to book your room. This may be because of a time conflict with another meeting, or because someone else booked it first or because of problems communicating with 25Live. Please try again.');
       $body = [];
-      $event_id = 0;
       if (!empty($result['index']['R25:EVENT_ID'][0]) && !empty($result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'])) {
         $event_id = $result['vals'][$result['index']['R25:EVENT_ID'][0]]['value'];
         $body[] = 'failed reservation at: ' .
