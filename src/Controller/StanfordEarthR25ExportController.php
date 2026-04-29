@@ -216,10 +216,8 @@ class StanfordEarthR25ExportController extends ControllerBase {
   ) {
 
     // Format the request to the 25Live API from either POST or GET arrays.
-    $earliest = 2399;
-    $latest = 0;
-    $reservations = [];
-    $output = [];
+    $latest = 1730;
+    $earliest = 830;
     $location_props = $r25_location->toArray();
     if (!empty($location_props['displaytype']) && intval($location_props['displaytype']) > 0) {
       $location_type = 'Unknown';
@@ -244,7 +242,6 @@ class StanfordEarthR25ExportController extends ControllerBase {
         }
       }
       $room_id = $r25_location->get('id');
-      $room_label = $r25_location->get('label');
       $start_date = new \DateTime($start, new \DateTimeZone('America/Los_Angeles'));
       $start_date_out = $start_date->format(DATE_W3C);
       $end = date("Y-m-t", strtotime($end));
@@ -263,10 +260,12 @@ class StanfordEarthR25ExportController extends ControllerBase {
         $this->moduleHandler);
       $json = $feedController->feed($r25_location, 'download', $newRequest);
       $reservations = json_decode($json->getContent(), TRUE);
+      $dupes = [];
       if (!empty($reservations)) {
         $filename = $this->fileSystem->tempnam('temporary://', 'bookings_' . $room_id . '_');
         $filename .= '.csv';
         $row_array = [
+          'Type',
           'Location',
           'Label',
           'Space',
@@ -278,18 +277,33 @@ class StanfordEarthR25ExportController extends ControllerBase {
         ];
         if (!empty($extended)) {
           $row_array = array_merge($row_array, [
-            'Type', 'Comment', 'Contact', 'PTA', 'Department', 'Food',
+            'Comment', 'Contact', 'PTA', 'Department', 'Food',
           ]);
         }
         $fp = fopen($filename, 'w');
         fputcsv($fp, $row_array);
         foreach ($reservations as $reservation) {
+          $this_res = strval($reservation['space_id']) . "."
+            . $reservation['start'] . "." . $reservation['end'];
+          if (in_array($this_res, $dupes)) {
+            continue;
+          }
+          $dupes[] = $this_res;
+          $start_time = intval(substr($reservation['start'], 11, 2)) * 100 + intval(substr($reservation['start'], 14, 2));
+          if ($start_time < $earliest) {
+            $reservation['start'] = substr($reservation['start'], 0, 11) . '08:30:00-08:00';
+          }
+          $end_time = intval(substr($reservation['end'], 11, 2)) * 100 + intval(substr($reservation['end'], 14, 2));
+          if ($end_time > $latest) {
+            $reservation['end'] = substr($reservation['end'], 0, 11) . '17:30:00-08:00';
+          }
           $resDates = $this->parseDates($reservation['start'],
             $reservation['end']);
           foreach ($resDates as $resDate) {
             $row_array = [];
-            $row_array['id'] = $room_id;
-            $row_array['label'] = $room_label;
+            $row_array['type'] = $reservation['type'] ?? '';
+            $row_array['id'] = $reservation['space_id'];
+            $row_array['label'] = $reservation['space_name'];
             $row_array['space'] = $location_type;
             $row_array['dayofweek'] = $resDate['dayofweek'];
             $row_array['date'] = $resDate['date'];
@@ -309,7 +323,6 @@ class StanfordEarthR25ExportController extends ControllerBase {
             $row_array['frontend'] = $frontend;
             if (!empty($extended)) {
               $row_array['space'] = $reservation['space_name'];
-              $row_array['type'] = $reservation['type'] ?? '';
               $row_array['comment'] = $reservation['extra_description'] ?? '';
               $row_array['contact'] = $reservation['contact'] ?? '';
               $row_array['pta'] = $reservation['pta_number'] ?? '';
