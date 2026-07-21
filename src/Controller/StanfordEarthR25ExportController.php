@@ -137,26 +137,43 @@ class StanfordEarthR25ExportController extends ControllerBase {
     $endJd = $this->julianDate($end);
     // If they are the same, return the duration for the same-day booking.
     if ($startJd['julian'] === $endJd['julian']) {
+      $starting = new \DateTime();
+      $starting->setTimestamp(strtotime($start));
+      $starttime = $starting->format("H:i");
+      $ending = new \DateTime();
+      $ending->setTimestamp(strtotime($end));
+      $endtime = $ending->format("H:i");
       $duration = $this->duration($start, $end);
       return [
         [
           'date' => $startJd['date'],
           'dayofweek' => $duration['dayofweek'],
+          'start' => $starttime,
+          'end' => $endtime,
           'duration' => $duration['duration'],
         ],
       ];
     }
     else {
+      $xyz = 1;
       // Otherwise get durations for each day in the booking.
       $date = substr($start, 0, 10);
-      $firstStart = $start;
+      $firstStart = $start;      $starting = new \DateTime();
       $firstEnd = substr($start, 0, 11) . "17:30:00" .
         substr($start, 19);
+      $starting = new \DateTime();
+      $starting->setTimestamp(strtotime($firstStart));
+      $starttime = $starting->format("H:i");
+      $ending = new \DateTime();
+      $ending->setTimestamp(strtotime($firstEnd));
+      $endtime = $ending->format("H:i");
       $duration = $this->duration($firstStart, $firstEnd);
       $results = [
         [
           'date' => $date,
           'dayofweek' => $duration['dayofweek'],
+          'start' => $starttime,
+          'end' => $endtime,
           'duration' => $duration['duration'],
         ],
       ];
@@ -168,10 +185,18 @@ class StanfordEarthR25ExportController extends ControllerBase {
         $midStart = $dateobj->format(DATE_W3C);
         $dateobj->setTime(17, 30);
         $midEnd = $dateobj->format(DATE_W3C);
+        $starting = new \DateTime();
+        $starting->setTimestamp(strtotime($midStart));
+        $starttime = $starting->format("H:i");
+        $ending = new \DateTime();
+        $ending->setTimestamp(strtotime($midEnd));
+        $endtime = $ending->format("H:i");
         $duration = $this->duration($midStart, $midEnd);
         $results[] = [
           'date' => substr($midStart, 0, 10),
           'dayofweek' => $duration['dayofweek'],
+          'start' => $starttime,
+          'end' => $endtime,
           'duration' => $duration['duration'],
         ];
       }
@@ -179,10 +204,18 @@ class StanfordEarthR25ExportController extends ControllerBase {
       $lastStart = substr($end, 0, 11) . "08:30:00" .
         substr($end, 19);
       $lastEnd = $end;
+      $starting = new \DateTime();
+      $starting->setTimestamp(strtotime($lastStart));
+      $starttime = $starting->format("H:i");
+      $ending = new \DateTime();
+      $ending->setTimestamp(strtotime($lastEnd));
+      $endtime = $ending->format("H:i");
       $duration = $this->duration($lastStart, $lastEnd);
       $results[] = [
         'date' => $date,
         'dayofweek' => $duration['dayofweek'],
+        'start' => $starttime,
+        'end' => $endtime,
         'duration' => $duration['duration'],
       ];
       return $results;
@@ -265,12 +298,14 @@ class StanfordEarthR25ExportController extends ControllerBase {
         $filename = $this->fileSystem->tempnam('temporary://', 'bookings_' . $room_id . '_');
         $filename .= '.csv';
         $row_array = [
-          'Type',
-          'Location',
-          'Label',
-          'Space',
+          'Room Type',
+          'Requires Approval',
+          '25Live Location ID',
+          'Room Name',
           'DayOfWeek',
           'Date',
+          'Start Time',
+          'End Time',
           'Duration',
           'Headcount',
           'Frontend',
@@ -301,12 +336,14 @@ class StanfordEarthR25ExportController extends ControllerBase {
             $reservation['end']);
           foreach ($resDates as $resDate) {
             $row_array = [];
-            $row_array['type'] = $reservation['type'] ?? '';
+            $row_array['type'] = $location_type; // $reservation['type'] ?? '';
+            $row_array['approval'] = 'Yes';
             $row_array['id'] = $reservation['space_id'];
             $row_array['label'] = $reservation['space_name'];
-            $row_array['space'] = $location_type;
             $row_array['dayofweek'] = $resDate['dayofweek'];
             $row_array['date'] = $resDate['date'];
+            $row_array['start_time'] = $resDate['start'];
+            $row_array['end_time'] = $resDate['end'];
             $row_array['duration'] = $resDate['duration'];
             $row_array['headcount'] = $reservation['headcount'];
             $frontend = 'Unknown';
