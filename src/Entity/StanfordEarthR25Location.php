@@ -386,7 +386,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $room_administrator_roles;
 
   /**
-   * Contact email addresses for room administrators..
+   * Contact email addresses for room administrators.
    *
    * @var string
    */
@@ -442,7 +442,7 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
   protected $multi_room_capacities;
 
   /**
-   * Parent rooms of locations in multi-room calendars..
+   * Parent rooms of locations in multi-room calendars.
    *
    * @var array
    */

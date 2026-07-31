@@ -64,6 +64,13 @@
   {% set caltype = 0 %}
 {% endif %}
 <div id="stanford-r25-reservation">
+  {% if displaytype == 1 %}
+    {% set  read_only_txt = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_readonly_msg') %}
+    {% if read_only_txt is empty %}
+      {%  set read_only_txt = 'This room can not be reserved via this calendar.' %}
+    {% endif %}
+    <span>{{ read_only_txt }}</span>
+  {% endif %}
   {% if displaytype > 1 %}
     {% set room_id = r25_location.id() %}
     {% set start = 'now' %}
@@ -85,7 +92,11 @@
       {% endif %}
     {% else %}
       {% if logged_in %}
-        <span>You do not have permission to reserve this room.</span>
+        {% set not_permitted_txt = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_notpermitted_msg') %}
+        {% if not_permitted_txt is empty %}
+          {% set not_permitted_txt = 'You do not have permission to reserve this room.' %}
+        {% endif %}
+        <span>{{ not_permitted_txt }}</span>
       {% else %}
         {% set btn_txt = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_login_msg') %}
         {% set login_uri = stanford_earth_r25_config_val('stanford_earth_r25.adminsettings', 'stanford_r25_login_uri') %}

@@ -2,6 +2,7 @@
 
 namespace Drupal\stanford_earth_r25\Form;
 
+use Drupal\filter\FilterFormatRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -30,6 +31,11 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
   protected $configManager;
 
   /**
+   * The filter format repository service.
+   */
+  protected FilterFormatRepositoryInterface $formatRepository;
+
+  /**
    * The R25 service.
    *
    * @var \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
@@ -43,16 +49,20 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
    *   The ConfigFactory interface.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $configManager
    *   The Typed Config Manager interface.
+   * @param \Drupal\filter\FilterFormatRepositoryInterface $formatRepository
+   *   The FilterFormatRepositoryInterface.
    * @param \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service $r25Service
    *   The Workgroup service.
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
     TypedConfigManagerInterface $configManager,
+    FilterFormatRepositoryInterface $formatRepository,
     StanfordEarthR25Service $r25Service,
   ) {
     $this->configFactory = $configFactory;
     $this->configManager = $configManager;
+    $this->formatRepository = $formatRepository;
     $this->r25Service = $r25Service;
     parent::__construct($configFactory, $configManager);
   }
@@ -64,6 +74,7 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
+      $container->get(FilterFormatRepositoryInterface::class),
       $container->get('stanford_earth_r25.r25_call')
     );
   }
@@ -176,40 +187,31 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
 
     // Messages if room is not reservable or user has no permission to reserve.
     $default_not_permitted = $config->get('stanford_r25_notpermitted_msg');
-    if (empty($default_not_permitted)) {
-      $default_not_permitted = [];
-    }
-    if (empty($default_not_permitted['value'])) {
-      $default_not_permitted['value'] = '';
-    }
-    if (empty($default_not_permitted['format'])) {
-      $default_not_permitted['format'] = filter_default_format();
+    if (!is_string($default_not_permitted)) {
+      if (is_array($default_not_permitted) &&
+        !empty($default_not_permitted['value'])) {
+        $default_not_permitted = $default_not_permitted['value'];
+      }
     }
     $form['stanford_r25_notpermitted_msg'] = [
-      '#type' => 'text_format',
+      '#type' => 'textfield',
       '#title' => $this->t('No Permission to Reserve Rooms Message'),
-      '#description' => $this->t('Informational message to logged in users without the "Book R25 Rooms" permission.'),
-      '#default_value' => $default_not_permitted['value'],
-      '#format' => $default_not_permitted['format'],
-      '#base_type' => 'textarea',
+      '#description' => $this->t('Informational plain text message to logged in users without the "Book R25 Rooms" permission.'),
+      '#default_value' => $default_not_permitted,
     ];
+
     $default_readonly_msg = $config->get('stanford_r25_readonly_msg');
-    if (empty($default_readonly_msg)) {
-      $default_readonly_msg = [];
-    }
-    if (empty($default_readonly_msg['value'])) {
-      $default_readonly_msg['value'] = '';
-    }
-    if (empty($default_readonly_msg['format'])) {
-      $default_readonly_msg['format'] = filter_default_format();
+    if (!is_string($default_readonly_msg)) {
+      if (is_array($default_readonly_msg) &&
+        !empty($default_readonly_msg['value'])) {
+        $default_readonly_msg = $default_readonly_msg['value'];
+      }
     }
     $form['stanford_r25_readonly_msg'] = [
-      '#type' => 'text_format',
+      '#type' => 'textfield',
       '#title' => $this->t('Read Only Calendar Message'),
       '#description' => $this->t('A message informing user that a room is not reservable.'),
-      '#default_value' => $default_readonly_msg['value'],
-      '#format' => $default_readonly_msg['format'],
-      '#base_type' => 'textarea',
+      '#default_value' => $default_readonly_msg,
     ];
 
     // Default booking instructions to appear at bottom or reservation form.
@@ -221,7 +223,8 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
       $default_booking_instr['value'] = '';
     }
     if (empty($default_booking_instr['format'])) {
-      $default_booking_instr['format'] = filter_default_format();
+      $default_booking_instr['format'] = $this->formatRepository
+        ->getDefaultFormat()->id();
     }
     $form['stanford_r25_booking_instructions'] = [
       '#type' => 'text_format',

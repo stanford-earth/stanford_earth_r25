@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\user\Entity\Role;
+use Drupal\filter\FilterFormatRepositoryInterface;
 use Drupal\stanford_earth_r25\Entity\StanfordEarthR25Location;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 
@@ -17,13 +18,24 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 class StanfordEarthR25LocationForm extends EntityForm {
 
   /**
+   * The filter format repository service.
+   */
+  protected FilterFormatRepositoryInterface $formatRepository;
+
+  /**
    * Constructs an RoomForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entityTypeManager.
+   * @param \Drupal\filter\FilterFormatRepositoryInterface $format_repository
+   *   The Filter Format repository interface.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(
+    EntityTypeManagerInterface $entityTypeManager,
+    FilterFormatRepositoryInterface $format_repository,
+  ) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->formatRepository = $format_repository;
   }
 
   /**
@@ -31,7 +43,8 @@ class StanfordEarthR25LocationForm extends EntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get(FilterFormatRepositoryInterface::class)
     );
   }
 
@@ -182,7 +195,8 @@ class StanfordEarthR25LocationForm extends EntityForm {
       $override_desc['value'] = '';
     }
     if (empty($override_desc['format'])) {
-      $override_desc['format'] = filter_default_format();
+      $override_desc['format'] = $this->formatRepository
+        ->getDefaultFormat()->id();
     }
     $form['calendar']['override_room_description'] = [
       '#type' => 'text_format',
@@ -447,7 +461,8 @@ class StanfordEarthR25LocationForm extends EntityForm {
       $override_instr['value'] = '';
     }
     if (empty($override_instr['format'])) {
-      $override_instr['format'] = filter_default_format();
+      $override_instr['format'] = $this->formatRepository
+        ->getDefaultFormat()->id();
     }
     $form['reservations']['override_booking_instructions'] = [
       '#type' => 'text_format',
@@ -475,7 +490,8 @@ class StanfordEarthR25LocationForm extends EntityForm {
       $override_instr['value'] = '';
     }
     if (empty($override_instr['format'])) {
-      $override_instr['format'] = filter_default_format();
+      $override_instr['format'] = $this->formatRepository
+        ->getDefaultFormat()->id();
     }
     $form['reservations']['override_blackout_instructions'] = [
       '#type' => 'text_format',

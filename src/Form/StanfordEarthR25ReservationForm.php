@@ -146,8 +146,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $dayBits = explode('-', $dateStr);
     if (count($dayBits) > 4) {
       $dayParts['year'] = $dayBits[0];
-      $dayParts['month'] = $dayBits[1];
-      $dayParts['day'] = $dayBits[2];
+      $dayParts['month'] = strval(intval($dayBits[1]));
+      $dayParts['day'] = strval(intval($dayBits[2]));
       $dayParts['hour'] = $dayBits[3];
       $minutes = intval($dayBits[4]);
       if ($minutes > 0 && $minutes < 30) {
@@ -160,11 +160,11 @@ class StanfordEarthR25ReservationForm extends FormBase {
           if ($hour == 24) {
             $hour = 0;
           }
-          $dayParts['hour'] = $hour;
+          $dayParts['hour'] = strval($hour);
         }
       }
-      $dayParts['minute'] = $minutes;
-      $dayParts['seconds'] = 0;
+      $dayParts['minute'] = strval($minutes);
+      $dayParts['second'] = '0';
       if (count($dayBits) > 5) {
         $dayParts['extra1'] = $dayBits[5];
         $extra2str = '';
@@ -272,7 +272,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     }
     $form['r25_instructions'] = [
       '#type' => 'markup',
-      '#markup' => check_markup($booking_instr['value'], $booking_instr['format']),
+      '#markup' => $booking_instr['value'],
+      '#format' => $booking_instr['format'],
     ];
 
     // Use the Drupal date popup for date and time picking.
@@ -453,8 +454,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
       str_contains($rooms[$room]['event_attributes'], "312")) {
       $form['r25_price_markup'] = [
         '#type' => 'markup',
-        '#markup' => check_markup('<br/><p><strong>Estimated cost will be: ' . $price . '</strong></p>',
-          $adminSettings['stanford_r25_booking_instructions']['format']),
+        '#markup' => '<br/><p><strong>Estimated cost will be: ' . $price . '</strong></p>',
+        '#format' => $adminSettings['stanford_r25_booking_instructions']['format'],
       ];
       // Store booking info in form storage.
       $storage = $form_state->getStorage();
@@ -1292,7 +1293,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
     else {
       // Display a message if the booking failed.
       if (!empty($result['index']['R25:MSG_TEXT'][0]) && !empty($result['vals'][$result['index']['R25:MSG_TEXT'][0]]['value'])) {
-        $this->logger('stanford_earth-r25')->info('R25 reservation error: '.
+        $this->logger('stanford_earth-r25')->info('R25 reservation error: ' .
           $result['vals'][$result['index']['R25:MSG_TEXT'][0]]['value']);
       }
       $this->postMessage($form_state, $nopopup, 'error',

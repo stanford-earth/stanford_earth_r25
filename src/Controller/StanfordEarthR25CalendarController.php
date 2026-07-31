@@ -127,12 +127,16 @@ class StanfordEarthR25CalendarController extends ControllerBase {
       $photo_url = StanfordEarthR25Util::stanfordR25FilePath($r25_location->get('location_info')['photo_id']);
     }
 
-    $override_desc = $r25_location->get('override_room_description');
-    $override_room_description = NULL;
-    if (!empty($override_desc['value'])) {
-      $override_room_description = check_markup($override_desc['value'],
-        $override_desc['format']);
+    $override_room_desc = $r25_location->get('override_room_description');
+    $override_room_description = [];
+    if (!empty($override_room_desc['value'])) {
+      $override_room_description = [
+        '#type' => 'processed_text',
+        '#text' => $override_room_desc['value'],
+        '#format' => $override_room_desc['format'],
+      ];
     }
+
     // Get default view and date params from URL if provided by a permalink.
     $params = $request->query->all();
     foreach ($params as $key => $param) {
