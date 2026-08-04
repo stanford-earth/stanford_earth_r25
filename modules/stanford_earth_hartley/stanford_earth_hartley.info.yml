@@ -3,4 +3,4 @@ type: module
 description: 'Hartley conference center submodule for R25 Reservations'
 core_version_requirement: ^10 || ^11
 package: Stanford
-version: 8.x-2.1
+version: 8.x-2.x-dev
