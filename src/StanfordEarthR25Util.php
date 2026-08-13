@@ -787,7 +787,7 @@ class StanfordEarthR25Util {
     $calendar_limit = [
       'room' => $r25_location->toArray(),
       'month' => $date->format('n'),
-      'day' => $date->format('d'),
+      'day' => $date->format('j'),
       'year' => $date->format('Y'),
     ];
     $module_handler->alter('stanford_r25_fullcalendar_limit', $calendar_limit);

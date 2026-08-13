@@ -729,7 +729,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       'day' => $calendar_limit['day'],
       'hour' => "0",
       'minute' => "0",
-      'seconds' => "0",
+      'second' => "0",
     ]);
     if ($date->getTimestamp() > $bdate->getTimestamp()) {
       $form_state->setErrorByName('stanford_r25_booking_date',

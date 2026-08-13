@@ -98,6 +98,10 @@ label.js-form-required.form-required::after {
   border-right-color: lightgoldenrodyellow;
 }
 
+.ui-dialog .ui-dialog-title {
+  font-size: 2.75rem;
+}
+
 /*
 body[class^="page-r25-"] .ui-dialog {
 .page-r25-mb04-calendar

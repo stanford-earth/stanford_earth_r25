@@ -5,6 +5,8 @@
  * Implements stanford_earth_r25 hooks for SE3-only customizations.
  */
 
+use Drupal\User\UserInterface;
+
 /**
  * Implements hook_user_format_name_alter().
  */
@@ -13,14 +15,19 @@ function stanford_earth_r25_custom_user_format_name_alter(
   $account,
 ) {
   if (!empty($account)) {
-    /** @var \Drupal\user\Entity\User $user */
-    $user = \Drupal::entityTypeManager()->getStorage('user')
-      ->load($account->id());
-    if ($user) {
-      $displayName = $user->get('field_su_display_name')->value;
-      if (!empty($displayName)) {
-        $name = $displayName;
+    if (! $account instanceof UserInterface) {
+      /** @var \Drupal\user\Entity\User $user */
+      $user = \Drupal::entityTypeManager()->getStorage('user')
+        ->load($account->id());
+      if ($user) {
+        $displayName = $user->get('field_su_display_name')->value;
       }
+    }
+    else {
+      $displayName = $account->get('field_su_display_name')->value;
+    }
+    if (!empty($displayName)) {
+      $name = $displayName;
     }
   }
 }

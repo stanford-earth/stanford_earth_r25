@@ -29,7 +29,7 @@ function stanford_earth_hartley_is_sdss_user() {
  */
 function stanford_earth_hartley_get_phone_number() {
   $uid = \Drupal::service('externalauth.authmap')
-    ->get(Drupal::currentUser()->id(), 'samlauth');
+    ->get(Drupal::currentUser()->id(), 'simplesamlphp_auth');
   $phone_number = '';
   if (!empty($uid)) {
     $access_token = '';
@@ -38,9 +38,9 @@ function stanford_earth_hartley_get_phone_number() {
       $access_token = $token->data['access_token'];
     }
     else {
-      $config_pages = \Drupal::service('config_pages.loader');
-      $capid = $config_pages->getValue('stanford_person_importer', 'su_person_cap_username', 0, 'value') ?? '';
-      $capsecret = $config_pages->getValue('stanford_person_importer', 'su_person_cap_password', 0, 'value') ?? '';
+      // $config_pages = \Drupal::service('config_pages.loader');
+      $capid = 'earth-sciences'; // $config_pages->getVaflue('stanford_person_importer', 'su_person_cap_username', 0, 'value') ?? '';
+      $capsecret = 'rijhodjenifAtHytvart'; // $config_pages->getValue('stanford_person_importer', 'su_person_cap_password', 0, 'value') ?? '';
       if (!empty($capid) && !empty($capsecret)) {
         $query = ['query' => ['grant_type' => 'client_credentials']];
         $auth_url = Url::fromUri('https://authz.stanford.edu/oauth/token', $query);
@@ -136,6 +136,7 @@ function stanford_earth_hartley_form_alter(
     $hartley_room = stanford_earth_hartley_is_room_category($form, 'hartley');
     $press_building_room = stanford_earth_hartley_is_room_category($form, 'press_building');
     $farm_room = stanford_earth_hartley_is_room_category($form, 'farm');
+    $hopkins_boats = stanford_earth_hartley_is_room_category($form, "hopkins-boats");
     if ($farm_room) {
       $form['stanford_r25_booking_headcount']['#title'] = t('Headcount');
       $event_code = $form['#attached']['drupalSettings']['stanfordEarthR25']['stanfordR25Room']['override_event_code'] ?? 0;
@@ -143,19 +144,29 @@ function stanford_earth_hartley_form_alter(
         $form['stanford_r25_booking_headcount']['#max'] = "40";
       }
     }
-    if ($hartley_room || $press_building_room || $farm_room) {
-      if ($press_building_room) {
+    if ($hartley_room || $press_building_room || $farm_room || $hopkins_boats) {
+      if ($press_building_room || $hopkins_boats) {
         if (!empty($form['#attached']['drupalSettings']['stanfordEarthR25']['stanfordR25Room']['post_process_redirect_url'])) {
-          $press_user = $room_admin ||
-            !empty(array_intersect(Drupal::currentUser()->getRoles(),
-              ['custm_press_building_user', 'custm_press_building_admin']));
-          if (!$press_user) {
-            $form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'] = TRUE;
-            if (!empty($form['stanford_r25_booking_roomid']['#value']) &&
-              $form['stanford_r25_booking_roomid']['#value'] === 'sa03') {
+          if ($press_building_room) {
+            $press_user = $room_admin ||
+              !empty(array_intersect(Drupal::currentUser()->getRoles(),
+                ['custm_press_building_user', 'custm_press_building_admin']));
+            if (!$press_user) {
+              $form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect'] = TRUE;
+              if (!empty($form['stanford_r25_booking_roomid']['#value']) &&
+                $form['stanford_r25_booking_roomid']['#value'] === 'sa03') {
+                $markup = strval($form['r25_instructions']['#markup']);
+                $markup = str_replace("<p>Reservations", "<p>Meeting reservations", $markup);
+                $markup = str_replace("For questions", "For the Event Space, you will be redirected to a detailed request form after clicking Reserve below. For questions", $markup);
+                $form['r25_instructions']['#markup'] = $markup;
+              }
+            }
+          }
+          else if ($hopkins_boats) {
+            if (!$room_admin) {
               $markup = strval($form['r25_instructions']['#markup']);
-              $markup = str_replace("<p>Reservations", "<p>Meeting reservations", $markup);
-              $markup = str_replace("For questions", "For the Event Space, you will be redirected to a detailed request form after clicking Reserve below. For questions", $markup);
+              $markup = str_replace("<p>Boat Reservations", "<p>Meeting reservations", $markup);
+              $markup = str_replace("For questions", "For the Boat Reservations, you will be redirected to a Boat Project Details form after clicking Reserve below. Your reservation will be tentative until your Boat Project is approved. For questions", $markup);
               $form['r25_instructions']['#markup'] = $markup;
             }
           }
@@ -470,9 +481,8 @@ function stanford_earth_hartley_form_submit(&$form, FormStateInterface $form_sta
       Drupal::service('plugin.manager.mail')->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
     if (!empty($storage['room']['post_process_redirect_url']) && !empty($storage['room']['nopopup_reservation_form']) &&
-      !empty($storage['event_state']) && $storage['event_state'] === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE &&
-      !empty($form['#attached']['drupalSettings']['stanfordEarthR25']['pressRedirect']) &&
-      $space_id === '2605') {
+      !empty($storage['event_state']) && $storage['event_state'] === StanfordEarthR25Util::STANFORD_R25_ROOM_STATUS_TENTATIVE
+      ) {
       $redirect = $storage['room']['post_process_redirect_url'];
       $startDate = '';
       $endDate = '';
