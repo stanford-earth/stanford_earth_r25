@@ -606,15 +606,14 @@ class StanfordEarthR25ReservationForm extends FormBase {
     elseif (!empty($r25_messages)) {
       if (!empty($r25_messages['success'])) {
         foreach ($r25_messages['success'] as $r25_message) {
-          $msg_list .= '<span class="r25-booking-success">' . $r25_message . '</span>';
+          $msg_list .= '<span tabindex="-1" class="r25-booking-success">' . $r25_message . '</span>';
         }
       }
       if (!empty($r25_messages['failure'])) {
         foreach ($r25_messages['failure'] as $r25_message) {
-          $msg_list .= '<span class="r25-booking-failure">' . $r25_message . '</span>';
+          $msg_list .= '<span tabindex="-1" class="r25-booking-failure">' . $r25_message . '</span>';
         }
       }
-
       $msg = [
         '#markup' => $msg_list,
       ];
@@ -1029,6 +1028,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $comment_str = $contact_str . '<br/>' . $comment_str;
     // Send the request to our api function.
     $xml = str_replace('[r25_created_by]', $contact_str, $xml);
+    $postdata = serialize([]);
+    $r25_result = $this->r25Service->stanfordR25ApiCall('blank', $postdata);
     // Send the request to our api function.
     $r25_result = $this->r25Service->stanfordR25ApiCall('reserve', $xml);
     // Check the results to see if our reservation attempt was successful.

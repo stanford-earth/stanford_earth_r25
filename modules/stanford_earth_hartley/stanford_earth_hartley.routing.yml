@@ -5,3 +5,11 @@ stanford_earth_farm_booking.export:
     _title: 'Stanford R25 Export Farm Reservations'
   requirements:
     _permission: 'download farm reservations'
+
+stanford_earth_hopkins_boat.project:
+  path: '/r25/hopkins_boat_project'
+  defaults:
+    _form: '\Drupal\stanford_earth_hartley\Form\StanfordEarthHopkinsBoatProject'
+    _title: 'Hopkins Scientific Boating Project'
+  requirements:
+    _permission: 'book r25 rooms'

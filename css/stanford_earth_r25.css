@@ -13,9 +13,11 @@
     margin-bottom: 0;
 }
 
+/*
 #stanford-earth-r25-reservation .form-submit {
     margin-top: 10px;
 }
+*/
 
 label.js-form-required.form-required::after {
   display: inline-block;

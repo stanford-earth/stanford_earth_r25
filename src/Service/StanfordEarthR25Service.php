@@ -208,6 +208,10 @@ class StanfordEarthR25Service {
           $xml_command = 'todo.xml?todo_id=' . $id;
           break;
 
+        case 'blank':
+          $xml_command = 'event.xml';
+          break;
+
         default:
           $xml_command = 'null.xml';
       }
@@ -218,7 +222,7 @@ class StanfordEarthR25Service {
       // GET, POST, or DELETE.
       $method = 'GET';
       $options = [];
-      if ($command == 'reserve' || $command == 'avail' || $command == 'todo-post') {
+      if ($command == 'reserve' || $command == 'avail' || $command == 'todo-post' || $command == 'blank') {
         // $post_data contains the XML for a reservation request
         $method = 'POST';
         $options['body'] = $post_data;
