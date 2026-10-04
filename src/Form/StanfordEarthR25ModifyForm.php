@@ -3,14 +3,8 @@
 namespace Drupal\stanford_earth_r25\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Extension\ExtensionPathResolver;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Mail\MailManager;
-use Drupal\Core\Messenger\Messenger;
-use Drupal\Core\Render\Renderer;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\Core\Form\ConfirmFormBase;
@@ -61,14 +55,14 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
   protected $configFactory;
 
   /**
-   * Drupal Account Interface
+   * Drupal Account Interface.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
   protected $account;
 
   /**
-   * Drupal Mail Manager
+   * Drupal Mail Manager.
    *
    * @var \Drupal\Core\Mail\MailManager
    */
@@ -109,7 +103,6 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       $container->get('stanford_earth_r25.r25_call'),
     );
   }
-
 
   /**
    * {@inheritdoc}

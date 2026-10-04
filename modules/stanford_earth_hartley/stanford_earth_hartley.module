@@ -39,36 +39,40 @@ function stanford_earth_hartley_get_phone_number() {
     }
     else {
       // $config_pages = \Drupal::service('config_pages.loader');
-      $capid = 'earth-sciences'; // $config_pages->getVaflue('stanford_person_importer', 'su_person_cap_username', 0, 'value') ?? '';
-      $capsecret = 'rijhodjenifAtHytvart'; // $config_pages->getValue('stanford_person_importer', 'su_person_cap_password', 0, 'value') ?? '';
-      //if (!empty($capid) && !empty($capsecret)) {
-        $query = ['query' => ['grant_type' => 'client_credentials']];
-        $auth_url = Url::fromUri('https://authz.stanford.edu/oauth/token', $query);
-        $response = NULL;
-        $options = ['auth' => [$capid, $capsecret]];
-        try {
-          $response = Drupal::httpClient()
-            ->request('GET', $auth_url->toString(TRUE)
-              ->getGeneratedUrl(), $options);
-        }
-        catch (GuzzleException | \Exception $e) {
-          Drupal::cache()->delete('cap:access_token');
-          // Most errors originate from the API itself, log and fail over.
-          Drupal::logger('stanford_earth_r25')
-            ->error('An unexpected error came from the API: %message', ['%message' => $e->getMessage()]);
-        }
-        $token = FALSE;
-        if (!empty($response) && $response->getStatusCode() == 200) {
-          $token = json_decode($response->getBody(), TRUE, 512);
-        }
-        if (!empty($token)) {
-          Drupal::logger('stanford_earth_r25')->info('new access token written to cache');
-          Drupal::cache()->set('cap:access_token', $token,
-            time() + $token['expires_in'] - 3600,
-            ['stanford_earth_r25']);
-          $access_token = $token['access_token'];
-        }
-      //}
+      $capid = 'earth-sciences';
+      // $config_pages->getVaflue('stanford_person_importer',
+      // 'su_person_cap_username', 0, 'value') ?? '';
+      $capsecret = 'rijhodjenifAtHytvart';
+      // $config_pages->getValue('stanford_person_importer',
+      // 'su_person_cap_password', 0, 'value') ?? '';
+      // if (!empty($capid) && !empty($capsecret)) {
+      $query = ['query' => ['grant_type' => 'client_credentials']];
+      $auth_url = Url::fromUri('https://authz.stanford.edu/oauth/token', $query);
+      $response = NULL;
+      $options = ['auth' => [$capid, $capsecret]];
+      try {
+        $response = Drupal::httpClient()
+          ->request('GET', $auth_url->toString(TRUE)
+            ->getGeneratedUrl(), $options);
+      }
+      catch (GuzzleException | \Exception $e) {
+        Drupal::cache()->delete('cap:access_token');
+        // Most errors originate from the API itself, log and fail over.
+        Drupal::logger('stanford_earth_r25')
+          ->error('An unexpected error came from the API: %message', ['%message' => $e->getMessage()]);
+      }
+      $token = FALSE;
+      if (!empty($response) && $response->getStatusCode() == 200) {
+        $token = json_decode($response->getBody(), TRUE, 512);
+      }
+      if (!empty($token)) {
+        Drupal::logger('stanford_earth_r25')->info('new access token written to cache');
+        Drupal::cache()->set('cap:access_token', $token,
+          time() + $token['expires_in'] - 3600,
+          ['stanford_earth_r25']);
+        $access_token = $token['access_token'];
+      }
+      // }
     }
     if (!empty($access_token)) {
       try {
@@ -162,7 +166,7 @@ function stanford_earth_hartley_form_alter(
               }
             }
           }
-          else if ($hopkins_boats) {
+          elseif ($hopkins_boats) {
             if (!$room_admin) {
               $markup = strval($form['r25_instructions']['#markup']);
               $markup = str_replace("<p>Boat Reservations", "<p>Meeting reservations", $markup);
