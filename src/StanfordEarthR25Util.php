@@ -269,6 +269,10 @@ class StanfordEarthR25Util {
         if (!empty($results['index']['R25:LAYOUT_NAME'][$default_layout])) {
           $room_info['layout_name'] = $results['vals'][$results['index']['R25:LAYOUT_NAME'][$default_layout]]['value'];
         }
+        $room_info['all_layouts'] = [];
+        foreach ($results['index']['R25:LAYOUT_NAME'] as $layoutid) {
+          $room_info['all_layouts'][] = $results['vals'][$layoutid]['value'];
+        }
         $room_info['layout_instruction'] = NULL;
         if (!empty($results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]) &&
           !empty($results['vals'][$results['index']['R25:LAYOUT_INSTRUCTION'][$default_layout]]['value'])) {

@@ -3,7 +3,6 @@
  *  various style tweaks for calendar displays, room info block, and reservation form
  *
  */
-
 #stanford-earth-r25-reservation {
     margin-bottom: 0;
 }
@@ -104,18 +103,117 @@ label.js-form-required.form-required::after {
   font-size: 2.75rem;
 }
 
+#block-olivero-content, #block-olivero-page-title, #block-olivero-breadcrumbs {
+  width: 100%;
+  max-width: 100%;
+  grid-column: 1 / -1;
+  margin-inline: 0;
+  padding-inline: 0;
+}
 /*
-body[class^="page-r25-"] .ui-dialog {
-.page-r25-mb04-calendar
- */
 body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset {
   margin-top: 0;
   margin-bottom: 0;
 }
+*/
 
+/*
+.views-view-responsive-grid {
+  width: 100%;
+  max-width: 100%;
+}
+*/
+
+.views-view-responsive-grid__item {
+  border: 1px solid #e3e3e3;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .13), 0 3px 6px rgba(0, 0, 0, .1);
+  -webkit-box-shadow: 0 3px 6px rgba(0, 0, 0, .13), 0 3px 6px rgba(0, 0, 0, .1);
+  min-width: 300px;
+}
+
+/* Make the card inner container a flex column */
+.views-view-responsive-grid__item-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.views-field-title {
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-block: var(--sp1);
+  font-weight: bold;
+  font-size: larger;
+}
+
+.views-field-field-description {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-block: var(--sp1);
+}
+
+/* Push the link button to the bottom */
+.views-field-field-link {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-block: var(--sp1);
+  background-color: #9F000E;
+  color: white;
+  margin-top: auto; /* ← This is the key addition */
+}
+
+.views-field-field-link a {
+  text-decoration: none;
+  color: white;
+}
+
+.views-field-field-link a:hover {
+  color: white;
+}
 /*
 .fc-highlight {
   margin-top: -10px !important;
   margin-bottom: 10px !important;
 }
 */
+
+/* Align page title to the left */
+.block-page-title-block,
+.block-page-title-block .page-title {
+  text-align: left;
+}
+
+/* Align breadcrumb to the left */
+.breadcrumb__content {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+/* Ensure the regions containing title and breadcrumb align left */
+.region--content-above,
+.region--breadcrumb {
+  text-align: left;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Page title specifically */
+.page-title {
+  text-align: left;
+  width: 100%;
+}
+
+/* Breadcrumb specifically */
+.breadcrumb,
+.breadcrumb__content,
+.breadcrumb__list {
+  text-align: left;
+  justify-content: flex-start;
+  margin-inline: 0;
+}

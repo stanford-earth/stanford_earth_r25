@@ -46,3 +46,8 @@ stanford_earth_r25_reservation_page:
   dependencies:
     - core/jquery
     - core/drupalSettings
+
+stanford_earth_r25_category_page:
+  css:
+    theme:
+      css/stanford_earth_r25.css: {}

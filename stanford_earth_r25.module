@@ -5,6 +5,8 @@
  * Implements Drupal hooks for stanford_earth_r25 module.
  */
 
+use Drupal\views\ViewExecutable;
+
 /**
  * Hook to format emailed error messages to site admin.
  *
@@ -117,4 +119,17 @@ function stanford_earth_r25_theme($existing, $type, $theme, $path) {
     ],
   ];
 
+}
+
+/**
+ * Implements hooks_views_pre_render().
+ */
+function stanford_earth_r25_views_pre_render(\Drupal\views\ViewExecutable $view) {
+  if ($view->id() == 'sdssrooms_locations') {
+    $view->element['#attached']['library'][] = 'stanford_earth_r25/stanford_earth_r25_category_page';
+  }
+}
+
+function stanford_earth_r25_preprocess_html(&$variables) {
+  $variables['attributes']['class'][] = 'sdssrooms';
 }
