@@ -21,7 +21,7 @@ use Drupal\stanford_earth_r25\Entity\StanfordEarthR25LocationInterface;
 /**
  * Provide R25 event feed by location to fullcalendar js.
  */
-class StanfordEarthR25FeedController extends ControllerBase {
+final class StanfordEarthR25FeedController extends ControllerBase {
 
   /**
    * Page cache kill switch.
@@ -83,7 +83,7 @@ class StanfordEarthR25FeedController extends ControllerBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('page_cache_kill_switch'),
       $container->get('config.factory'),
       $container->get('current_user'),

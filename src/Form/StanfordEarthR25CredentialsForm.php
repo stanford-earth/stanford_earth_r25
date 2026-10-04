@@ -13,7 +13,7 @@ use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 /**
  * Contains Drupal\stanford_earth_r25\Form\StanfordEarthR25ConfigForm.
  */
-class StanfordEarthR25CredentialsForm extends ConfigFormBase {
+final class StanfordEarthR25CredentialsForm extends ConfigFormBase {
 
   /**
    * The configuration factory.
@@ -63,7 +63,7 @@ class StanfordEarthR25CredentialsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('config.factory'),
       $container->get('config.typed'),
       $container->get('stanford_earth_r25.r25_call'),

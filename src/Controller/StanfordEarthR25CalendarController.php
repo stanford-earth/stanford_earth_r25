@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Provides a calendar page.
  */
-class StanfordEarthR25CalendarController extends ControllerBase {
+final class StanfordEarthR25CalendarController extends ControllerBase {
 
   /**
    * Page cache kill switch.
@@ -82,7 +82,7 @@ class StanfordEarthR25CalendarController extends ControllerBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('page_cache_kill_switch'),
       $container->get('current_user'),
       $container->get('form_builder'),

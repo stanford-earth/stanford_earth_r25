@@ -2,12 +2,23 @@
 
 namespace Drupal\stanford_earth_r25\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Extension\ExtensionPathResolver;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Mail\MailManager;
+use Drupal\Core\Messenger\Messenger;
+use Drupal\Core\Render\Renderer;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\stanford_earth_r25\Service\StanfordEarthR25Service;
 use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Contains Drupal\stanford_earth_r25\Form\StanfordEarthR25CancelForm.
@@ -43,6 +54,64 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
   protected $start;
 
   /**
+   * Drupal Config Factory interface.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * Drupal Account Interface
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $account;
+
+  /**
+   * Drupal Mail Manager
+   *
+   * @var \Drupal\Core\Mail\MailManager
+   */
+  protected $mailManager;
+
+  /**
+   * The R25 Service.
+   *
+   * @var \Drupal\stanford_earth_r25\Service\StanfordEarthR25Service
+   */
+  protected $r25Service;
+
+  /**
+   * Class constructor.
+   */
+  public function __construct(
+    ConfigFactoryInterface $configFactory,
+    AccountInterface $account,
+    MailManager $mailManager,
+    StanfordEarthR25Service $r25Service,
+  ) {
+    $this->configFactory = $configFactory;
+    $this->account = $account;
+    $this->mailManager = $mailManager;
+    $this->r25Service = $r25Service;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    // Instantiates this form class.
+    return new self(
+    // Load the service required to construct this class.
+      $container->get('config.factory'),
+      $container->get('current_user'),
+      $container->get('plugin.manager.mail'),
+      $container->get('stanford_earth_r25.r25_call'),
+    );
+  }
+
+
+  /**
    * {@inheritdoc}
    */
   public function getFormId() {
@@ -71,7 +140,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
     $this->start = $start;
 
     if (!empty($room_id)) {
-      $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
+      $config = $this->configFactory->get('stanford_earth_r25.stanford_earth_r25.' . $room_id);
       $rooms[$room_id] = $config->getRawData();
     }
 
@@ -174,7 +243,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
     $rooms = [];
     $room_id = $this->locationId;
     if (!empty($room_id)) {
-      $config = \Drupal::config('stanford_earth_r25.stanford_earth_r25.' . $room_id);
+      $config = $this->configFactory->get('stanford_earth_r25.stanford_earth_r25.' . $room_id);
       $rooms[$room_id] = $config->getRawData();
     }
     $storage = $form_state->getStorage();
@@ -241,8 +310,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
     }
 
     // Put the event XML back to 25Live to set the new cancel or confirm state.
-    $r25_service = \Drupal::service('stanford_earth_r25.r25_call');
-    $r25_service->stanfordR25ApiCall('event-put', $xml_string, $this->eventId);
+    $this->r25Service->stanfordR25ApiCall('event-put', $xml_string, $this->eventId);
 
     // If we want to email room approvers or the user about the confirmation
     // or cancellation, build up the email list and send information.
@@ -260,7 +328,6 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
         $admin_emails = $rooms[$room_id]['room_administrator_emails'];
       }
       $email_list = StanfordEarthR25Util::stanfordR25BuildEventEmailList($result, $secgroup_id, $admin_emails, $additional);
-      $user = \Drupal::currentUser();
       // Get the event title from the XML for display.
       $title = '';
       if (!empty($result['vals'][$result['index']['R25:EVENT_NAME'][0]]['value'])) {
@@ -274,7 +341,7 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
       }
 
       $body = [];
-      $body[] = 'A Room Reservation ' . $opout . ' request was sent by ' . $user->getDisplayName();
+      $body[] = 'A Room Reservation ' . $opout . ' request was sent by ' . $this->account->getDisplayName();
       $body[] = ' for "' . $title . '" in room ' . $rooms[$room_id]['label'];
       $startdate = DrupalDateTime::createFromFormat(DATE_W3C, $this->start);
       if ($event_count > 1) {
@@ -299,16 +366,15 @@ class StanfordEarthR25ModifyForm extends ConfirmFormBase {
         'body' => $body,
         'subject' => $subject,
       ];
-      $mailManager = \Drupal::service('plugin.manager.mail');
       $module = 'stanford_earth_r25';
       $key = 'r25_operation';
       $to = $email_list;
       $params['message'] = $body;
       $params['r25_operation'] = $subject;
-      $langcode = \Drupal::currentUser()->getPreferredLangcode();
+      $langcode = $this->account->getPreferredLangcode();
       $send = TRUE;
-      $replyto = \Drupal::config('system.site')->get('mail');
-      $mailManager->mail($module, $key, $to, $langcode, $params, $replyto, $send);
+      $replyto = $this->configFactory->get('system.site')->get('mail');
+      $this->mailManager->mail($module, $key, $to, $langcode, $params, $replyto, $send);
     }
     // The operation is done, so go back to the calendar page.
     $url = new Url('entity.stanford_earth_r25_location.calendar',

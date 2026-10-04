@@ -16,7 +16,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 /**
  * Provides a room reservation page.
  */
-class StanfordEarthR25ReservationController extends ControllerBase {
+final class StanfordEarthR25ReservationController extends ControllerBase {
 
   /**
    * The form builder.
@@ -92,7 +92,7 @@ class StanfordEarthR25ReservationController extends ControllerBase {
    * @return static
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('form_builder'),
       $container->get('entity_type.manager'),
       $container->get('current_user'),

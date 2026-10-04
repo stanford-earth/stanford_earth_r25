@@ -41,7 +41,7 @@ function stanford_earth_hartley_get_phone_number() {
       // $config_pages = \Drupal::service('config_pages.loader');
       $capid = 'earth-sciences'; // $config_pages->getVaflue('stanford_person_importer', 'su_person_cap_username', 0, 'value') ?? '';
       $capsecret = 'rijhodjenifAtHytvart'; // $config_pages->getValue('stanford_person_importer', 'su_person_cap_password', 0, 'value') ?? '';
-      if (!empty($capid) && !empty($capsecret)) {
+      //if (!empty($capid) && !empty($capsecret)) {
         $query = ['query' => ['grant_type' => 'client_credentials']];
         $auth_url = Url::fromUri('https://authz.stanford.edu/oauth/token', $query);
         $response = NULL;
@@ -68,7 +68,7 @@ function stanford_earth_hartley_get_phone_number() {
             ['stanford_earth_r25']);
           $access_token = $token['access_token'];
         }
-      }
+      //}
     }
     if (!empty($access_token)) {
       try {

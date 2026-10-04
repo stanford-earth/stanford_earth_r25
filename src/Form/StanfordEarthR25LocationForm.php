@@ -15,7 +15,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 /**
  * Form handler for the Example add and edit forms.
  */
-class StanfordEarthR25LocationForm extends EntityForm {
+final class StanfordEarthR25LocationForm extends EntityForm {
 
   /**
    * The filter format repository service.
@@ -42,7 +42,7 @@ class StanfordEarthR25LocationForm extends EntityForm {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('entity_type.manager'),
       $container->get(FilterFormatRepositoryInterface::class)
     );

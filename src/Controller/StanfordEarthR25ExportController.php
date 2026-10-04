@@ -17,7 +17,7 @@ use Drupal\Core\File\FileSystem;
 /**
  * Provides a reservations exporter.
  */
-class StanfordEarthR25ExportController extends ControllerBase {
+final class StanfordEarthR25ExportController extends ControllerBase {
 
   /**
    * Page cache kill switch.
@@ -89,7 +89,7 @@ class StanfordEarthR25ExportController extends ControllerBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('page_cache_kill_switch'),
       $container->get('config.factory'),
       $container->get('current_user'),

@@ -22,11 +22,13 @@ use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Url;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ExtensionPathResolver;
 
 /**
  * Drupal Ajax form to reserve a 25Live room.
  */
-class StanfordEarthR25ReservationForm extends FormBase {
+final class StanfordEarthR25ReservationForm extends FormBase {
 
   /**
    * The current user.
@@ -85,6 +87,20 @@ class StanfordEarthR25ReservationForm extends FormBase {
   protected $tempStore;
 
   /**
+   * Drupal Config Factory interface.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * Drupal Extension path Resolver service.
+   *
+   * @var \Drupal\Core\Extension\ExtensionPathResolver
+   */
+  protected $extensionPathResolver;
+
+  /**
    * Class constructor.
    */
   public function __construct(
@@ -96,6 +112,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     Messenger $messenger,
     ModuleHandlerInterface $moduleHandler,
     PrivateTempStoreFactory $tempStore,
+    ConfigFactoryInterface $configFactory,
+    ExtensionPathResolver $extensionPathResolver,
   ) {
     $this->user = $user;
     $this->mailManager = $mailManager;
@@ -105,6 +123,8 @@ class StanfordEarthR25ReservationForm extends FormBase {
     $this->messenger = $messenger;
     $this->moduleHandler = $moduleHandler;
     $this->tempStore = $tempStore;
+    $this->configFactory = $configFactory;
+    $this->extensionPathResolver = $extensionPathResolver;
   }
 
   /**
@@ -112,7 +132,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     // Instantiates this form class.
-    return new static(
+    return new self(
     // Load the service required to construct this class.
       $container->get('current_user'),
       $container->get('plugin.manager.mail'),
@@ -121,7 +141,9 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $container->get('renderer'),
       $container->get('messenger'),
       $container->get('module_handler'),
-      $container->get('tempstore.private')
+      $container->get('tempstore.private'),
+      $container->get('config.factory'),
+      $container->get('extension.path.resolver'),
     );
   }
 
@@ -933,8 +955,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       return;
     }
     $adminSettings = $this->config('stanford_earth_r25.adminsettings')->getRawData();
-    $extension_path_resolver = \Drupal::service('extension.path.resolver');
-    $module_path = $extension_path_resolver->getPath('module', 'stanford_earth_r25');
+    $module_path = $this->extensionPathResolver->getPath('module', 'stanford_earth_r25');
     $comment_str = '';
     $attr_email_info = [];
 
@@ -1270,7 +1291,7 @@ class StanfordEarthR25ReservationForm extends FormBase {
       $params['r25_operation'] = $subject;
       $langcode = $this->user->getPreferredLangcode();
       $send = TRUE;
-      $replyto = \Drupal::config('system.site')->get('mail');
+      $replyto = $this->configFactory->get('system.site')->get('email');
       $this->mailManager->mail($module, $key, $to, $langcode, $params, $replyto, $send);
 
       if (!empty($room['postprocess_booking']) && !empty($res_usermail)) {

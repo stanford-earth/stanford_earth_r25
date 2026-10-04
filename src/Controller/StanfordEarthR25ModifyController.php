@@ -12,7 +12,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 /**
  * Provides a reservation cancel/modify page.
  */
-class StanfordEarthR25ModifyController extends ControllerBase {
+final class StanfordEarthR25ModifyController extends ControllerBase {
 
   /**
    * Current user.
@@ -54,7 +54,7 @@ class StanfordEarthR25ModifyController extends ControllerBase {
    * @return static
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('current_user'),
       $container->get('form_builder')
     );

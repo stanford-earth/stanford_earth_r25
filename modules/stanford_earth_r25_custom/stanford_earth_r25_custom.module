@@ -5,7 +5,7 @@
  * Implements stanford_earth_r25 hooks for SE3-only customizations.
  */
 
-use Drupal\User\UserInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Implements hook_user_format_name_alter().

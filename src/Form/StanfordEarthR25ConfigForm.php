@@ -14,7 +14,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
 /**
  * General configuration form for Room Reservations using R25.
  */
-class StanfordEarthR25ConfigForm extends ConfigFormBase {
+final class StanfordEarthR25ConfigForm extends ConfigFormBase {
 
   /**
    * The configuration factory.
@@ -71,7 +71,7 @@ class StanfordEarthR25ConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
+    return new self(
       $container->get('config.factory'),
       $container->get('config.typed'),
       $container->get(FilterFormatRepositoryInterface::class),
