@@ -198,6 +198,7 @@ final class StanfordEarthR25ConfigForm extends ConfigFormBase {
       '#title' => $this->t('No Permission to Reserve Rooms Message'),
       '#description' => $this->t('Informational plain text message to logged in users without the "Book R25 Rooms" permission.'),
       '#default_value' => $default_not_permitted,
+      '#maxlength' => 255,
     ];
 
     $default_readonly_msg = $config->get('stanford_r25_readonly_msg');
@@ -212,6 +213,7 @@ final class StanfordEarthR25ConfigForm extends ConfigFormBase {
       '#title' => $this->t('Read Only Calendar Message'),
       '#description' => $this->t('A message informing user that a room is not reservable.'),
       '#default_value' => $default_readonly_msg,
+      '#maxlength' => 255,
     ];
 
     // Default booking instructions to appear at bottom or reservation form.

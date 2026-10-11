@@ -109,7 +109,22 @@ label.js-form-required.form-required::after {
   grid-column: 1 / -1;
   margin-inline: 0;
   padding-inline: 0;
+  margin-bottom: 0;
 }
+
+.region--footer_top__inner {
+  width: 100% !important;
+  grid-column: 1 / -1 !important;
+  max-width: 100%;
+  margin-inline: 0;
+  padding-inline: 0;
+  margin-bottom: 0;
+  height: 60px;
+}
+#block-olivero-logo img {
+  width: 50%
+}
+
 /*
 body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset {
   margin-top: 0;
@@ -124,11 +139,21 @@ body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane 
 }
 */
 
-.views-view-responsive-grid__item {
+.pb-card-three-columns__left, .pb-card-three-columns__middle,
+.pb-card-three-columns__right,
+.pb-col-right, .pb-col-left, .views-view-responsive-grid__item {
   border: 1px solid #e3e3e3;
   box-shadow: 0 3px 6px rgba(0, 0, 0, .13), 0 3px 6px rgba(0, 0, 0, .1);
   -webkit-box-shadow: 0 3px 6px rgba(0, 0, 0, .13), 0 3px 6px rgba(0, 0, 0, .1);
   min-width: 300px;
+}
+
+.pb-two-columns, .pb-card-three-columns {
+  padding-bottom: 15px;
+}
+
+.pb-card-text-section__inner {
+  align-self: center;
 }
 
 /* Make the card inner container a flex column */
@@ -166,15 +191,26 @@ body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane 
   background-color: #9F000E;
   color: white;
   margin-top: auto; /* ← This is the key addition */
+  position: relative;
+}
+
+.views-field-field-link a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1; /* Keeps the click target on top */
 }
 
 .views-field-field-link a {
   text-decoration: none;
-  color: white;
+  color: white !important;
 }
 
 .views-field-field-link a:hover {
-  color: white;
+  color: white !important;
 }
 /*
 .fc-highlight {
@@ -209,6 +245,14 @@ body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane 
   width: 100%;
 }
 
+h1.page-title, h1.pb-content__title {
+  font-size: xxx-large !important;
+}
+
+h2.pb-content__title {
+  font-size: x-large !important;
+}
+
 /* Breadcrumb specifically */
 .breadcrumb,
 .breadcrumb__content,
@@ -216,4 +260,22 @@ body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane 
   text-align: left;
   justify-content: flex-start;
   margin-inline: 0;
+}
+
+.site-footer__inner {
+  background-color: white;
+}
+.region--footer-top {
+  background-color: #F1F1F1;
+}
+.region--footer-bottom {
+  background-color: #770a11;
+}
+
+#block-olivero-logo {
+  text-align: left;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-inline: 0;
+  width: 100%
 }
