@@ -112,7 +112,8 @@ label.js-form-required.form-required::after {
   margin-bottom: 0;
 }
 
-.region--footer_top__inner {
+.region--footer_top__inner,
+.region--footer-bottom .pb-ui-block {
   width: 100% !important;
   grid-column: 1 / -1 !important;
   max-width: 100%;
@@ -121,27 +122,11 @@ label.js-form-required.form-required::after {
   margin-bottom: 0;
   height: 60px;
 }
-#block-olivero-logo img {
-  width: 50%
-}
-
-/*
-body[class*="page-r25-"][class*="-calendar"] .ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-*/
-
-/*
-.views-view-responsive-grid {
-  width: 100%;
-  max-width: 100%;
-}
-*/
 
 .pb-card-three-columns__left, .pb-card-three-columns__middle,
 .pb-card-three-columns__right,
-.pb-col-right, .pb-col-left, .views-view-responsive-grid__item {
+.pb-col-right, .pb-col-left,
+.views-view-responsive-grid__item {
   border: 1px solid #e3e3e3;
   box-shadow: 0 3px 6px rgba(0, 0, 0, .13), 0 3px 6px rgba(0, 0, 0, .1);
   -webkit-box-shadow: 0 3px 6px rgba(0, 0, 0, .13), 0 3px 6px rgba(0, 0, 0, .1);
@@ -262,20 +247,92 @@ h2.pb-content__title {
   margin-inline: 0;
 }
 
-.site-footer__inner {
-  background-color: white;
-}
-.region--footer-top {
-  background-color: #F1F1F1;
-}
-.region--footer-bottom {
-  background-color: #770a11;
+.site-footer {
+  border-inline-start-color: #F3F6F6 !important;
 }
 
-#block-olivero-logo {
-  text-align: left;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-inline: 0;
-  width: 100%
+.site-footer__inner {
+  background-color: #F3F6F6;
+}
+
+.region--footer-top {
+  background-color: #F3F6F6;
+}
+
+.pb-two-columns-63 .pb-two-columns {
+  background-color: #6D1615;
+}
+
+.pb-two-columns-63 .pb-col-left,
+.pb-two-columns-63 .pb-col-right {
+  border: none;
+}
+/*
+.region--footer-bottom {
+  background-color: #6D1615;
+}
+*/
+/*
+.pb-image-51 {
+  box-shadow: none !important
+}
+*/
+/* Push the link button to the bottom */
+/*
+.pb-simple-52 .field--name-pb-content-link {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-block: var(--sp1);
+  background-color: #9F000E;
+  color: white;
+  margin-top: auto;
+  position: relative;
+}
+
+.pb-simple-52 > .field--name-pb-content-link a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.pb-simple-52 .field--name-pb-content-link a {
+  text-decoration: none;
+  color: white !important;
+}
+
+.pb-simple-52 .field--name-pb-content-link a:hover {
+  color: white !important;
+}
+*/
+
+.pb-block-56 .pb-ui-inner {
+  align-items: center;
+}
+
+.pb-block-56 .pb-ui-inner a {
+  font-size: larger;
+}
+
+.pb-two-columns-60 .pb-col-left,
+.pb-two-columns-60 .pb-col-right {
+  border: none;
+  box-shadow: none;
+}
+
+.link-container {
+    display: flex;         /* Places all links in a single line */
+    flex-direction: row;   /* Ensures they stay side-by-side (default) */
+    gap: 20px;             /* Perfectly spaces them out by 20px */
+}
+
+.su-copyright {
+  color: wheat !important;
 }
