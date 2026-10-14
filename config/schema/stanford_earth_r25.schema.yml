@@ -292,3 +292,7 @@ stanford_earth_r25_location.*:
     post_process_redirect_url:
       type: string
       label: 'Redirect URL When Custom Postprocessing Bookings'
+    resource_id:
+      type: string
+      label: 'R25 Resource IDs'
+

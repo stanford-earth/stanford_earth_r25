@@ -136,7 +136,7 @@ final class StanfordEarthR25LocationForm extends EntityForm {
     if (empty($caltype)) {
       $caltype = "2";
     }
-    $caltype = $this->checkRadioVals($caltype, 1, 3);
+    $caltype = $this->checkRadioVals($caltype, 1, 4);
     $form['caltype'] = [
       '#type' => 'radios',
       '#title' => $this->t('Calendar Display Options'),
@@ -145,6 +145,7 @@ final class StanfordEarthR25LocationForm extends EntityForm {
         1 => $this->t('25Live Publisher'),
         2 => $this->t('FullCalendar'),
         3 => $this->t('FullCalendar List'),
+        4 => $this->t('FullCalendar with Resources'),
       ],
       '#description' => $this->t('Whether to use the 25Live Publisher read-only calendar display or the interactive FullCalendar display.'),
       '#required' => TRUE,
@@ -158,7 +159,7 @@ final class StanfordEarthR25LocationForm extends EntityForm {
       '#title' => $this->t('R25 Room ID'),
       '#type' => 'textfield',
       '#reqired' => TRUE,
-      '#size' => 30,
+      '#size' => 80,
       '#default_value' => $location->get('space_id'),
       '#description' => $this->t('The R25 space_id code for this room. Required for tentative and confirmed bookings.'),
       '#states' => [
@@ -169,6 +170,15 @@ final class StanfordEarthR25LocationForm extends EntityForm {
           ],
         ],
       ],
+    ];
+
+    $form['resource_id'] = [
+      '#title' => $this->t('R25 Resource IDs'),
+      '#type' => 'textfield',
+      '#reqired' => TRUE,
+      '#size' => 50,
+      '#default_value' => $location->get('resource_id'),
+      '#description' => $this->t('The R25 resource_id codes for this room. Required for Fullcalendar with Resources.'),
     ];
 
     // Get the user roles.

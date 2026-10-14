@@ -85,6 +85,7 @@ use Drupal\stanford_earth_r25\StanfordEarthR25Util;
  *     "extra_hours",
  *     "extra_hours_roles",
  *     "post_process_redirect_url",
+ *     "resource_id",
  *   },
  *   links = {
  *     "edit-form" =
@@ -489,6 +490,14 @@ class StanfordEarthR25Location extends ConfigEntityBase implements StanfordEarth
    * @var string
    */
   protected $post_process_redirect_url;
+
+  /**
+   * The R25 Resource ids.
+   *
+   * @var string
+   */
+  protected $resource_id;
+
 
   /**
    * {@inheritdoc}

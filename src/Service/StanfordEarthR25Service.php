@@ -212,6 +212,10 @@ class StanfordEarthR25Service {
           $xml_command = 'event.xml';
           break;
 
+        case 'resources':
+          $xml_command = 'rs_reservations.xml?' . $post_data;
+          break;
+
         default:
           $xml_command = 'null.xml';
       }
