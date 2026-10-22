@@ -29,7 +29,7 @@ function stanford_earth_hartley_is_sdss_user() {
  */
 function stanford_earth_hartley_get_phone_number() {
   $uid = \Drupal::service('externalauth.authmap')
-    ->get(Drupal::currentUser()->id(), 'simplesamlphp_auth');
+    ->get(Drupal::currentUser()->id(), 'samlauth');
   $phone_number = '';
   if (!empty($uid)) {
     $access_token = '';
