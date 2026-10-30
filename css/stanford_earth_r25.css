@@ -103,7 +103,10 @@ label.js-form-required.form-required::after {
   font-size: 2.75rem;
 }
 
-#block-olivero-content, #block-olivero-page-title, #block-olivero-breadcrumbs {
+#block-olivero-content,
+#block-olivero-page-title,
+#block-olivero-breadcrumbs,
+#block-olivero-stanfordfooteralt {
   width: 100%;
   max-width: 100%;
   grid-column: 1 / -1;
@@ -173,7 +176,7 @@ label.js-form-required.form-required::after {
   margin-left: 20px;
   margin-right: 20px;
   margin-block: var(--sp1);
-  background-color: #9F000E;
+  background-color: #8C1515;
   color: white;
   margin-top: auto; /* ← This is the key addition */
   position: relative;
@@ -260,7 +263,7 @@ h2.pb-content__title {
 }
 
 .pb-two-columns-56 .pb-two-columns {
-  background-color: #6D1615;
+  background-color: #8C1515;
 }
 
 .pb-two-columns-56 .pb-col-left,
@@ -334,8 +337,4 @@ h2.pb-content__title {
     display: flex;         /* Places all links in a single line */
     flex-direction: row;   /* Ensures they stay side-by-side (default) */
     gap: 20px;             /* Perfectly spaces them out by 20px */
-}
-
-.su-copyright {
-  color: wheat !important;
 }
