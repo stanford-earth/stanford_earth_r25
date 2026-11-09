@@ -1,8 +1,8 @@
 langcode: en
 status: true
 dependencies: {  }
-id: hartley_administrator
+id: custm_hartley_administrator
 label: 'Hartley Administrator'
-weight: 11
-is_admin: null
+weight: 4
+is_admin: false
 permissions: {  }
