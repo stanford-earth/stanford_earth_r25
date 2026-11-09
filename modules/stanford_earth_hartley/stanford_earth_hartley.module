@@ -561,7 +561,7 @@ function stanford_earth_hartley_stanford_r25_fullcalendar_limit_alter(&$calendar
         $calendar_limit = array_merge($calendar_limit,
           [
             'month' => date('n'),
-            'day' => date('d'),
+            'day' => date('j'),
             'year' => strval(date('Y') + 1),
           ]);
       }
@@ -570,7 +570,7 @@ function stanford_earth_hartley_stanford_r25_fullcalendar_limit_alter(&$calendar
         $calendar_limit = array_merge($calendar_limit,
           [
             'month' => date('n'),
-            'day' => date('d'),
+            'day' => date('j'),
             'year' => strval(date('Y') + 3),
           ]);
       }
