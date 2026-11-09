@@ -1050,7 +1050,7 @@ final class StanfordEarthR25ReservationForm extends FormBase {
     // Send the request to our api function.
     $xml = str_replace('[r25_created_by]', $contact_str, $xml);
     $postdata = serialize([]);
-    $r25_result = $this->r25Service->stanfordR25ApiCall('blank', $postdata);
+    //$r25_result = $this->r25Service->stanfordR25ApiCall('blank', $postdata);
     // Send the request to our api function.
     $r25_result = $this->r25Service->stanfordR25ApiCall('reserve', $xml);
     // Check the results to see if our reservation attempt was successful.
