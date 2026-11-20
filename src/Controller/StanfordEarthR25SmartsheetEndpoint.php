@@ -110,7 +110,7 @@ class StanfordEarthR25SmartsheetEndpoint extends ControllerBase {
     // We must echo it back both as a header and in the JSON body.
     $challenge = $request->headers->get('Smartsheet-Hook-Challenge');
     if ($challenge) {
-        $this->logger->info('challenge response');      
+        $this->logger->info('challenge response');
         return new JsonResponse(
         ['smartsheetHookResponse' => $challenge],
         Response::HTTP_OK,
@@ -125,7 +125,9 @@ class StanfordEarthR25SmartsheetEndpoint extends ControllerBase {
     $signature = $request->headers->get('Smartsheet-Hmac-SHA256', '');
     $xyz = print_r($signature,true);
     $this->logger->info('signature: '.$xyz);
-    $expectedSig = hash_hmac('sha256', $payload, "3wqyfyypur6n4xkfonaks7o7jh");
+    $xyz = print_r($payload,true);
+    $this->logger->info('payload: '.$xyz);
+    $expectedSig = hash_hmac('sha256', $payload, "3m36pjg83l5kdf4auio7kr2zou");
     $xyz = print_r($expectedSig, true);
     $this->logger->info('expected: '.$xyz);
     if (!hash_equals($expectedSig, $signature)) {
@@ -135,7 +137,7 @@ class StanfordEarthR25SmartsheetEndpoint extends ControllerBase {
     else {
       $this->logger->info('smartsheet webhook verified!');
     }
-    $this->logger('verified');
+    $this->logger->info('verified');
     // 3. Process events.
     // Note: Smartsheet events only identify *what* changed, not the new
     // values. Fetch fresh data from the Smartsheet API if needed.
