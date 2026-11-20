@@ -144,3 +144,11 @@ stanford_earth_r25_booking.export:
         type: string
   requirements:
     _permission: 'administer stanford r25'
+
+stanford_earth_r25_smartsheet.webhook:
+  path: '/smartsheet/webhook'
+  defaults:
+    _controller: '\Drupal\stanford_earth_r25\Controller\StanfordEarthR25SmartsheetEndpoint::handle'
+    _title: 'Smartsheet Webhook'
+  requirements:
+    _access: 'TRUE'
